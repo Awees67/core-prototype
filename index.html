@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Core – Own the Future (Offline Demo)</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <header>
+    <h1>Core – Own the Future</h1>
+    <p>Anonyme, KPI-basierte Startup-Suche</p>
+  </header>
+
+  <div class="container">
+
+    <div class="topbar">
+<div class="nav">
+        <button class="navbtn" id="navHome">Übersicht</button>
+        <button class="navbtn" id="navSaved">Merkliste</button>
+        <button class="navbtn" id="navPipeline">My Pipeline</button>
+        <button class="navbtn" id="navCompare">Compare</button>
+        <button class="navbtn" id="navPortfolio">Portfolio</button>
+        <button class="navbtn" id="navSavedFilters">Saved Filters</button>
+        <button class="navbtn" id="navActivity">Activity</button>
+        <button class="navbtn" id="navInbox">Anfragen</button>
+        <button class="navbtn" id="openFilterBtn">Filter</button>
+        <button class="navbtn" id="toggleThemeBtn">Dark Mode</button>
+        <button class="navbtn primary" id="navReset">Demo reset</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Suche: ID (z. B. L-7507), HQ, Markt, Stage, Sektor" autocomplete="off">
+      </div>
+      <div class="filters-inline">
+        <button class="btn secondary" id="clearAllFiltersBtn">Filter löschen</button>
+        <button class="btn secondary" id="randomizeBtn">Dataset neu mischen</button>
+      </div>
+    </div>
+
+    <div class="summarybar">
+      <div class="summary-left">
+        <div class="pill" id="resultCount">0 Ergebnisse</div>
+        <div class="pill" id="activeFilterCount">0 Filter aktiv</div>
+        <div class="pill" id="savedCount">0 gemerkt</div>
+      </div>
+      <div class="sortbox">
+        <select id="sortSelect" aria-label="Sortierung">
+          <option value="mrr_desc">Sortierung: MRR (hoch → niedrig)</option>
+          <option value="growth_desc">Sortierung: Wachstum (hoch → niedrig)</option>
+          <option value="runway_desc">Sortierung: Runway (hoch → niedrig)</option>
+          <option value="burn_asc">Sortierung: Burn (niedrig → hoch)</option>
+          <option value="nrr_desc">Sortierung: NRR (hoch → niedrig)</option>
+          <option value="ltvcac_desc">Sortierung: LTV/CAC (hoch → niedrig)</option>
+          <option value="ticket_desc">Sortierung: Ticket (Rundengröße) (hoch → niedrig)</option>
+          <option value="arr_desc">Sortierung: ARR (hoch → niedrig)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="activechips" id="activeChips"></div>
+
+    <div class="card-grid" id="cardGrid"></div>
+    <div id="viewSaved" class="view" style="display:none;"></div>
+    <div id="viewPipeline" class="view" style="display:none;"></div>
+    <div id="viewCompare" class="view" style="display:none;"></div>
+    <div id="viewPortfolio" class="view" style="display:none;"></div>
+    <div id="viewSavedFilters" class="view" style="display:none;"></div>
+    <div id="viewActivity" class="view" style="display:none;"></div>
+    <div id="viewInbox" class="view" style="display:none;"></div>
+
+  </div>
+
+<!-- ✅ COMPARE TRAY (offline, additive) -->
+<div class="compare-tray" id="compareTray" aria-live="polite">
+  <div class="compare-inner">
+    <div class="compare-ids" id="compareIds"></div>
+    <div class="cell-actions">
+      <button class="btn secondary small" id="compareClearBtn">Clear</button>
+      <button class="btn small" id="compareOpenBtn">Open Compare</button>
+    </div>
+  </div>
+</div>
+
+  
+  
+
+  <!-- DETAILS MODAL -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document" aria-label="Startup Details">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h2 id="modalH2">Startup</h2>
+          <p id="modalSub">—</p>
+        </div>
+        <button class="close" id="modalClose" aria-label="Schließen">Schließen</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="panel">
+          <h3>KPI-Übersicht</h3>
+          <div class="kpi-grid" id="kpiGrid"></div>
+          <div class="helper" id="kpiHint" style="margin-top:10px;">—</div>
+        </div>
+
+        <div class="panel">
+          <h3>Interesse anfragen</h3>
+          <div class="form-row">
+            <div>
+              <label for="leadName">Name</label>
+              <input type="text" id="leadName" placeholder="Max Mustermann">
+            </div>
+            <div>
+              <label for="leadEmail">E-Mail</label>
+              <input type="email" id="leadEmail" placeholder="max@firma.com">
+            </div>
+          </div>
+
+          <label for="leadFirm">Firma / Fonds</label>
+          <input type="text" id="leadFirm" placeholder="Firma / Fonds (optional)">
+
+          <label for="leadMsg">Nachricht</label>
+          <textarea id="leadMsg" placeholder="Kurz: Warum relevant? Was brauchst du als nächsten Schritt?"></textarea>
+
+          <div class="helper">Demo: Es wird nur lokal gespeichert (keine Übertragung).</div>
+
+          <div class="card-actions" style="margin-top:10px;">
+            <button class="btn" id="sendLeadBtn">Anfrage speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn secondary" id="prevBtn">Zurück</button>
+          <button class="btn secondary" id="nextBtn">Weiter</button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn secondary" id="saveToggleBtn">Zur Merkliste</button>
+          <button class="btn secondary" id="interestedBtn">Interested</button>
+          <button class="btn secondary" id="addCompareBtn">Add to Compare</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER MODAL -->
+  <div class="filter-backdrop" id="filterBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="filter-modal" role="document" aria-label="Filter">
+      <div class="filter-header">
+        <div>
+          <h2>Filter</h2>
+          <p>Definiere dein Suchprofil präzise, ohne das bestehende UI zu verändern.</p>
+        </div>
+        <button class="close" id="filterCloseBtn" aria-label="Schließen">Schließen</button>
+      </div>
+
+      <div class="filter-body">
+        <div class="filter-section">
+          <h3>Kontext</h3>
+          <label>Herkunft</label>
+          <div id="originDD"></div>
+          <label>Markt</label>
+          <div id="marketDD"></div>
+          <label>Stage</label>
+          <div id="stageDD"></div>
+          <label>Sektor</label>
+          <div id="sectorDD"></div>
+        </div>
+
+        <div class="filter-section">
+          <h3>Signal / Qualität</h3>
+          <label for="ueSelect">UE</label>
+          <select id="ueSelect">
+            <option value="All">Alle</option>
+            <option value="Strong">Strong</option>
+            <option value="No Risk">No Risk</option>
+            <option value="Risk">Risk</option>
+          </select>
+
+          <label for="rqSelect">RQ</label>
+          <select id="rqSelect">
+            <option value="All">Alle</option>
+            <option value="High">High</option>
+            <option value="Stable">Stable</option>
+            <option value="Risk">Risk</option>
+          </select>
+
+          <label for="ceSelect">CE</label>
+          <select id="ceSelect">
+            <option value="All">Alle</option>
+            <option value="Efficient">Efficient</option>
+            <option value="Neutral">Neutral</option>
+            <option value="Inefficient">Inefficient</option>
+          </select>
+
+          <div class="toggle-row">
+            <input type="checkbox" id="advToggle">
+            <label for="advToggle" style="margin:0;">Advanced Metrics aktivieren</label>
+          </div>
+
+          <div id="advFields" style="display:none; margin-top:10px;">
+            <div class="range-row">
+              <div>
+                <label for="nrrMin">NRR min</label>
+                <input type="number" id="nrrMin" placeholder="z. B. 110">
+              </div>
+              <div>
+                <label for="ltvCacMin">LTV/CAC min</label>
+                <input type="number" id="ltvCacMin" placeholder="z. B. 3">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <h3>Wachstum / Kapital</h3>
+          <div class="range-row">
+            <div>
+              <label for="mrrMin">MRR min</label>
+              <input type="number" id="mrrMin">
+            </div>
+            <div>
+              <label for="mrrMax">MRR max</label>
+              <input type="number" id="mrrMax">
+            </div>
+          </div>
+
+          <div class="range-row">
+            <div>
+              <label for="growthMin">Wachstum min %</label>
+              <input type="number" id="growthMin">
+            </div>
+            <div>
+              <label for="runwayMin">Runway min</label>
+              <input type="number" id="runwayMin">
+            </div>
+          </div>
+
+          <div class="range-row">
+            <div>
+              <label for="burnMax">Burn max</label>
+              <input type="number" id="burnMax">
+            </div>
+            <div>
+              <label for="ebitdaMin">EBITDA min %</label>
+              <input type="number" id="ebitdaMin">
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <h3>Runde</h3>
+          <div class="range-row">
+            <div>
+              <label for="ticketMin">Ticket min</label>
+              <input type="number" id="ticketMin">
+            </div>
+            <div>
+              <label for="ticketMax">Ticket max</label>
+              <input type="number" id="ticketMax">
+            </div>
+          </div>
+          <div class="tiny">Alle bestehenden Filterfunktionen bleiben erhalten; hier wird nur die fehlende UI wieder angebunden.</div>
+        </div>
+      </div>
+
+      <div class="filter-footer">
+        <div class="muted-note">OR innerhalb einer Kategorie, AND zwischen Kategorien.</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn secondary" id="resetFiltersBtn">Zurücksetzen</button>
+          <button class="btn secondary" id="saveFilterBtn">Filter speichern</button>
+          <button class="btn" id="applyFiltersBtn">Anwenden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY BAR -->
+  <div class="privacy-bar">
+    <div class="privacy-bar-inner">
+      <div class="privacy-left">
+        <span>Datenschutz & Demo-Hinweis</span>
+      </div>
+      <button class="privacy-link" id="openPrivacyBtn">Datenschutzerklärung</button>
+    </div>
+  </div>
+
+  <!-- PRIVACY OVERLAY -->
+  <div class="privacy-backdrop" id="privacyBackdrop" aria-hidden="true">
+    <div class="privacy-sheet">
+      <div class="privacy-header">
+        <div>
+          <h2>Datenschutzerklärung</h2>
+          <p>Offline-Demo. Keine echte Übertragung an Dritte. Eingaben werden lokal im Browser gespeichert.</p>
+        </div>
+        <button class="close" id="privacyCloseBtn" aria-label="Schließen">Schließen</button>
+      </div>
+      <div class="privacy-body">
+        <div class="privacy-content">
+          <h1>Datenschutz</h1>
+          <p>Diese Prototyp-Demo verarbeitet Eingaben lokal im Browser des Nutzers. Gespeicherte Daten wie Filtersets, Pipeline und Verlauf werden ausschließlich über Local Storage simuliert.</p>
+          <h2>Hinweis</h2>
+          <p>Alle Startup-Daten in dieser Demo sind anonymisiert und indikativ. Sie dienen nur der Produktdemonstration.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" style="display:none;">
+    <div id="toastTitle">Gespeichert</div>
+    <small id="toastSub">Lokale Demo-Aktion</small>
+  </div>
+
+  <!-- ADD-ONLY: Signal Index Popover -->
+  <div id="signalIndexPopover" class="popover" role="dialog" aria-label="Signal Index Erklärung"></div>
+
+<!-- =========================
+     Custom Index V6 (Rules) — Modal (additive)
+========================= -->
+<div class="custom-backdrop" id="customIndexBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="custom-sheet" role="document" aria-label="Custom Index Regeln">
+    <div class="custom-head">
+      <div>
+        <h3>Custom Index (Rules)</h3>
+        <div class="sub">Fonds-spezifische IF/THEN Regeln • Punkte frei • Stacking + Caps • Explainability</div>
+        <div class="custom-tabs" role="tablist" aria-label="Custom Index Tabs">
+          <button class="tabbtn active" id="ciTabBtn_rules" data-ci-tab="rules" role="tab" aria-selected="true">Regeln</button>
+          <button class="tabbtn" id="ciTabBtn_library" data-ci-tab="library" role="tab" aria-selected="false">Metriken</button>
+          <button class="tabbtn" id="ciTabBtn_preview" data-ci-tab="preview" role="tab" aria-selected="false">Preview</button>
+        </div>
+      </div>
+      <div class="right" style="display:flex; gap:8px; align-items:flex-start;">
+        <button class="btn secondary" id="ciResetBtn" title="Default wiederherstellen">Reset</button>
+        <button class="btn secondary" id="ciCloseBtn" aria-label="Schließen">Schließen</button>
+      </div>
+    </div>
+
+    <div class="custom-body" id="ciBody">
+      <!-- RULES TAB -->
+      <div id="ciTab_rules" data-ci-tabpanel="rules">
+        <div class="custom-grid">
+          <div class="custom-panel">
+            <h4>Ruleset</h4>
+
+            <div class="custom-row">
+              <label for="ciRulesetSelect">Ruleset</label>
+              <div class="right" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <select id="ciRulesetSelect" style="min-width:220px;"></select>
+                <button class="btn secondary" id="ciRulesetNewBtn" type="button">Neu</button>
+                <button class="btn secondary" id="ciRulesetDupBtn" type="button">Duplizieren</button>
+                <button class="btn secondary" id="ciRulesetDelBtn" type="button">Löschen</button>
+              </div>
+            </div>
+
+            <div class="custom-row">
+              <label for="ciEnabled">Aktiv</label>
+              <div class="right">
+                <input type="checkbox" id="ciEnabled" />
+                <span class="custom-mini">Custom Index im UI anzeigen & berechnen</span>
+              </div>
+            </div>
+
+            <div class="custom-row">
+              <label for="ciName">Name</label>
+              <div class="right">
+                <input type="text" id="ciName" placeholder="My Fund Ruleset" />
+              </div>
+            </div>
+
+            <div class="custom-row">
+              <label for="ciStart">Start Score</label>
+              <div class="right">
+                <input type="number" id="ciStart" />
+                <span class="custom-mini">z.B. 50</span>
+              </div>
+            </div>
+
+            <div class="custom-row">
+              <label for="ciMin">Min / Max</label>
+              <div class="right">
+                <input type="number" id="ciMin" />
+                <input type="number" id="ciMax" />
+              </div>
+            </div>
+
+            <div class="custom-row">
+              <label for="ciMissingPolicy">Missing KPI</label>
+              <div class="right">
+                <select id="ciMissingPolicy">
+                  <option value="skip_rule">skip_rule</option>
+                  <option value="treat_as_zero">treat_as_zero</option>
+                  <option value="apply_penalty_points">apply_penalty_points</option>
+                </select>
+                <input type="number" id="ciMissingPenalty" class="hide-sm" title="Penalty points wenn KPI fehlt" />
+              </div>
+            </div>
+
+            <div class="helper" style="margin-top:10px;">
+              <b>Stacking</b>: Jede getriggerte Regel addiert Punkte (Sum).<br>
+              <b>Caps</b>: Ergebnis wird auf Min/Max geklemmt.<br>
+              <b>Explainability</b>: pro Deal siehst du die getriggerten Regeln.
+            </div>
+
+          </div>
+
+          <div class="custom-panel">
+            <h4>Actions</h4>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn" id="ciAddGroupBtn">Add Group</button>
+              <button class="btn secondary" id="ciExportBtn">Export JSON</button>
+              <button class="btn secondary" id="ciImportBtn">Import JSON</button>
+            </div>
+            <div class="custom-mini" style="margin-top:10px;">
+              Hinweis: Offline Demo – gespeichert in localStorage (persistiert nach Reload).
+            </div>
+            <textarea id="ciJsonIO" style="margin-top:10px; width:100%; min-height:140px; padding:10px; border-radius:12px; border:1px solid var(--border); background:var(--soft2); color:inherit; font-weight:900;" placeholder="JSON Import/Export…"></textarea>
+          </div>
+        </div>
+
+        <div class="custom-panel" style="margin-top:12px;">
+          <h4>Rule Groups</h4>
+          <div id="ciGroupsMount"></div>
+        </div>
+      </div>
+
+      <!-- LIBRARY TAB -->
+      <div id="ciTab_library" data-ci-tabpanel="library" style="display:none;">
+        <div class="custom-panel">
+          <h4>Unterstützte Metriken</h4>
+          <div class="custom-mini">Diese KPIs stehen im Rules Engine zur Verfügung (KPI Map).</div>
+          <div id="ciKpiLibrary" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <!-- PREVIEW TAB -->
+      <div id="ciTab_preview" data-ci-tabpanel="preview" style="display:none;">
+        <div class="custom-grid">
+          <div class="custom-panel">
+            <h4>Startup auswählen</h4>
+            <div class="custom-row">
+              <label for="ciPreviewAnonInput">Anon ID</label>
+              <div class="right">
+                <input id="ciPreviewAnonInput" list="ciPreviewAnonList" placeholder="z.B. g_849" style="min-width:220px;" />
+                <datalist id="ciPreviewAnonList"></datalist>
+              </div>
+            </div>
+            <div class="custom-scorebox" style="margin-top:10px;">
+              <div style="font-weight:950;">Custom Index:</div>
+              <div class="mono" id="ciPreviewScore">—</div>
+              <div class="custom-pill" id="ciPreviewEnabledPill">disabled</div>
+            </div>
+            <div class="custom-mini" style="margin-top:10px;">Breakdown:</div>
+            <div id="ciPreviewBreakdown" style="margin-top:8px;"></div>
+          </div>
+
+          <div class="custom-panel">
+            <h4>Interpretation</h4>
+            <div class="helper">
+              <b>Warum Custom?</b> Fonds können eigene Schwellen & Punkte definieren (Excel-Logik).<br>
+              <b>Kein Schönrechnen</b>: Missing KPIs werden transparent behandelt (Policy).<br>
+              <b>Stacking</b>: mehrere Treffer → Summe der Punkte.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+  <!-- JS: load order matters (dependencies first) -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/signal-index.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/renderers.js"></script>
+  <script src="js/custom-index.js"></script>
+  <script src="js/activity.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>
