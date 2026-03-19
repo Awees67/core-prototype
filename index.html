@@ -18,11 +18,7 @@
     <div class="topbar">
 <div class="nav">
         <button class="navbtn" id="navHome">Übersicht</button>
-        <button class="navbtn" id="navSaved">Merkliste</button>
-        <button class="navbtn" id="navPipeline">My Pipeline</button>
         <button class="navbtn" id="navCompare">Compare</button>
-        <button class="navbtn" id="navPortfolio">Portfolio</button>
-        <button class="navbtn" id="navSavedFilters">Saved Filters</button>
         <button class="navbtn" id="navActivity">Activity</button>
         <button class="navbtn" id="navInbox">Anfragen</button>
         <button class="navbtn" id="openFilterBtn">Filter</button>
@@ -64,11 +60,7 @@
     <div class="activechips" id="activeChips"></div>
 
     <div class="card-grid" id="cardGrid"></div>
-    <div id="viewSaved" class="view" style="display:none;"></div>
-    <div id="viewPipeline" class="view" style="display:none;"></div>
     <div id="viewCompare" class="view" style="display:none;"></div>
-    <div id="viewPortfolio" class="view" style="display:none;"></div>
-    <div id="viewSavedFilters" class="view" style="display:none;"></div>
     <div id="viewActivity" class="view" style="display:none;"></div>
     <div id="viewInbox" class="view" style="display:none;"></div>
 
@@ -139,8 +131,6 @@
           <button class="btn secondary" id="nextBtn">Weiter</button>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-          <button class="btn secondary" id="saveToggleBtn">Zur Merkliste</button>
-          <button class="btn secondary" id="interestedBtn">Interested</button>
           <button class="btn secondary" id="addCompareBtn">Add to Compare</button>
         </div>
       </div>
@@ -272,7 +262,6 @@
         <div class="muted-note">OR innerhalb einer Kategorie, AND zwischen Kategorien.</div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn secondary" id="resetFiltersBtn">Zurücksetzen</button>
-          <button class="btn secondary" id="saveFilterBtn">Filter speichern</button>
           <button class="btn" id="applyFiltersBtn">Anwenden</button>
         </div>
       </div>

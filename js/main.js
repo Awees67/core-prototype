@@ -23,10 +23,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     syncFilterModalFromState();
   });
 
-  on("saveFilterBtn","click", ()=>{
-    saveCurrentFilters();
-  });
-
   // ✅ privacy events
   on("openPrivacyBtn","click", openPrivacy);
   on("privacyCloseBtn","click", closePrivacy);
@@ -52,14 +48,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 
   on("navHome","click", ()=>{ currentView = "home"; renderCurrent(); });
-on("navSaved","click", ()=>{ currentView = "saved"; renderCurrent(); });
-
-on("navPipeline","click", ()=>{ currentView = "pipeline"; renderCurrent(); });
-on("navCompare","click", ()=>{ currentView = "compare"; renderCurrent(); });
-on("navPortfolio","click", ()=>{ currentView = "portfolio"; renderCurrent(); });
-on("navSavedFilters","click", ()=>{ currentView = "savedFilters"; renderCurrent(); });
-on("navActivity","click", ()=>{ currentView = "activity"; renderCurrent(); });
-on("navInbox","click", ()=>{ currentView = "inbox"; renderCurrent(); });
+  on("navCompare","click", ()=>{ currentView = "compare"; renderCurrent(); });
+  on("navActivity","click", ()=>{ currentView = "activity"; renderCurrent(); });
+  on("navInbox","click", ()=>{ currentView = "inbox"; renderCurrent(); });
 
   on("navReset","click", resetDemo);
   on("toggleThemeBtn","click", toggleTheme);
