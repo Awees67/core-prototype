@@ -26,6 +26,8 @@ function buildStartup(rng, i){
 
   const stage = randChoice(rng, GEN.stages);
   const sector = randChoice(rng, GEN.sectors);
+  const subSectors = SECTOR_MAP[sector] || [];
+  const sub_sector = subSectors.length ? randChoice(rng, subSectors) : null;
   const growthType = randChoice(rng, GEN.growthTypes);
 
   const base = Math.pow(rng(), 2) * 450000;
@@ -83,6 +85,7 @@ function buildStartup(rng, i){
     market_served: Array.from(marketSet),
     stage,
     sector,
+    sub_sector,
 
     mrr_eur: mrr,
     growth: { type: growthType, value_pct: growthPct },
@@ -109,7 +112,7 @@ function buildStartup(rng, i){
     esop_pct: esop,
     employees_pct: employees,
 
-    notes: `HQ: ${origin} • Markt: ${Array.from(marketSet).join(", ")} • ${sector} • ${stage}`
+    notes: `HQ: ${origin} • Markt: ${Array.from(marketSet).join(", ")} • ${sector}${sub_sector ? " › " + sub_sector : ""} • ${stage}`
   };
 }
 

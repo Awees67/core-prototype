@@ -15,12 +15,13 @@ const FILTER_DEFAULTS = {
   ticketMin: null, ticketMax: null
 };
 function makeFilters(){
-  return { origin: new Set(), market: new Set(), stage: new Set(), sector: new Set(), ...FILTER_DEFAULTS };
+  return { origin: new Set(), market: new Set(), stage: new Set(), sector: new Set(), sub_sector: new Set(), ...FILTER_DEFAULTS };
 }
 function serializeFilters(){
   return {
     origin: Array.from(filters.origin), market: Array.from(filters.market),
     stage: Array.from(filters.stage), sector: Array.from(filters.sector),
+    sub_sector: Array.from(filters.sub_sector),
     ...FILTER_DEFAULTS,
     ue: filters.ue, rq: filters.rq, ce: filters.ce,
     advEnabled: filters.advEnabled,
@@ -37,6 +38,7 @@ function applyFilterObject(f){
   filters.market = new Set(f.market || []);
   filters.stage = new Set(f.stage || []);
   filters.sector = new Set(f.sector || []);
+  filters.sub_sector = new Set(f.sub_sector || []);
   filters.ue = f.ue || "All";
   filters.rq = f.rq || "All";
   filters.ce = f.ce || "All";

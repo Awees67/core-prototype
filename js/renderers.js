@@ -25,7 +25,19 @@ function renderActiveChips(){
     pushChip(`Stage: ${v}`, ()=>{ filters.stage.delete(v); saveUIState(); renderCurrent(); });
   }
   for(const v of filters.sector){
-    pushChip(`Sektor: ${v}`, ()=>{ filters.sector.delete(v); saveUIState(); renderCurrent(); });
+    pushChip(`Sektor: ${v}`, ()=>{
+      filters.sector.delete(v);
+      // Auto-cleanup: remove sub_sectors that no longer belong to any remaining sector
+      if(filters.sub_sector.size > 0){
+        const availableSubs = new Set();
+        for(const sec of filters.sector){ for(const sub of (SECTOR_MAP[sec] || [])){ availableSubs.add(sub); } }
+        for(const sub of [...filters.sub_sector]){ if(!availableSubs.has(sub)) filters.sub_sector.delete(sub); }
+      }
+      saveUIState(); renderCurrent();
+    });
+  }
+  for(const v of filters.sub_sector){
+    pushChip(`Sub: ${v}`, ()=>{ filters.sub_sector.delete(v); saveUIState(); renderCurrent(); });
   }
 
   if(filters.ue !== "All") pushChip(`UE: ${filters.ue}`, ()=>{ filters.ue="All"; saveUIState(); renderCurrent(); });
@@ -108,6 +120,7 @@ function renderCards(){
             <span class="tag">Markt: ${marketLabel}</span>
             <span class="tag">${s.stage}</span>
             <span class="tag">${s.sector}</span>
+            ${s.sub_sector ? `<span class="tag">${s.sub_sector}</span>` : ""}
           </div>
 
           <!-- Signals only -->
@@ -432,7 +445,7 @@ function openModalWithStartup(s, list){
   });
 
   document.getElementById("kpiHint").textContent = s.notes || "—";
-  document.getElementById("modalSub").textContent = `${s.sector} • ${s.stage}`;
+  document.getElementById("modalSub").textContent = `${s.sector}${s.sub_sector ? " › " + s.sub_sector : ""} • ${s.stage}`;
   bindLeadFormForStartup(s);
 
   document.getElementById("nextBtn").onclick = ()=>{

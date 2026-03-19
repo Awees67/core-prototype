@@ -7,7 +7,7 @@ function closeAllDropdowns(exceptEl){
     dd.classList.remove("open");
   });
 }
-function renderDropdownMulti(containerId, title, options, selectedSet, labelFn){
+function renderDropdownMulti(containerId, title, options, selectedSet, labelFn, onChange){
   const host = document.getElementById(containerId);
   host.innerHTML = "";
 
@@ -68,6 +68,7 @@ function renderDropdownMulti(containerId, title, options, selectedSet, labelFn){
         if(e.target.checked) selectedSet.add(v);
         else selectedSet.delete(v);
         renderBtn();
+        if(onChange) onChange();
       });
       list.appendChild(item);
     });
@@ -93,11 +94,13 @@ function renderDropdownMulti(containerId, title, options, selectedSet, labelFn){
     options.forEach(v=>selectedSet.add(v));
     renderList(search.value);
     renderBtn();
+    if(onChange) onChange();
   });
   actions.querySelector('[data-act="none"]').addEventListener("click", ()=>{
     selectedSet.clear();
     renderList(search.value);
     renderBtn();
+    if(onChange) onChange();
   });
 
   panel.appendChild(search);
@@ -129,6 +132,58 @@ function renderDropdownMulti(containerId, title, options, selectedSet, labelFn){
 }
 
 /* =========================
+   SUB-SECTOR DROPDOWN (context-aware)
+========================= */
+function getAvailableSubSectors(sectorSet){
+  const available = [];
+  const seen = new Set();
+  for(const sector of sectorSet){
+    for(const sub of (SECTOR_MAP[sector] || [])){
+      if(!seen.has(sub)){ available.push(sub); seen.add(sub); }
+    }
+  }
+  return available;
+}
+
+function cleanSubSectorsByAvailable(tempSubSectorSet, available){
+  const availSet = new Set(available);
+  for(const sub of [...tempSubSectorSet]){
+    if(!availSet.has(sub)) tempSubSectorSet.delete(sub);
+  }
+}
+
+function renderSubSectorDropdown(containerId, tempSectorSet, tempSubSectorSet){
+  let ddRef = null;
+
+  function render(){
+    const available = getAvailableSubSectors(tempSectorSet);
+    cleanSubSectorsByAvailable(tempSubSectorSet, available);
+    const host = document.getElementById(containerId);
+    if(!host) return;
+    host.innerHTML = "";
+
+    if(available.length === 0){
+      const dd = document.createElement("div");
+      dd.className = "dd";
+      dd.innerHTML = `<button type="button" class="dd-btn" disabled style="opacity:0.5; cursor:not-allowed;">
+        <div class="left">
+          <span style="font-weight:950;">Auswahl</span>
+          <span class="dd-pill">Wähle zuerst einen Sektor</span>
+        </div>
+        <span style="font-weight:950; opacity:0.8;">▾</span>
+      </button>`;
+      host.appendChild(dd);
+      ddRef = null;
+    } else {
+      ddRef = renderDropdownMulti(containerId, "Auswahl", available, tempSubSectorSet, (x)=>x);
+    }
+  }
+
+  render();
+  return { refresh: render };
+}
+
+/* =========================
    FILTER MODAL UI
 ========================= */
 let DD_REFS = null;
@@ -151,19 +206,22 @@ function syncFilterModalFromState(){
   const tempMarket = new Set(filters.market);
   const tempStage = new Set(filters.stage);
   const tempSector = new Set(filters.sector);
+  const tempSubSector = new Set(filters.sub_sector);
 
-  document.getElementById("filterBackdrop")._temp = { tempOrigin, tempMarket, tempStage, tempSector };
+  document.getElementById("filterBackdrop")._temp = { tempOrigin, tempMarket, tempStage, tempSector, tempSubSector };
 
   const marketLabel = (k)=>{
     const m = FILTER_OPTIONS.market.find(x=>x.key===k);
     return m ? m.label : k;
   };
 
+  const subSectorDDRef = renderSubSectorDropdown("subSectorDD", tempSector, tempSubSector);
+
   DD_REFS = {
     origin: renderDropdownMulti("originDD", "Auswahl", FILTER_OPTIONS.origin, tempOrigin, (x)=>x),
     market: renderDropdownMulti("marketDD", "Auswahl", FILTER_OPTIONS.market.map(x=>x.key), tempMarket, marketLabel),
     stage: renderDropdownMulti("stageDD", "Auswahl", FILTER_OPTIONS.stage, tempStage, (x)=>x),
-    sector: renderDropdownMulti("sectorDD", "Auswahl", FILTER_OPTIONS.sector, tempSector, (x)=>x)
+    sector: renderDropdownMulti("sectorDD", "Auswahl", FILTER_OPTIONS.sector, tempSector, (x)=>x, ()=>subSectorDDRef.refresh())
   };
 
   document.getElementById("ueSelect").value = filters.ue;
@@ -195,6 +253,7 @@ function applyFilterModal(){
     market: Array.from(temp.tempMarket || []),
     stage: Array.from(temp.tempStage || []),
     sector: Array.from(temp.tempSector || []),
+    sub_sector: Array.from(temp.tempSubSector || []),
     ue: document.getElementById("ueSelect").value,
     rq: document.getElementById("rqSelect").value,
     ce: document.getElementById("ceSelect").value,
@@ -237,6 +296,7 @@ function countActiveFilters(){
   c += filters.market.size;
   c += filters.stage.size;
   c += filters.sector.size;
+  c += filters.sub_sector.size;
 
   if(filters.ue !== "All") c++;
   if(filters.rq !== "All") c++;
@@ -276,6 +336,7 @@ function matchesFilters(s){
   if(!anyInSetOrAll(filters.market, s.market_served)) return false;
   if(!inSetOrAll(filters.stage, s.stage)) return false;
   if(!inSetOrAll(filters.sector, s.sector)) return false;
+  if(!inSetOrAll(filters.sub_sector, s.sub_sector)) return false;
 
   const ue = classifyUE(s);
   const rq = classifyRQ(s);
@@ -352,6 +413,7 @@ function matchesSearch(s, q){
     (s.market_served||[]).join(" "),
     s.stage,
     s.sector,
+    s.sub_sector || "",
     s.notes || ""
   ].join(" ").toLowerCase();
 
