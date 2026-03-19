@@ -773,8 +773,6 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
     .comparelist{ display:flex; flex-direction:column; gap:12px; }
     .comparelist .startup-card{ width:100%; }
 
-    #viewPipeline .controls > div:first-child{ flex:1 1 auto; }
-    #viewPipeline .controls .cell-actions{ margin-left:auto; }
 
     body.no-scroll{ overflow:hidden !important; }
     .popover{ overscroll-behavior:contain; }
