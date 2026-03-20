@@ -40,18 +40,18 @@ function openSignalPopover(anchorEl, html, anon_id=null){
   pop.style.top = "0px";
   const pr = pop.getBoundingClientRect();
 
-  let left = r.left + window.scrollX;
-  let top = r.bottom + window.scrollY + 8;
+  let left = r.left;
+  let top = r.bottom + 8;
 
-  // clamp horizontally
-  left = Math.min(left, window.scrollX + window.innerWidth - pr.width - pad);
-  left = Math.max(left, window.scrollX + pad);
+  // clamp horizontally (viewport-relative for position:fixed)
+  left = Math.min(left, window.innerWidth - pr.width - pad);
+  left = Math.max(left, pad);
 
   // if too low, place above
-  if(top + pr.height > window.scrollY + window.innerHeight - pad){
-    top = r.top + window.scrollY - pr.height - 8;
+  if(top + pr.height > window.innerHeight - pad){
+    top = r.top - pr.height - 8;
   }
-  top = Math.max(top, window.scrollY + pad);
+  top = Math.max(top, pad);
 
   pop.style.left = left + "px";
   pop.style.top = top + "px";

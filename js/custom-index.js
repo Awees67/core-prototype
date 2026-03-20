@@ -242,6 +242,7 @@ function getPipelineStartupListV6(){
     try{ renderCustomIndexUI(true); }catch(_){}
     try{ patchVisibleCustomIndex(); }catch(_){}
     try{ if(typeof renderCompare === "function") renderCompare(); }catch(_){}
+    try{ if(typeof currentView !== "undefined" && currentView === "home" && typeof renderCards === "function") renderCards(); }catch(_){}
   }
 
   function getCustomRulesV6(){
@@ -286,6 +287,7 @@ function getPipelineStartupListV6(){
     try{ renderCustomIndexUI(); }catch(_){}
     try{ patchVisibleCustomIndex(); }catch(_){}
     try{ if(typeof renderCompare === "function") renderCompare(); }catch(_){}
+    try{ if(typeof currentView !== "undefined" && currentView === "home" && typeof renderCards === "function") renderCards(); }catch(_){}
   }
 
   /* ---------- operator evaluation ---------- */
@@ -583,8 +585,8 @@ function getPipelineStartupListV6(){
     // After editing rules, refresh visible UI (Pipeline/Compare/Modal badges)
     try{ patchVisibleCustomIndex(); }catch(_){}
     try{
-      if(typeof currentView !== "undefined" && (currentView==="pipeline" || currentView==="compare")){
-        if(typeof renderCurrent === "function") renderCurrent();
+      if(typeof currentView !== "undefined" && typeof renderCurrent === "function"){
+        renderCurrent();
       }
     }catch(_){}
   }
@@ -1277,6 +1279,7 @@ function getPipelineStartupListV6(){
   window.computeCustomIndexBreakdownV6 = computeCustomIndexBreakdownV6;
   window.openCustomIndex = openCustomIndex;
   window.closeCustomIndex = closeCustomIndex;
+  window.__CI_V6_CLEAR_CACHE__ = function(){ _cache = {}; };
 
   // initial best-effort injections after load
   window.addEventListener("load", ()=>{

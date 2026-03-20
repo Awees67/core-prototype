@@ -496,7 +496,7 @@ function renderSubmissions(){
               <td><button class="btn secondary small" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(ss?.company_name || sub.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(sub.anon_id)}</small></td>
               <td>${escapeHTML(sectorStr)}</td>
               <td>${escapeHTML(sub.stage||"—")}</td>
-              <td class="mono">${Math.round(sub.signal_index||0)}</td>
+              <td class="mono">${(()=>{ try{ const _r = computeCustomIndexV6(sub.anon_id); return (_r && _r.score !== null) ? String(_r.score) : String(Math.round(sub.signal_index||0)); }catch(_){ return String(Math.round(sub.signal_index||0)); } })()}</td>
               <td>${plausiBadge(sub.plausibility_status, sub.plausibility_flags)}</td>
               <td class="mono" style="font-size:0.88rem;">${dt}</td>
               <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
@@ -640,7 +640,8 @@ function renderPipeline(){
         <tbody>
           ${list.map(item=>{
             const dt = item.last_updated ? new Date(item.last_updated).toLocaleDateString("de-DE") : "—";
-            const signal = Math.round(item.signal_index||0);
+            let signal = "—";
+            try{ const _r = computeCustomIndexV6(item.anon_id); if(_r && _r.score !== null) signal = String(_r.score); }catch(_){ signal = Math.round(item.signal_index||0); }
             const ps = startups.find(x=>x.anon_id===item.anon_id);
 
             const statusCell = item.status === "Synced"
@@ -930,6 +931,13 @@ function resetDemo(){
     localStorage.removeItem(LS_KEYS.savedFilters);
     localStorage.removeItem(LS_KEYS.activity);
     localStorage.removeItem(LS_KEYS.submissions);
+    // Clear custom index rulesets so fresh defaults are used
+    localStorage.removeItem("core_custom_rules_v6");
+    localStorage.removeItem("core_custom_rules_v6_backup");
+    localStorage.removeItem("core_custom_rules_v6_enabled");
+    localStorage.removeItem("core_custom_rulesets_v6");
+    localStorage.removeItem("core_custom_rules_v6_active_id");
+    if(window.__CI_V6_CLEAR_CACHE__) window.__CI_V6_CLEAR_CACHE__();
   }catch(e){}
   resetFiltersAll();
   document.getElementById("searchInput").value = "";
