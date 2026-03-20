@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     if(currentView==="home") renderCards();
   });
 
+  on("navDashboard","click", ()=>{ currentView = "dashboard"; renderCurrent(); });
   on("navHome","click", ()=>{ currentView = "home"; renderCurrent(); });
   on("navSubmissions","click", ()=>{ currentView = "submissions"; renderCurrent(); });
   on("navPipeline","click", ()=>{ currentView = "pipeline"; renderCurrent(); });

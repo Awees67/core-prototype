@@ -2,7 +2,7 @@
    APP STATE (localStorage)
 ========================= */
 let startups = [];
-let currentView = "home"; // home | submissions | pipeline | compare | activity | inbox
+let currentView = "dashboard"; // dashboard | home | submissions | pipeline | compare | activity | inbox
 let modalIndex = -1;
 let lastListContext = [];
 
