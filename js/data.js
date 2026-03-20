@@ -124,6 +124,46 @@ function generateDataset(seed){
 }
 
 /* =========================
+   SUBMISSIONS SEEDING
+========================= */
+function generateSubmissionsFromStartups(arr, rng){
+  if(!arr || !arr.length) return [];
+  const count = Math.min(arr.length, randInt(rng, 5, 8));
+  // Shuffle and pick first N
+  const shuffled = arr.slice().sort(()=> rng() - 0.5);
+  const chosen = shuffled.slice(0, count);
+
+  const possibleFlags = ["missing_mrr","suspicious_growth","low_runway","high_burn_multiple","incomplete_data"];
+
+  return chosen.map(s => {
+    const r = rng();
+    let plausibility_status, plausibility_flags;
+    if(r < 0.70){
+      plausibility_status = "passed";
+      plausibility_flags = [];
+    } else if(r < 0.90){
+      plausibility_status = "flagged";
+      plausibility_flags = [possibleFlags[Math.floor(rng() * possibleFlags.length)]];
+    } else {
+      plausibility_status = "failed";
+      plausibility_flags = ["spam_detected", "invalid_data"];
+    }
+    // submitted_at: random time in last 7 days
+    const submitted_at = Date.now() - Math.floor(rng() * 7 * 24 * 60 * 60 * 1000);
+    return {
+      anon_id: s.anon_id,
+      signal_index: 0, // will be computed after signal-index.js loads
+      plausibility_status,
+      plausibility_flags,
+      submitted_at,
+      sector: s.sector,
+      sub_sector: s.sub_sector || null,
+      stage: s.stage
+    };
+  });
+}
+
+/* =========================
    QUALITY CLASSIFICATION
 ========================= */
 function classifyUE(s){

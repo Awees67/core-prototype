@@ -7,6 +7,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
   try{ _cache = {}; }catch(_){}
   ensurePipelineIdsExist();
 
+  // Seed submissions queue if empty
+  if(!getSubmissions().length){
+    const rng = mulberry32(seed + 42);
+    const rawSubs = generateSubmissionsFromStartups(startups, rng);
+    const seededSubs = rawSubs.map(x=>({ ...x, signal_index: computeSignalIndex(x.anon_id) }));
+    setSubmissions(seededSubs);
+  }
+
   on("openFilterBtn","click", openFilterModal);
   on("filterCloseBtn","click", closeFilterModal);
   on("filterBackdrop","click", (e)=>{
@@ -48,6 +56,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 
   on("navHome","click", ()=>{ currentView = "home"; renderCurrent(); });
+  on("navSubmissions","click", ()=>{ currentView = "submissions"; renderCurrent(); });
+  on("navPipeline","click", ()=>{ currentView = "pipeline"; renderCurrent(); });
   on("navCompare","click", ()=>{ currentView = "compare"; renderCurrent(); });
   on("navActivity","click", ()=>{ currentView = "activity"; renderCurrent(); });
   on("navInbox","click", ()=>{ currentView = "inbox"; renderCurrent(); });

@@ -11,7 +11,31 @@ const LS_KEYS = {
   leads: "core_demo_leads_v4",
   saved: "core_demo_saved_v1",
   savedFilters: "core_saved_filters_v1",
-  activity: "core_activity_v1"
+  activity: "core_activity_v1",
+  submissions: "core_submissions_v1"
+};
+
+/* =========================
+   PIPELINE STAGE TRANSITIONS
+========================= */
+const PIPELINE_TRANSITIONS = {
+  "In Review": ["Hot Deal", "Watching", "Declined"],
+  "Hot Deal":  ["Watching", "Declined"],
+  "Watching":  ["Hot Deal", "Declined"],
+  "Declined":  ["Watching"],
+  "Synced":    []
+};
+
+const PIPELINE_NEW_STAGES = new Set(["In Review", "Hot Deal", "Watching", "Declined", "Synced"]);
+
+const PIPELINE_STAGE_MIGRATION = {
+  "Screening":   "In Review",
+  "Contacted":   "In Review",
+  "Diligence":   "In Review",
+  "IC":          "Hot Deal",
+  "Term Sheet":  "Hot Deal",
+  "Invested":    "Synced",
+  "Passed":      "Declined"
 };
 
 /* =========================

@@ -421,9 +421,11 @@ function matchesSearch(s, q){
 }
 
 function buildFilteredList(){
+  const submissionIds = new Set(getSubmissions().map(x=>x.anon_id));
   const searchVal = document.getElementById("searchInput").value;
   const sortFn = getSortFn();
   return startups
+    .filter(s => !submissionIds.has(s.anon_id))
     .filter(s=>matchesFilters(s))
     .filter(s=>matchesSearch(s, searchVal))
     .slice()

@@ -2,7 +2,7 @@
    APP STATE (localStorage)
 ========================= */
 let startups = [];
-let currentView = "home"; // home | saved | pipeline | compare | portfolio | savedFilters | activity | inbox
+let currentView = "home"; // home | submissions | pipeline | compare | activity | inbox
 let modalIndex = -1;
 let lastListContext = [];
 
@@ -118,12 +118,6 @@ function toggleSaved(id, btnEl){
   }
 
   if(currentView === "home") renderCards();
-  if(currentView === "saved") renderSaved();
-
-  const saveBtn = document.getElementById("saveToggleBtn");
-  if(saveBtn && saveBtn.dataset.anonId === safeId){
-    saveBtn.textContent = isSaved ? "Aus Merkliste" : "Zur Merkliste";
-  }
 
   return isSaved;
 }
@@ -134,15 +128,54 @@ function toggleSaved(id, btnEl){
 function getPipeline(){
   const arr = safeGetJSON(LS_KEYS.pipeline, []);
   if(!Array.isArray(arr)) return [];
-  // backfill/migration
+  // backfill/migration: map old stages to new stages
+  return arr.map(x=>{
+    const rawStatus = x.status || "Screening";
+    const status = PIPELINE_NEW_STAGES.has(rawStatus)
+      ? rawStatus
+      : (PIPELINE_STAGE_MIGRATION[rawStatus] || "In Review");
+    return {
+      anon_id: String(x.anon_id || ""),
+      status,
+      owner: (x.owner===undefined || x.owner===null) ? "" : String(x.owner),
+      signal_index: (x.signal_index===undefined || x.signal_index===null) ? 0 : Number(x.signal_index),
+      last_updated: (x.last_updated===undefined || x.last_updated===null) ? Date.now() : Number(x.last_updated),
+      created_at: (x.created_at===undefined || x.created_at===null) ? (Number(x.last_updated)||Date.now()) : Number(x.created_at)
+    };
+  }).filter(x=>!!x.anon_id);
+}
+
+/* =========================
+   SUBMISSIONS STORAGE
+========================= */
+function getSubmissions(){
+  const arr = safeGetJSON(LS_KEYS.submissions, []);
+  if(!Array.isArray(arr)) return [];
   return arr.map(x=>({
-    anon_id: String(x.anon_id || ""),
-    status: x.status || "Screening",
-    owner: (x.owner===undefined || x.owner===null) ? "" : String(x.owner),
-    signal_index: (x.signal_index===undefined || x.signal_index===null) ? 0 : Number(x.signal_index),
-    last_updated: (x.last_updated===undefined || x.last_updated===null) ? Date.now() : Number(x.last_updated),
-    created_at: (x.created_at===undefined || x.created_at===null) ? (Number(x.last_updated)||Date.now()) : Number(x.created_at)
+    anon_id: String(x?.anon_id || ""),
+    signal_index: Number(x?.signal_index || 0),
+    plausibility_status: String(x?.plausibility_status || "passed"),
+    plausibility_flags: Array.isArray(x?.plausibility_flags) ? x.plausibility_flags : [],
+    submitted_at: Number(x?.submitted_at || 0),
+    sector: String(x?.sector || ""),
+    sub_sector: x?.sub_sector ? String(x.sub_sector) : null,
+    stage: String(x?.stage || "")
   })).filter(x=>!!x.anon_id);
+}
+function setSubmissions(arr){ safeSetJSON(LS_KEYS.submissions, Array.isArray(arr)?arr:[]); }
+
+function acceptSubmission(anon_id){
+  setSubmissions(getSubmissions().filter(x=>x.anon_id!==anon_id));
+  // Startup now visible in Übersicht (no longer in queue)
+}
+
+function declineSubmission(anon_id){
+  setSubmissions(getSubmissions().filter(x=>x.anon_id!==anon_id));
+  // Remove from in-memory startups so it doesn't reappear in Übersicht
+  if(Array.isArray(window.startups)){
+    window.startups = window.startups.filter(x=>x.anon_id!==anon_id);
+    startups = window.startups;
+  }
 }
 function setPipeline(arr){ safeSetJSON(LS_KEYS.pipeline, Array.isArray(arr)?arr:[]); }
 
@@ -172,19 +205,18 @@ function activityLogAppend(event, anon_id=null, meta=null){
   if(currentView==="activity") renderActivity();
 }
 
-function pipelineUpsertInterested(anon_id){
+function pipelineAdd(anon_id, initialStatus){
+  const status = initialStatus || "In Review";
   const p = getPipeline();
   const idx = p.findIndex(x=>x.anon_id===anon_id);
   if(idx>=0){
     p[idx].last_updated = Date.now();
-    p[idx].signal_index = computeSignalIndex(anon_id);
     setPipeline(p);
-    activityLogAppend("INTERESTED_AGAIN", anon_id, null);
     return { created:false, item:p[idx] };
   }
   const item = {
     anon_id,
-    status: "Screening",
+    status,
     owner: "",
     signal_index: computeSignalIndex(anon_id),
     last_updated: Date.now(),
@@ -192,20 +224,57 @@ function pipelineUpsertInterested(anon_id){
   };
   p.unshift(item);
   setPipeline(p);
-  activityLogAppend("INTERESTED", anon_id, null);
+  activityLogAppend("PIPELINE_ADDED", anon_id, { status });
   return { created:true, item };
 }
 
 function pipelineSetStatus(anon_id, toStatus){
   const p = getPipeline();
   const idx = p.findIndex(x=>x.anon_id===anon_id);
-  if(idx<0) return;
-  const from = p[idx].status || "Screening";
+  if(idx<0) return false;
+  const from = p[idx].status || "In Review";
+
+  if(from === "Synced"){
+    toast("Gesperrt", "Synced Deals können nicht geändert werden");
+    return false;
+  }
+
+  const allowed = PIPELINE_TRANSITIONS[from] || [];
+  if(!allowed.includes(toStatus) && toStatus !== from){
+    toast("Ungültig", `${from} → ${toStatus} nicht erlaubt`);
+    return false;
+  }
+
   p[idx].status = toStatus;
   p[idx].last_updated = Date.now();
   p[idx].signal_index = computeSignalIndex(anon_id);
   setPipeline(p);
   activityLogAppend("STATUS_CHANGED", anon_id, { from, to: toStatus });
+  return true;
+}
+
+function pipelinePushToCRM(anon_id){
+  const p = getPipeline();
+  const idx = p.findIndex(x=>x.anon_id===anon_id);
+  if(idx < 0){
+    const item = {
+      anon_id,
+      status: "Synced",
+      owner: "",
+      signal_index: computeSignalIndex(anon_id),
+      last_updated: Date.now(),
+      created_at: Date.now()
+    };
+    p.unshift(item);
+    setPipeline(p);
+  } else {
+    p[idx].status = "Synced";
+    p[idx].last_updated = Date.now();
+    p[idx].signal_index = computeSignalIndex(anon_id);
+    setPipeline(p);
+  }
+  activityLogAppend("CRM_PUSHED", anon_id, null);
+  toast("CRM", "Deal an CRM übergeben");
 }
 
 function pipelineSetOwner(anon_id, owner){
@@ -225,10 +294,7 @@ function pipelineRemove(anon_id){
   activityLogAppend("PIPELINE_REMOVED", anon_id, null);
 }
 
-function pipelineMarkPassed(anon_id){
-  pipelineSetStatus(anon_id, "Passed");
-  activityLogAppend("PASSED", anon_id, null);
-}
+// pipelineMarkPassed removed – use pipelineSetStatus(anon_id, 'Declined') instead
 
 function addToCompare(anon_id){
   const ids = getCompare();
@@ -271,7 +337,6 @@ function saveCurrentFilters(){
   setSavedFilters(list);
   activityLogAppend("FILTER_SAVED", null, { name });
   toast("Saved Filters","Gespeichert");
-  if(currentView==="savedFilters") renderSavedFilters();
 }
 
 function applySavedFilter(id){
@@ -303,11 +368,4 @@ function openModalByAnonId(anon_id, list){
   const arr = (list && list.length) ? list : startups;
   const idx = arr.findIndex(x=>x.anon_id===anon_id);
   if(idx>=0) openModalByIndex(idx, arr);
-}
-
-/* Wire 'Interested' + Compare actions */
-function handleInterested(anon_id){
-  const res = pipelineUpsertInterested(anon_id);
-  toast("Pipeline", res.created ? "Deal hinzugefügt: Screening" : "Deal bereits in Pipeline");
-  updateCompareTray();
 }
