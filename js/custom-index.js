@@ -14,7 +14,7 @@
 
   const DEFAULT_CUSTOM_RULES_V6 = {
     enabled: true,
-    name: "My Fund Ruleset",
+    name: "Standard Screening",
     updated_at: Date.now(),
     scoring: {
       start_score: 50,
@@ -30,24 +30,92 @@
     },
     rule_groups: [
       {
-        group_id: "mrr",
-        label: "Revenue (MRR)",
+        group_id: "revenue",
+        label: "Umsatz & Traction",
         enabled: true,
         rules: [
-          { id:"r_mrr_0", enabled:true, priority:5,  kpi:"MRR_EUR", operator:"lt", value:50000, points:-10, stackable:true, note:"MRR <50k = -10p" },
-          { id:"r_mrr_1", enabled:true, priority:10, kpi:"MRR_EUR", operator:"between_inclusive", value:{min:50000,max:100000}, points:15, stackable:true, note:"MRR 50–100k = 15p" },
-          { id:"r_mrr_2", enabled:true, priority:20, kpi:"MRR_EUR", operator:"gte", value:100000, points:20, stackable:true, note:"MRR >=100k = 20p" }
+          { id:"r_rev_0", enabled:true, priority:5,  kpi:"MRR_EUR", operator:"lt", value:20000, points:-8, stackable:true, note:"MRR unter 20k€" },
+          { id:"r_rev_1", enabled:true, priority:10, kpi:"MRR_EUR", operator:"between_inclusive", value:{min:20000,max:50000}, points:5, stackable:true, note:"MRR 20–50k€" },
+          { id:"r_rev_2", enabled:true, priority:15, kpi:"MRR_EUR", operator:"between_inclusive", value:{min:50001,max:100000}, points:10, stackable:true, note:"MRR 50–100k€" },
+          { id:"r_rev_3", enabled:true, priority:20, kpi:"MRR_EUR", operator:"gte", value:100000, points:15, stackable:true, note:"MRR über 100k€" }
+        ]
+      },
+      {
+        group_id: "growth",
+        label: "Wachstum",
+        enabled: true,
+        rules: [
+          { id:"r_grw_0", enabled:true, priority:5,  kpi:"GROWTH_MOM_PCT", operator:"lt", value:0, points:-8, stackable:true, note:"Negatives Wachstum" },
+          { id:"r_grw_1", enabled:true, priority:10, kpi:"GROWTH_MOM_PCT", operator:"between_inclusive", value:{min:0,max:10}, points:3, stackable:true, note:"Wachstum 0–10%" },
+          { id:"r_grw_2", enabled:true, priority:15, kpi:"GROWTH_MOM_PCT", operator:"between_inclusive", value:{min:11,max:30}, points:8, stackable:true, note:"Wachstum 11–30%" },
+          { id:"r_grw_3", enabled:true, priority:20, kpi:"GROWTH_MOM_PCT", operator:"gt", value:30, points:12, stackable:true, note:"Wachstum über 30%" }
+        ]
+      },
+      {
+        group_id: "unit_economics",
+        label: "Unit Economics",
+        enabled: true,
+        rules: [
+          { id:"r_ue_0", enabled:true, priority:5,  kpi:"LTV_CAC", operator:"lt", value:2, points:-6, stackable:true, note:"LTV/CAC unter 2x" },
+          { id:"r_ue_1", enabled:true, priority:10, kpi:"LTV_CAC", operator:"gte", value:3, points:6, stackable:true, note:"LTV/CAC ab 3x" },
+          { id:"r_ue_2", enabled:true, priority:15, kpi:"LTV_CAC", operator:"gte", value:5, points:10, stackable:true, note:"LTV/CAC ab 5x" },
+          { id:"r_ue_3", enabled:true, priority:20, kpi:"GROSS_MARGIN_PCT", operator:"gte", value:70, points:5, stackable:true, note:"Gross Margin ab 70%" },
+          { id:"r_ue_4", enabled:true, priority:25, kpi:"CAC_PAYBACK_MONTHS", operator:"lte", value:12, points:4, stackable:true, note:"CAC Payback unter 12 Monate" }
+        ]
+      },
+      {
+        group_id: "retention",
+        label: "Retention",
+        enabled: true,
+        rules: [
+          { id:"r_ret_0", enabled:true, priority:5,  kpi:"NRR_PCT", operator:"lt", value:100, points:-8, stackable:true, note:"NRR unter 100%" },
+          { id:"r_ret_1", enabled:true, priority:10, kpi:"NRR_PCT", operator:"between_inclusive", value:{min:100,max:119}, points:4, stackable:true, note:"NRR 100–119%" },
+          { id:"r_ret_2", enabled:true, priority:15, kpi:"NRR_PCT", operator:"gte", value:120, points:10, stackable:true, note:"NRR ab 120%" },
+          { id:"r_ret_3", enabled:true, priority:20, kpi:"LOGO_CHURN_PCT", operator:"lte", value:3, points:4, stackable:true, note:"Logo Churn unter 3%" }
+        ]
+      },
+      {
+        group_id: "efficiency",
+        label: "Kapitaleffizienz",
+        enabled: true,
+        rules: [
+          { id:"r_eff_0", enabled:true, priority:5,  kpi:"RUNWAY_MONTHS", operator:"lt", value:6, points:-10, stackable:true, note:"Runway unter 6 Monate" },
+          { id:"r_eff_1", enabled:true, priority:10, kpi:"RUNWAY_MONTHS", operator:"gte", value:12, points:5, stackable:true, note:"Runway ab 12 Monate" },
+          { id:"r_eff_2", enabled:true, priority:15, kpi:"RUNWAY_MONTHS", operator:"gte", value:18, points:8, stackable:true, note:"Runway ab 18 Monate" },
+          { id:"r_eff_3", enabled:true, priority:20, kpi:"BURN_MULTIPLE", operator:"lte", value:1.5, points:6, stackable:true, note:"Burn Multiple unter 1.5x" },
+          { id:"r_eff_4", enabled:true, priority:25, kpi:"BURN_MULTIPLE", operator:"gt", value:3, points:-6, stackable:true, note:"Burn Multiple über 3x" }
+        ]
+      },
+      {
+        group_id: "team",
+        label: "Team",
+        enabled: true,
+        rules: [
+          { id:"r_tm_0", enabled:true, priority:5,  kpi:"TEAM_SIZE", operator:"gte", value:5, points:3, stackable:true, note:"Mindestens 5 Teammitglieder" },
+          { id:"r_tm_1", enabled:true, priority:10, kpi:"FOUNDER_OWNERSHIP_PCT", operator:"gte", value:50, points:4, stackable:true, note:"Founder hält 50%+" }
         ]
       }
     ],
     kpi_map: {
-      MRR_EUR: { path: "s.mrr_eur", type:"number", unit:"EUR", label:"MRR (EUR)" },
-      GROWTH_MOM_PCT: { path: "s.growth.value_pct", type:"number", unit:"percent", label:"Growth MoM (%)" },
-      RUNWAY_MONTHS: { path: "s.runway_months", type:"number", unit:"months", label:"Runway (Monate)" },
-      BURN_EUR: { path: "s.burn_eur_per_month", type:"number", unit:"EUR", label:"Burn / Monat (EUR)" },
-      LTV_CAC: { path: "s.ltv_cac_ratio", type:"number", unit:"x", label:"LTV/CAC (x)" },
-      NRR_PCT: { path: "s.nrr_pct", type:"number", unit:"percent", label:"NRR (%)" },
-      FOUNDER_OWNERSHIP_PCT: { path: "s.founder_pct", type:"number", unit:"percent", label:"Founder Ownership (%)" }
+      MRR_EUR:              { path: "s.mrr_eur",            type:"number", unit:"EUR",     label:"MRR (EUR)" },
+      GROWTH_MOM_PCT:       { path: "s.growth.value_pct",  type:"number", unit:"percent", label:"Growth MoM (%)" },
+      RUNWAY_MONTHS:        { path: "s.runway_months",      type:"number", unit:"months",  label:"Runway (Monate)" },
+      BURN_EUR:             { path: "s.burn_eur_per_month", type:"number", unit:"EUR",     label:"Burn / Monat (EUR)" },
+      LTV_CAC:              { path: "s.ltv_cac_ratio",      type:"number", unit:"x",       label:"LTV/CAC (x)" },
+      NRR_PCT:              { path: "s.nrr_pct",            type:"number", unit:"percent", label:"NRR (%)" },
+      FOUNDER_OWNERSHIP_PCT:{ path: "s.founder_pct",        type:"number", unit:"percent", label:"Founder Ownership (%)" },
+      ARR_EUR:              { path: "s.arr_eur",            type:"number", unit:"EUR",     label:"ARR (EUR)" },
+      NET_NEW_ARR_EUR:      { path: "s.net_new_arr_eur",    type:"number", unit:"EUR",     label:"Net New ARR (EUR)" },
+      GROSS_MARGIN_PCT:     { path: "s.gross_margin_pct",   type:"number", unit:"percent", label:"Gross Margin (%)" },
+      LOGO_CHURN_PCT:       { path: "s.logo_churn_pct",     type:"number", unit:"percent", label:"Logo Churn (%)" },
+      REVENUE_CHURN_PCT:    { path: "s.revenue_churn_pct",  type:"number", unit:"percent", label:"Revenue Churn (%)" },
+      CAC_EUR:              { path: "s.cac_eur",            type:"number", unit:"EUR",     label:"CAC (EUR)" },
+      CAC_PAYBACK_MONTHS:   { path: "s.cac_payback_months", type:"number", unit:"months",  label:"CAC Payback (Monate)" },
+      BURN_MULTIPLE:        { path: "s.burn_multiple",       type:"number", unit:"x",       label:"Burn Multiple (x)" },
+      TEAM_SIZE:            { path: "s.team_size",           type:"number", unit:"Personen",label:"Teamgröße" },
+      TICKET_EUR:           { path: "s.ticket_eur",          type:"number", unit:"EUR",     label:"Ticket / Rundengröße (EUR)" },
+      ESOP_PCT:             { path: "s.esop_pct",            type:"number", unit:"percent", label:"ESOP (%)" },
+      EMPLOYEES_PCT:        { path: "s.employees_pct",       type:"number", unit:"percent", label:"Employee Ownership (%)" }
     }
   };
 
@@ -661,7 +729,18 @@ function getPipelineStartupListV6(){
               ${Object.keys(rules.kpi_map||{}).map(k=>`<option value="${escapeHTML(k)}" ${k===r.kpi?"selected":""}>${escapeHTML(k)}</option>`).join("")}
             </select>
             <select data-r-op="${gi}:${ri}">
-              ${["gt","gte","lt","lte","eq","neq","between_inclusive","between_exclusive","in_set","not_in_set"].map(op=>`<option value="${op}" ${op===r.operator?"selected":""}>${op}</option>`).join("")}
+              ${[
+                {value:"gt",                label:"ist größer als"},
+                {value:"gte",               label:"ist mindestens"},
+                {value:"lt",                label:"ist kleiner als"},
+                {value:"lte",               label:"ist maximal"},
+                {value:"eq",                label:"ist genau"},
+                {value:"neq",               label:"ist nicht"},
+                {value:"between_inclusive", label:"liegt zwischen"},
+                {value:"between_exclusive", label:"liegt zwischen (exkl.)"},
+                {value:"in_set",            label:"ist einer von"},
+                {value:"not_in_set",        label:"ist keiner von"}
+              ].map(o=>`<option value="${o.value}" ${o.value===r.operator?"selected":""}>${escapeHTML(o.label)}</option>`).join("")}
             </select>
 
             <input class="hide-sm" type="number" data-r-val="${gi}:${ri}" value="${escapeHTML(!isBetween ? (r.value ?? "") : "")}" placeholder="value" />
@@ -885,7 +964,7 @@ function getPipelineStartupListV6(){
         r.enabled = current.enabled;
         r.__ruleset_id = current.__ruleset_id;
         setCustomRulesV6(r);
-        try{ if(typeof toast==="function") toast("Custom Index","Reset auf Default"); }catch(_){ }
+        try{ if(typeof toast==="function") toast("Score","Reset auf Default"); }catch(_){ }
       };
       resetBtn._bound = true;
     }
@@ -1002,7 +1081,7 @@ function getPipelineStartupListV6(){
     const btn = document.createElement("button");
     btn.className = "btn secondary";
     btn.id = "openCustomRulesBtn";
-    btn.textContent = "Custom Index";
+    btn.textContent = "Score";
     btn.style.marginLeft = "8px";
     btn.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); openCustomIndex(); };
 

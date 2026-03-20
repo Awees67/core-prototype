@@ -97,6 +97,13 @@ function renderCards(){
   const pipelineMap = new Map(pipelineItems.map(x=>[x.anon_id, x.status]));
   const frag = document.createDocumentFragment();
 
+  // Load active ruleset name once before loop
+  let activeRulesetName = "Score";
+  try{
+    const rules = getCustomRulesV6();
+    activeRulesetName = rules.name || "Score";
+  }catch(_){}
+
   list.forEach((s, idx)=>{
     const card = document.createElement("div");
     card.className = "startup-card";
@@ -105,15 +112,23 @@ function renderCards(){
     const g = s.growth?.value_pct ?? null;
     const gCls = g>0 ? "trend-up" : (g<0 ? "trend-down" : "");
 
-    const ue = classifyUE(s);
-    const rq = classifyRQ(s);
-    const ce = classifyCE(s);
     const pipelineStatus = pipelineMap.get(s.anon_id) || null;
     const pipelineBtnText = pipelineStatus === "Synced" ? "✓ Synced" :
                              pipelineStatus ? "✓ In Pipeline" : "Add to Pipeline";
     const pipelineBtnDisabled = pipelineStatus ? "disabled" : "";
 
     const marketLabel = s.market_served.includes("DACH") ? "DACH (DE•AT•CH)" : (s.market_served[0] || "—");
+
+    // Compute score for this card
+    let scoreValue = "—";
+    let scoreColorClass = "";
+    try{
+      const res = computeCustomIndexV6(s.anon_id);
+      if(res && res.score !== null && res.score !== undefined){
+        scoreValue = String(res.score);
+        scoreColorClass = getScoreColorClass(res.score);
+      }
+    }catch(_){}
 
     card.innerHTML = `
       <div class="card-head">
@@ -130,11 +145,14 @@ function renderCards(){
             ${s.sub_sector ? `<span class="tag">${s.sub_sector}</span>` : ""}
           </div>
 
-          <!-- Signals only -->
-          <div class="tagrow" style="margin-top:8px;">
-            <span class="tag ${kpiChipClass("UE", ue)}">UE: ${ue}</span>
-            <span class="tag ${kpiChipClass("RQ", rq)}">RQ: ${rq}</span>
-            <span class="tag ${kpiChipClass("CE", ce)}">CE: ${ce}</span>
+          <!-- Score Badge -->
+          <div class="score-row">
+            <div class="score-badge ${scoreColorClass}">
+              <span class="score-value">${escapeHTML(scoreValue)}</span>
+              <span class="score-label">/ 100</span>
+            </div>
+            <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(s.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button>
+            <span class="score-preset-name">${escapeHTML(activeRulesetName)}</span>
           </div>
 
           ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ""}
@@ -185,6 +203,7 @@ function renderCards(){
       if(btn){
         const action = btn.dataset.action;
         const id = btn.dataset.id;
+        if(action==="scoreinfo"){ openScoreBreakdown(id, btn); e.stopPropagation(); return; }
         if(action==="open") open();
         if(action==="compare") addToCompare(id);
         if(action==="addpipeline" && !btn.disabled) handleAddToPipeline(id);
@@ -462,7 +481,7 @@ function renderSubmissions(){
             <th>Startup</th>
             <th>Sektor</th>
             <th>Stage</th>
-            <th>Signal Index</th>
+            <th>Score</th>
             <th>Plausibility</th>
             <th>Eingereicht am</th>
             <th>Aktionen</th>
@@ -612,7 +631,7 @@ function renderPipeline(){
           <tr>
             <th>Startup</th>
             <th>Status</th>
-            <th>Signal Index</th>
+            <th>Score</th>
             <th>Owner</th>
             <th>Last Updated</th>
             <th>Aktionen</th>
