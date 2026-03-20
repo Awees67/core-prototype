@@ -105,6 +105,9 @@ function renderCards(){
   const saved = getSavedSet();
   const pipelineItems = getPipeline();
   const pipelineMap = new Map(pipelineItems.map(x=>[x.anon_id, x.status]));
+  const allNotes = getNotes();
+  const noteCountMap = {};
+  allNotes.forEach(n => { noteCountMap[n.anon_id] = (noteCountMap[n.anon_id] || 0) + 1; });
   const frag = document.createDocumentFragment();
 
   // Load active ruleset name once before loop
@@ -121,6 +124,7 @@ function renderCards(){
 
     const g = s.growth?.value_pct ?? null;
     const gCls = g>0 ? "trend-up" : (g<0 ? "trend-down" : "");
+    const nc = noteCountMap[s.anon_id] || 0;
 
     const pipelineStatus = pipelineMap.get(s.anon_id) || null;
     const pipelineBtnText = pipelineStatus === "Synced" ? "✓ Synced" :
@@ -163,6 +167,7 @@ function renderCards(){
             </div>
             <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(s.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button>
             <span class="score-preset-name">${escapeHTML(activeRulesetName)}</span>
+            ${nc > 0 ? `<span class="card-notes-indicator">📝 ${nc}</span>` : ""}
           </div>
 
           ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ""}
@@ -634,6 +639,10 @@ function renderPipeline(){
     return;
   }
 
+  const allNotes = getNotes();
+  const noteCountMap = {};
+  allNotes.forEach(n => { noteCountMap[n.anon_id] = (noteCountMap[n.anon_id] || 0) + 1; });
+
   mount.innerHTML = `
     <div class="compareTableWrap">
       <table class="compareTable">
@@ -643,6 +652,7 @@ function renderPipeline(){
             <th>Status</th>
             <th>Score</th>
             <th>Owner</th>
+            <th>Notes</th>
             <th>Last Updated</th>
             <th>Aktionen</th>
           </tr>
@@ -652,6 +662,7 @@ function renderPipeline(){
             const dt = item.last_updated ? new Date(item.last_updated).toLocaleDateString("de-DE") : "—";
             const signal = Math.round(item.signal_index||0);
             const ps = startups.find(x=>x.anon_id===item.anon_id);
+            const nc = noteCountMap[item.anon_id] || 0;
 
             const statusCell = item.status === "Synced"
               ? `<span class="synced-label">✓ Synced to CRM</span>`
@@ -665,11 +676,16 @@ function renderPipeline(){
               : `<button class="btn crm-push-btn small" data-crm="${escapeHTML(item.anon_id)}">Push to CRM</button>
                  <button class="btn secondary small" data-pipe-remove="${escapeHTML(item.anon_id)}">Remove</button>`;
 
+            const notesCell = nc > 0
+              ? `<span class="notes-badge" data-notes-open="${escapeHTML(item.anon_id)}">${nc}</span>`
+              : `<span class="notes-badge empty">—</span>`;
+
             return `<tr>
               <td><button class="btn secondary small" data-open="${escapeHTML(item.anon_id)}">${escapeHTML(ps?.company_name || item.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(item.anon_id)}</small></td>
               <td>${statusCell}</td>
               <td class="mono">${signal}</td>
               <td><input class="owner-input" data-owner-id="${escapeHTML(item.anon_id)}" value="${escapeHTML(item.owner||"")}" placeholder="—" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:inherit;font-weight:900;padding:2px 4px;width:100px;"></td>
+              <td>${notesCell}</td>
               <td class="mono" style="font-size:0.88rem;">${dt}</td>
               <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">${actionsCell}</td>
             </tr>`;
@@ -698,6 +714,9 @@ function renderPipeline(){
   });
   mount.querySelectorAll("[data-owner-id]").forEach(inp=>{
     inp.onchange=()=>pipelineSetOwner(inp.getAttribute("data-owner-id"), inp.value);
+  });
+  mount.querySelectorAll("[data-notes-open]").forEach(b=>{
+    b.onclick=()=>openModalByAnonId(b.getAttribute("data-notes-open"), startups);
   });
 }
 
@@ -784,6 +803,7 @@ function openModalWithStartup(s, list){
   document.getElementById("modalSub").textContent = `${s.anon_id} • ${s.sector}${s.sub_sector ? " › " + s.sub_sector : ""} • ${s.stage}`;
   bindLeadFormForStartup(s);
   syncModalPipelineButtons(s);
+  renderModalNotes(s.anon_id);
 
   document.getElementById("nextBtn").onclick = ()=>{
     const arr = (list && list.length) ? list : [s];
@@ -797,6 +817,70 @@ function openModalWithStartup(s, list){
     const prev = (current - 1 + arr.length) % arr.length;
     openModalByIndex(prev, arr);
   };
+}
+
+function renderModalNotes(anon_id){
+  const notesList = document.getElementById("notesList");
+  const notesCount = document.getElementById("notesCount");
+  const noteInput = document.getElementById("noteInput");
+  const addNoteBtn = document.getElementById("addNoteBtn");
+  if(!notesList || !notesCount || !noteInput || !addNoteBtn) return;
+
+  const notes = getNotesForDeal(anon_id);
+
+  notesCount.textContent = notes.length ? `(${notes.length})` : "";
+
+  if(notes.length === 0){
+    notesList.innerHTML = `<div class="hint" style="margin-bottom:8px;">Keine Notizen – Fang an zu schreiben.</div>`;
+  } else {
+    notesList.innerHTML = notes.map(note => `
+      <div class="note-item">
+        <div class="note-header">
+          <span class="note-author">${escapeHTML(note.author)}</span>
+          <span class="note-time">${timeAgo(note.created_at)}</span>
+          <button class="note-delete" data-note-id="${escapeHTML(note.id)}" title="Löschen">✕</button>
+        </div>
+        <div class="note-text">${escapeHTML(note.text)}</div>
+      </div>
+    `).join("");
+
+    notesList.querySelectorAll(".note-delete").forEach(btn => {
+      btn.onclick = () => {
+        deleteNote(btn.getAttribute("data-note-id"));
+        renderModalNotes(anon_id);
+        toast("Gelöscht", "Notiz gelöscht");
+      };
+    });
+  }
+
+  // Rebind add handler (clone to remove old listeners)
+  const newBtn = addNoteBtn.cloneNode(true);
+  addNoteBtn.parentNode.replaceChild(newBtn, addNoteBtn);
+
+  const doSave = () => {
+    const text = document.getElementById("noteInput").value.trim();
+    if(!text) return;
+    const pipeline = getPipeline();
+    const pipeItem = pipeline.find(x => x.anon_id === anon_id);
+    const author = (pipeItem && pipeItem.owner) ? pipeItem.owner : "Analyst";
+    addNote(anon_id, text, author);
+    document.getElementById("noteInput").value = "";
+    renderModalNotes(anon_id);
+    toast("Gespeichert", "Notiz gespeichert");
+  };
+
+  newBtn.onclick = doSave;
+
+  // Rebind textarea keyboard shortcut (clone to remove old listeners)
+  const oldInput = document.getElementById("noteInput");
+  const newInput = oldInput.cloneNode(true);
+  oldInput.parentNode.replaceChild(newInput, oldInput);
+  newInput.addEventListener("keydown", (e) => {
+    if((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+      e.preventDefault();
+      doSave();
+    }
+  });
 }
 
 function closeModal(){
@@ -1216,6 +1300,7 @@ function resetDemo(){
     localStorage.removeItem(LS_KEYS.savedFilters);
     localStorage.removeItem(LS_KEYS.activity);
     localStorage.removeItem(LS_KEYS.submissions);
+    localStorage.removeItem(LS_KEYS.notes);
   }catch(e){}
   resetFiltersAll();
   document.getElementById("searchInput").value = "";
@@ -1358,7 +1443,8 @@ const ACTIVITY_TYPES = [
   "SUBMISSION_ACCEPTED","SUBMISSION_DECLINED",
   "PIPELINE_ADDED","CRM_PUSHED",
   "STATUS_CHANGED","OWNER_SET","PIPELINE_REMOVED",
-  "FILTER_SAVED","FILTER_APPLIED","FILTER_DELETED","LEAD_SAVED"
+  "FILTER_SAVED","FILTER_APPLIED","FILTER_DELETED","LEAD_SAVED",
+  "NOTE_ADDED","NOTE_DELETED"
 ];
 
 const ACTIVITY_LABELS = {
@@ -1378,7 +1464,9 @@ const ACTIVITY_LABELS = {
   "FILTER_SAVED": "Filter gespeichert",
   "FILTER_APPLIED": "Filter angewendet",
   "FILTER_DELETED": "Filter gelöscht",
-  "LEAD_SAVED": "Lead gespeichert"
+  "LEAD_SAVED": "Lead gespeichert",
+  "NOTE_ADDED": "📝 Notiz",
+  "NOTE_DELETED": "📝 Notiz gelöscht"
 };
 
 function renderActivity(){
