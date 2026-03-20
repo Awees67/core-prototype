@@ -149,3 +149,44 @@ function closePrivacy(){
   bd.setAttribute("aria-hidden","true");
   document.body.style.overflow = "";
 }
+
+/* =========================
+   DASHBOARD HELPERS
+========================= */
+function timeAgo(ts){
+  const diff = Date.now() - ts;
+  if(diff < 60000) return "gerade eben";
+  if(diff < 3600000) return "vor " + Math.floor(diff/60000) + " Min";
+  if(diff < 86400000) return "vor " + Math.floor(diff/3600000) + " Std";
+  return new Date(ts).toLocaleDateString("de-DE");
+}
+
+function groupBy(arr, keyFn){
+  const map = {};
+  arr.forEach(x=>{ const k = keyFn(x) || "—"; map[k] = (map[k]||0) + 1; });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+
+function pctOf(part, total){
+  return total > 0 ? Math.round((part/total)*100) : 0;
+}
+
+const DASHBOARD_EVENT_LABELS = {
+  "SUBMISSION_ACCEPTED": "📥 Angenommen",
+  "SUBMISSION_DECLINED": "📥 Abgelehnt",
+  "PIPELINE_ADDED": "📋 Pipeline",
+  "CRM_PUSHED": "🔗 CRM",
+  "STATUS_CHANGED": "🔄 Status",
+  "OWNER_SET": "👤 Owner",
+  "PIPELINE_REMOVED": "🗑 Entfernt",
+  "COMPARE_ADDED": "⚖ Compare",
+  "COMPARE_REMOVED": "⚖ Compare",
+  "COMPARE_CLEARED": "⚖ Compare",
+  "COMPARE_OPENED": "⚖ Compare",
+  "SAVED": "⭐ Gemerkt",
+  "UNSAVED": "⭐ Entfernt",
+  "LEAD_SAVED": "📧 Anfrage",
+  "INTERESTED": "📋 Pipeline",
+  "INTERESTED_AGAIN": "📋 Pipeline",
+  "PASSED": "✗ Passed"
+};
