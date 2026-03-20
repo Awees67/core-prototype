@@ -409,11 +409,13 @@ function matchesSearch(s, q){
 
   const hay = [
     s.anon_id,
+    s.company_name || "",
     s.origin_country,
     (s.market_served||[]).join(" "),
     s.stage,
     s.sector,
     s.sub_sector || "",
+    s.description || "",
     s.notes || ""
   ].join(" ").toLowerCase();
 

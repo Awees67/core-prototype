@@ -172,6 +172,11 @@
       letter-spacing:0.2px;
     }
     .tagrow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .card-desc{
+      margin:8px 0 0; font-size:0.88rem; color:var(--muted); line-height:1.4; font-weight:400;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+      overflow:hidden; text-overflow:ellipsis;
+    }
     .tag{
       font-size:0.82rem; font-weight:900;
       padding:6px 10px; border-radius:999px;

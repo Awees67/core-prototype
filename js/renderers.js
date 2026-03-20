@@ -122,6 +122,7 @@ function renderCards(){
 
           <!-- Context only -->
           <div class="tagrow">
+            <span class="tag" style="opacity:0.7;">ID: ${s.anon_id}</span>
             <span class="tag">HQ: ${s.origin_country}</span>
             <span class="tag">Markt: ${marketLabel}</span>
             <span class="tag">${s.stage}</span>
@@ -135,6 +136,8 @@ function renderCards(){
             <span class="tag ${kpiChipClass("RQ", rq)}">RQ: ${rq}</span>
             <span class="tag ${kpiChipClass("CE", ce)}">CE: ${ce}</span>
           </div>
+
+          ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ""}
         </div>
       </div>
 
@@ -205,7 +208,7 @@ function renderCards(){
    INBOX VIEW (Leads)
 ========================= */
 function startupLabel(s){
-  return `Startup ${s?.anon_id || "—"}`;
+  return s?.company_name || `Startup ${s?.anon_id || "—"}`;
 }
 
 
@@ -469,8 +472,9 @@ function renderSubmissions(){
           ${list.map(sub=>{
             const dt = sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString("de-DE") : "—";
             const sectorStr = sub.sector + (sub.sub_sector ? ` › ${sub.sub_sector}` : "");
+            const ss = startups.find(x=>x.anon_id===sub.anon_id);
             return `<tr>
-              <td><button class="btn secondary small" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(sub.anon_id)}</button></td>
+              <td><button class="btn secondary small" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(ss?.company_name || sub.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(sub.anon_id)}</small></td>
               <td>${escapeHTML(sectorStr)}</td>
               <td>${escapeHTML(sub.stage||"—")}</td>
               <td class="mono">${Math.round(sub.signal_index||0)}</td>
@@ -618,6 +622,7 @@ function renderPipeline(){
           ${list.map(item=>{
             const dt = item.last_updated ? new Date(item.last_updated).toLocaleDateString("de-DE") : "—";
             const signal = Math.round(item.signal_index||0);
+            const ps = startups.find(x=>x.anon_id===item.anon_id);
 
             const statusCell = item.status === "Synced"
               ? `<span class="synced-label">✓ Synced to CRM</span>`
@@ -632,7 +637,7 @@ function renderPipeline(){
                  <button class="btn secondary small" data-pipe-remove="${escapeHTML(item.anon_id)}">Remove</button>`;
 
             return `<tr>
-              <td><button class="btn secondary small" data-open="${escapeHTML(item.anon_id)}">${escapeHTML(item.anon_id)}</button></td>
+              <td><button class="btn secondary small" data-open="${escapeHTML(item.anon_id)}">${escapeHTML(ps?.company_name || item.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(item.anon_id)}</small></td>
               <td>${statusCell}</td>
               <td class="mono">${signal}</td>
               <td><input class="owner-input" data-owner-id="${escapeHTML(item.anon_id)}" value="${escapeHTML(item.owner||"")}" placeholder="—" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:inherit;font-weight:900;padding:2px 4px;width:100px;"></td>
@@ -703,6 +708,7 @@ function openModalWithStartup(s, list){
   const kpis = [
     { label:"HQ", value: s.origin_country, sub:"Sitz / Herkunft" },
     { label:"Markt", value: (s.market_served || []).join(", ").replace("DACH","DACH (DE•AT•CH)"), sub:"Served markets" },
+    { label:"Team", value: (s.team_size || "—") + " Mitarbeiter", sub:"Aktuelle Teamgröße" },
 
     { label:"MRR", value: fmtEUR(s.mrr_eur), sub:"aktueller Wert" },
     { label:`Wachstum ${s.growth?.type || ""}`.trim(), value: s.growth ? fmtPct(s.growth.value_pct) : "—", sub:"Veränderung" },
@@ -746,7 +752,7 @@ function openModalWithStartup(s, list){
   });
 
   document.getElementById("kpiHint").textContent = s.notes || "—";
-  document.getElementById("modalSub").textContent = `${s.sector}${s.sub_sector ? " › " + s.sub_sector : ""} • ${s.stage}`;
+  document.getElementById("modalSub").textContent = `${s.anon_id} • ${s.sector}${s.sub_sector ? " › " + s.sub_sector : ""} • ${s.stage}`;
   bindLeadFormForStartup(s);
   syncModalPipelineButtons(s);
 

@@ -9,6 +9,182 @@ const GEN = {
   growthTypes: ["MoM","QoQ","YoY"]
 };
 
+const STARTUP_NAMES = {
+  "B2B SaaS": [
+    "Stackly","Pipeforge","Clarisync","Workbase","Tenanta",
+    "Metriflow","Boardloop","Quotient","Datatide","Syncwell",
+    "Opslane","Vendorly","Planbase","FlowNest","Rampify"
+  ],
+  "FinTech": [
+    "Neoledger","PayCircle","Vaultik","CashRail","Finbrix",
+    "LendStack","Kapivo","Clearfin","Monarc","Tresora",
+    "Coinpath","Bankwise","Fundara","Paylix","Wealthcore"
+  ],
+  "HealthTech": [
+    "Mediloop","Carestack","Vitalix","Healwise","Docstream",
+    "Symbiora","Pulsara","Cliniqo","Remedix","Neurova",
+    "Biolinq","MedSphere","Curaflow","Healthpod","Genara"
+  ],
+  "DeepTech": [
+    "Quantara","Atomyx","Fermion","Photonex","Synthera",
+    "Cryonik","NanoEdge","Materico","Iontec","Fusionlabs",
+    "Gravion","Plexar","Qubitec","Spectron","Neutrino.ai"
+  ],
+  "AI": [
+    "Cortexia","Inferix","DeepLayer","Synthminds","NeuralOps",
+    "Promptwise","ModelForge","Cognara","Tensora","DataMind",
+    "Vectorly","Percepta","AIForge","Brainstack","Autologic"
+  ],
+  "ClimateTech": [
+    "Carbonia","GreenGrid","SolarEdge","EcoVolt","TerraLoop",
+    "Windara","CleanStack","Hydrogena","CircuTech","Renewix",
+    "BioCarbon","Gridwise","Solanta","EarthCore","Leaflogic"
+  ],
+  "Cybersecurity": [
+    "Shieldify","CipherNet","Threatbase","VaultEdge","Secura",
+    "Hackproof","Sentrix","Guardara","CyberNest","Lockwise",
+    "Firechain","ZeroTrust.io","Ironclad","Encryptis","Watchpost"
+  ],
+  "PropTech": [
+    "Estatify","Brickflow","Propcore","Homestack","Rentwise",
+    "BuildLayer","Realytics","Plothub","Domara","Spacemint",
+    "Roofline","Keyvault","Yardbase","Plotwise","TenantIQ"
+  ],
+  "Marketplace": [
+    "Tradely","Swapline","Vendorloop","Matchfield","Bazario",
+    "Offerstack","Gridmarket","Bidflex","Hubtrader","Peerloop",
+    "Sellcraft","Nexbay","Dealyard","Shopflow","Auctora"
+  ],
+  "DevTools": [
+    "Devstream","CodeForge","Deployr","Buildkite.dev","Testara",
+    "Pipekit","Repowise","Debugly","Lintbase","Stackpilot",
+    "Mergeflow","Compilr","Dockhub","Infraly","Terminalix"
+  ]
+};
+
+const STARTUP_DESCRIPTIONS = {
+  "B2B SaaS": [
+    "Automatisiert Vertrags- und Dokumentenmanagement für mittelständische Unternehmen.",
+    "Zentralisiert Team-Workflows und Projektmanagement in einer Plattform.",
+    "Bietet modulare ERP-Lösung speziell für SaaS-Unternehmen.",
+    "Optimiert Vertriebsprozesse durch KI-gestütztes Lead Scoring.",
+    "Vernetzt interne Toolstacks über eine einheitliche API-Schicht.",
+    "Automatisiert Rechnungsstellung und Subscription Management.",
+    "Bietet Self-Service-Analytics für Nicht-Techniker in B2B-Teams.",
+    "Vereinfacht Compliance-Dokumentation für regulierte Branchen.",
+    "Baut kollaborative Workspace-Tools für Remote-First-Unternehmen.",
+    "Liefert Echtzeit-Dashboards für Operational KPIs in SaaS-Firmen."
+  ],
+  "FinTech": [
+    "Baut Echtzeit-Zahlungsinfrastruktur für europäische KMU.",
+    "Automatisiert Kreditentscheidungen mit alternativen Datensignalen.",
+    "Bietet Embedded-Finance-APIs für Plattform-Unternehmen.",
+    "Entwickelt regulierungskonforme Wallet-Infrastruktur für digitale Assets.",
+    "Vereinfacht grenzüberschreitende B2B-Zahlungen im DACH-Raum.",
+    "Baut KI-gestützte Risikobewertung für Online-Lending.",
+    "Liefert White-Label-Banking-Module für Neobanken.",
+    "Automatisiert Buchhaltung und Cashflow-Prognosen für Startups.",
+    "Entwickelt Open-Banking-Integrationen für den Mittelstand.",
+    "Bietet programmierbare Konten und Zahlungsflüsse via API."
+  ],
+  "HealthTech": [
+    "Digitalisiert Patientenpfade von der Diagnose bis zur Nachsorge.",
+    "Entwickelt KI-gestützte Bildgebungsanalyse für die Radiologie.",
+    "Baut eine Plattform für dezentrale klinische Studien.",
+    "Bietet Teletherapie-Lösung mit integriertem Outcome-Tracking.",
+    "Entwickelt Biomarker-Analytik für personalisierte Medizin.",
+    "Automatisiert klinische Dokumentation durch Spracherkennung.",
+    "Baut Remote-Monitoring-Plattform für chronisch Kranke.",
+    "Vernetzt Krankenhäuser mit niedergelassenen Ärzten digital.",
+    "Entwickelt digitale Therapeutika für neurologische Erkrankungen.",
+    "Bietet Datenplattform für Arzneimittelentwicklung."
+  ],
+  "DeepTech": [
+    "Entwickelt Quantencomputing-Algorithmen für Materialforschung.",
+    "Baut neue Generation von Festkörperbatterien für industrielle Anwendung.",
+    "Erforscht programmierbare Metamaterialien für die Halbleiterindustrie.",
+    "Entwickelt autonome Robotersysteme für Logistik und Fertigung.",
+    "Baut photonische Chips für energieeffiziente Datenverarbeitung.",
+    "Entwickelt Quantensensoren für medizinische und industrielle Nutzung.",
+    "Erforscht synthetische Biologie zur Produktion nachhaltiger Chemikalien.",
+    "Baut miniaturisierte Spektroskopie-Sensoren für Inline-Qualitätskontrolle.",
+    "Entwickelt neuartige Supraleitermaterialien für Energieübertragung.",
+    "Baut autonome Drohnensysteme für Inspektion kritischer Infrastruktur."
+  ],
+  "AI": [
+    "Baut spezialisierte Sprachmodelle für den europäischen Rechtsmarkt.",
+    "Entwickelt AutoML-Plattform für Nicht-ML-Engineers.",
+    "Bietet KI-gestützte Dokumentenanalyse für Finanzdienstleister.",
+    "Baut Computer-Vision-Pipeline für industrielle Qualitätsprüfung.",
+    "Entwickelt konversationelle KI für den Kundenservice.",
+    "Automatisiert Datenaufbereitung und Feature Engineering.",
+    "Baut multimodale KI-Modelle für die Gesundheitsbranche.",
+    "Liefert Echtzeit-Anomalieerkennung für IoT-Netzwerke.",
+    "Entwickelt AI-Agents für automatisierte Geschäftsprozesse.",
+    "Baut Retrieval-Augmented-Generation-Infrastruktur für Enterprises."
+  ],
+  "ClimateTech": [
+    "Entwickelt Direct-Air-Capture-Technologie zur CO2-Entfernung.",
+    "Baut intelligente Energiespeichersysteme für Gewerbegebäude.",
+    "Optimiert Solaranlagen-Erträge durch KI-basierte Steuerung.",
+    "Entwickelt Kreislaufwirtschafts-Plattform für die Baubranche.",
+    "Baut Ladeinfrastruktur-Management für Flottenbetreiber.",
+    "Entwickelt Precision-Farming-Sensorik für nachhaltige Landwirtschaft.",
+    "Bietet Carbon-Accounting-Software für Unternehmen.",
+    "Baut grüne Wasserstoff-Elektrolyseure im Pilotmaßstab.",
+    "Entwickelt Biodiversitäts-Monitoring durch Satellitenanalyse.",
+    "Optimiert Gebäudeenergieeffizienz durch digitale Zwillinge."
+  ],
+  "Cybersecurity": [
+    "Baut Zero-Trust-Architektur für hybride Cloud-Umgebungen.",
+    "Entwickelt KI-gestützte Bedrohungserkennung in Echtzeit.",
+    "Bietet automatisierte Penetrationstests als SaaS.",
+    "Sichert API-Schnittstellen gegen Missbrauch und Data Leaks.",
+    "Baut Identity-Management-Plattform für dezentrale Teams.",
+    "Entwickelt Endpoint-Protection für industrielle Steuerungssysteme.",
+    "Automatisiert Compliance-Audits für ISO 27001 und SOC 2.",
+    "Bietet verschlüsselte Collaboration-Tools für regulierte Branchen.",
+    "Entwickelt Ransomware-Prävention durch Verhaltensanalyse.",
+    "Baut Security-Operations-Center als Managed Service."
+  ],
+  "PropTech": [
+    "Digitalisiert Immobilienverwaltung für große Wohnungsbestände.",
+    "Baut KI-gestützte Immobilienbewertung für Investoren.",
+    "Entwickelt Smart-Building-Plattform mit IoT-Sensorintegration.",
+    "Automatisiert Mieterprozesse von der Bewerbung bis zur Kündigung.",
+    "Bietet digitale Bauprojektsteuerung für Generalunternehmer.",
+    "Baut 3D-Visualisierung für Immobilienvermarktung.",
+    "Entwickelt Energie-Monitoring für Gewerbeimmobilien.",
+    "Automatisiert Facility Management durch prädiktive Wartung.",
+    "Baut Plattform für tokenisierte Immobilieninvestments.",
+    "Bietet Marktdaten-Analytics für institutionelle Immobilieninvestoren."
+  ],
+  "Marketplace": [
+    "Verbindet mittelständische Zulieferer mit globalen Abnehmern.",
+    "Baut vertikalen Marktplatz für nachhaltige Baumaterialien.",
+    "Entwickelt Matching-Plattform für Freelancer und Unternehmen.",
+    "Baut B2B-Handelsplattform für industrielle Ersatzteile.",
+    "Bietet kuratierte Service-Vermittlung für Unternehmen.",
+    "Entwickelt Secondhand-Marktplatz für Elektronik mit Garantie.",
+    "Verbindet lokale Produzenten direkt mit Gastronomiebetrieben.",
+    "Baut Plattform für den Handel mit überschüssigem Lagerbestand.",
+    "Entwickelt Nischen-Marktplatz für spezialisierte Industriechemikalien.",
+    "Bietet Reverse-Auction-Plattform für Logistikdienstleistungen."
+  ],
+  "DevTools": [
+    "Baut CI/CD-Pipeline-Optimierung für Monorepo-Setups.",
+    "Entwickelt Echtzeit-Observability für Microservice-Architekturen.",
+    "Bietet Low-Code-Backend-Builder für schnelles Prototyping.",
+    "Automatisiert Code-Reviews durch statische Analyse und KI.",
+    "Baut Entwicklerportal für interne API-Dokumentation.",
+    "Entwickelt Testing-Infrastruktur für mobile Anwendungen.",
+    "Bietet Feature-Flag-Management mit A/B-Testing-Integration.",
+    "Baut lokale Entwicklungsumgebungen die Production spiegeln.",
+    "Automatisiert Dependency-Management und Security-Scanning.",
+    "Entwickelt Kollaborations-Tools für verteilte Engineering-Teams."
+  ]
+};
+
 function idFromIndex(rng, i){
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const prefix = letters[i % letters.length];
@@ -29,6 +205,18 @@ function buildStartup(rng, i){
   const subSectors = SECTOR_MAP[sector] || [];
   const sub_sector = subSectors.length ? randChoice(rng, subSectors) : null;
   const growthType = randChoice(rng, GEN.growthTypes);
+
+  const description = randChoice(rng, STARTUP_DESCRIPTIONS[sector] || ["Entwickelt innovative Lösungen."]);
+
+  const teamRanges = {
+    "Pre-Seed": [2, 6],
+    "Seed": [4, 15],
+    "Pre-Series A": [8, 25],
+    "Series A": [15, 50],
+    "Series B": [30, 120]
+  };
+  const [tMin, tMax] = teamRanges[stage] || [3, 20];
+  const team_size = randInt(rng, tMin, tMax);
 
   const base = Math.pow(rng(), 2) * 450000;
   const mrr = Math.round(clamp(base + randInt(rng, 5000, 35000), 6000, 520000) / 100) * 100;
@@ -86,6 +274,9 @@ function buildStartup(rng, i){
     stage,
     sector,
     sub_sector,
+    company_name: null,                      // assigned by generateDataset (duplicate-free)
+    description,
+    team_size,
 
     mrr_eur: mrr,
     growth: { type: growthType, value_pct: growthPct },
@@ -116,10 +307,36 @@ function buildStartup(rng, i){
   };
 }
 
+function shuffleArray(arr, rng){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(rng() * (i + 1));
+    const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+  }
+  return a;
+}
+
 function generateDataset(seed){
   const rng = mulberry32(seed);
+
+  // Pre-shuffle name pools per sector for duplicate-free assignment
+  const namePools = {};
+  const nameUsed = {};
+  for(const sec of GEN.sectors){
+    namePools[sec] = shuffleArray(STARTUP_NAMES[sec] || [], rng);
+    nameUsed[sec] = 0;
+  }
+
   const out = [];
-  for(let i=0;i<30;i++) out.push(buildStartup(rng, i));
+  for(let i = 0; i < 30; i++){
+    const s = buildStartup(rng, i);
+    const pool = namePools[s.sector] || [];
+    const used = nameUsed[s.sector] || 0;
+    s.company_name = pool[used] || `Startup ${s.anon_id}`;
+    nameUsed[s.sector] = used + 1;
+    s.notes = `${s.company_name} • ${s.notes}`;
+    out.push(s);
+  }
   return out;
 }
 
