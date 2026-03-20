@@ -188,5 +188,7 @@ const DASHBOARD_EVENT_LABELS = {
   "LEAD_SAVED": "📧 Anfrage",
   "INTERESTED": "📋 Pipeline",
   "INTERESTED_AGAIN": "📋 Pipeline",
-  "PASSED": "✗ Passed"
+  "PASSED": "✗ Passed",
+  "NOTE_ADDED": "📝 Notiz",
+  "NOTE_DELETED": "📝 Notiz gelöscht"
 };

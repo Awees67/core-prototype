@@ -197,6 +197,51 @@ function getActivity(){
 }
 function setActivity(arr){ safeSetJSON(LS_KEYS.activity, Array.isArray(arr)?arr:[]); }
 
+/* =========================
+   NOTES STORAGE
+========================= */
+function getNotes(){
+  const arr = safeGetJSON(LS_KEYS.notes, []);
+  if(!Array.isArray(arr)) return [];
+  return arr.filter(n => n && typeof n.id === "string" && typeof n.anon_id === "string");
+}
+function setNotes(arr){ safeSetJSON(LS_KEYS.notes, Array.isArray(arr) ? arr : []); }
+
+function getNotesForDeal(anon_id){
+  return getNotes()
+    .filter(n => n.anon_id === anon_id)
+    .sort((a, b) => b.created_at - a.created_at);
+}
+
+function addNote(anon_id, text, author){
+  const note = {
+    id: uid(),
+    anon_id: String(anon_id || ""),
+    text: String(text || "").trim(),
+    author: String(author || "Analyst"),
+    created_at: Date.now(),
+    pinned: false
+  };
+  const notes = getNotes();
+  notes.push(note);
+  setNotes(notes);
+  activityLogAppend("NOTE_ADDED", anon_id, { text: note.text.slice(0, 80), author: note.author });
+  return note;
+}
+
+function deleteNote(noteId){
+  const notes = getNotes();
+  const idx = notes.findIndex(n => n.id === noteId);
+  if(idx < 0) return;
+  const note = notes[idx];
+  setNotes(notes.filter(n => n.id !== noteId));
+  activityLogAppend("NOTE_DELETED", note.anon_id, { note_id: noteId });
+}
+
+function getNotesCount(anon_id){
+  return getNotes().filter(n => n.anon_id === anon_id).length;
+}
+
 function activityLogAppend(event, anon_id=null, meta=null){
   const a = getActivity();
   a.unshift({ id: uid(), ts: Date.now(), event: String(event||""), anon_id: anon_id?String(anon_id):null, meta: meta||null });
