@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   on("navActivity","click", ()=>{ currentView = "activity"; renderCurrent(); });
   on("navInbox","click", ()=>{ currentView = "inbox"; renderCurrent(); });
 
+  on("navScore","click", ()=>{ if(typeof openCustomIndex === "function") openCustomIndex(); });
   on("navReset","click", resetDemo);
   on("toggleThemeBtn","click", toggleTheme);
 
@@ -151,7 +152,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const rows = ids.map(id=> startups.find(s=>s.anon_id===id)).filter(Boolean);
 
     const kpis = [
-      { key:"signal", label:"Signal Index", val:(s)=>computeSignalIndex(s.anon_id), best:"max", fmt:(n)=>String(Math.round(n)) },
+      { key:"signal", label:"Score", val:(s)=>computeSignalIndex(s.anon_id), best:"max", fmt:(n)=>String(Math.round(n)) },
       { key:"mrr", label:"MRR", val:(s)=>Number(s.mrr_eur||0), best:"max", fmt:(n)=>fmtEUR(n) },
       { key:"growth", label:"Growth", val:(s)=>Number(s.growth?.value_pct ?? 0), best:"max", fmt:(n)=>fmtPct(n) },
       { key:"runway", label:"Runway", val:(s)=>Number(s.runway_months||0), best:"max", fmt:(n)=> (n? (n+" M") : "—") },
@@ -236,7 +237,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       b.onclick = (e)=>{
         e.stopPropagation();
         const id = b.getAttribute("data-si");
-        openSignalPopover(b, buildSignalExplainHTML(id), id);
+        openScoreBreakdown(id, b);
       };
     });
   };

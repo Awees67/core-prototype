@@ -1,62 +1,17 @@
+/* =========================
+   computeSignalIndex → Proxy für computeCustomIndexV6
+   Signal Index ist ersetzt durch Custom Index (Score).
+   Diese Funktion bleibt als Proxy um bestehende Referenzen nicht zu brechen.
+========================= */
 function computeSignalIndex(anon_id){
-  const s = startups.find(x=>x.anon_id===anon_id);
-  if(!s) return 0;
-
-  // Demo-only heuristic: combine UE/RQ/CE + some KPI norms
-  const ue = classifyUE(s);
-  const rq = classifyRQ(s);
-  const ce = classifyCE(s);
-
-  let score = 50;
-  const bump = (v)=>{ score += v; };
-
-  if(ue==="Strong") bump(12);
-  if(ue==="No Risk") bump(7);
-  if(ue==="Risk") bump(-10);
-
-  if(rq==="High") bump(12);
-  if(rq==="Stable") bump(4);
-  if(rq==="Risk") bump(-10);
-
-  if(ce==="Efficient") bump(12);
-  if(ce==="Neutral") bump(4);
-  if(ce==="Inefficient") bump(-12);
-
-  const mrr = Number(s.mrr_eur || 0);
-  const growth = Number(s.growth?.value_pct ?? 0);
-  const runway = Number(s.runway_months || 0);
-  const burn = Number(s.burn_eur || 0);
-  const nrr = Number(s.nrr_pct || 0);
-  const ltvCac = Number(s.ltv_cac_ratio || 0);
-
-  if(mrr >= 50000) bump(6);
-  else if(mrr >= 20000) bump(3);
-
-  if(growth >= 15) bump(6);
-  else if(growth >= 8) bump(3);
-  else if(growth < 0) bump(-4);
-
-  if(runway >= 18) bump(6);
-  else if(runway >= 12) bump(3);
-  else if(runway < 6) bump(-6);
-
-  if(burn <= 40000) bump(3);
-  else if(burn >= 120000) bump(-4);
-
-  if(nrr >= 120) bump(6);
-  else if(nrr >= 110) bump(3);
-  else if(nrr < 100) bump(-6);
-
-  if(ltvCac >= 5) bump(6);
-  else if(ltvCac >= 3) bump(3);
-  else if(ltvCac < 2) bump(-6);
-
-  score = Math.max(0, Math.min(100, Math.round(score)));
-  return score;
+  try{
+    const res = computeCustomIndexV6(anon_id);
+    return (res && res.score !== null) ? res.score : 50;
+  }catch(_){ return 50; }
 }
 
 /* =========================
-   ADD-ONLY: Signal Index Explainability (v2)
+   Popover-Infrastruktur (wird für Score Breakdown wiederverwendet)
 ========================= */
 let _signalPopoverState = { open:false, anon_id:null };
 
@@ -102,127 +57,101 @@ function openSignalPopover(anchorEl, html, anon_id=null){
   pop.style.top = top + "px";
 }
 
-function _siRuleHit(label, value, ruleText, points){
-  return { label, value, rule: ruleText, points };
+/* =========================
+   Score Breakdown Hilfsfunktionen (neu)
+========================= */
+
+function getScoreColorClass(score){
+  const n = Number(score ?? 0);
+  if(n <= 30) return "score-red";
+  if(n <= 60) return "score-orange";
+  if(n <= 80) return "score-yellow";
+  return "score-green";
 }
 
-function buildSignalIndexBreakdown(anon_id){
-  const s = startups.find(x=>x.anon_id===anon_id);
-  if(!s){
-    return { anon_id, total:0, computed_at:Date.now(), parts:[], note:"Startup nicht gefunden." };
+function formatOperatorLabel(operator, value, unit){
+  const op = String(operator || "").toLowerCase();
+  const fmt = (v) => {
+    if(v === null || v === undefined) return "—";
+    if(unit === "EUR") return fmtEUR(v);
+    if(unit === "percent") return v + "%";
+    if(unit === "months") return v + " Monate";
+    if(unit === "x") return v + "x";
+    if(unit === "Personen") return v + " Mitarbeiter";
+    return String(v);
+  };
+
+  if(op === "between_inclusive" || op === "between_exclusive"){
+    const min = value?.min, max = value?.max;
+    return "zwischen " + fmt(min) + " und " + fmt(max);
   }
 
-  // Use existing computeSignalIndex logic, but expose contributions.
-  const ue = classifyUE(s);
-  const rq = classifyRQ(s);
-  const ce = classifyCE(s);
-
-  const mrr = Number(s.mrr_eur || 0);
-  const growth = Number(s.growth?.value_pct ?? 0);
-  const runway = Number(s.runway_months || 0);
-  const burn = Number(s.burn_eur || 0);
-  const nrr = Number(s.nrr_pct || 0);
-  const ltvCac = Number(s.ltv_cac_ratio || 0);
-
-  let base = 50;
-  const parts = [];
-
-  // Signals UE/RQ/CE
-  if(ue==="Strong") parts.push(_siRuleHit("UE", ue, "Strong → +12", 12));
-  else if(ue==="No Risk") parts.push(_siRuleHit("UE", ue, "No Risk → +7", 7));
-  else if(ue==="Risk") parts.push(_siRuleHit("UE", ue, "Risk → -10", -10));
-  else parts.push(_siRuleHit("UE", ue, "—", 0));
-
-  if(rq==="High") parts.push(_siRuleHit("RQ", rq, "High → +12", 12));
-  else if(rq==="Stable") parts.push(_siRuleHit("RQ", rq, "Stable → +4", 4));
-  else if(rq==="Risk") parts.push(_siRuleHit("RQ", rq, "Risk → -10", -10));
-  else parts.push(_siRuleHit("RQ", rq, "—", 0));
-
-  if(ce==="Efficient") parts.push(_siRuleHit("CE", ce, "Efficient → +12", 12));
-  else if(ce==="Neutral") parts.push(_siRuleHit("CE", ce, "Neutral → +4", 4));
-  else if(ce==="Inefficient") parts.push(_siRuleHit("CE", ce, "Inefficient → -12", -12));
-  else parts.push(_siRuleHit("CE", ce, "—", 0));
-
-  // KPI bumps (same thresholds as computeSignalIndex)
-  if(mrr >= 50000) parts.push(_siRuleHit("MRR", mrr, ">= 50k → +6", 6));
-  else if(mrr >= 20000) parts.push(_siRuleHit("MRR", mrr, ">= 20k → +3", 3));
-  else parts.push(_siRuleHit("MRR", mrr, "< 20k → +0", 0));
-
-  if(growth >= 15) parts.push(_siRuleHit("Growth", growth, ">= 15% → +6", 6));
-  else if(growth >= 8) parts.push(_siRuleHit("Growth", growth, ">= 8% → +3", 3));
-  else if(growth < 0) parts.push(_siRuleHit("Growth", growth, "< 0% → -4", -4));
-  else parts.push(_siRuleHit("Growth", growth, "0–<8% → +0", 0));
-
-  if(runway >= 18) parts.push(_siRuleHit("Runway", runway, ">= 18m → +6", 6));
-  else if(runway >= 12) parts.push(_siRuleHit("Runway", runway, ">= 12m → +3", 3));
-  else if(runway < 6) parts.push(_siRuleHit("Runway", runway, "< 6m → -6", -6));
-  else parts.push(_siRuleHit("Runway", runway, "6–<12m → +0", 0));
-
-  if(burn <= 40000) parts.push(_siRuleHit("Burn", burn, "<= 40k → +3", 3));
-  else if(burn >= 120000) parts.push(_siRuleHit("Burn", burn, ">= 120k → -4", -4));
-  else parts.push(_siRuleHit("Burn", burn, "40k–<120k → +0", 0));
-
-  if(nrr >= 120) parts.push(_siRuleHit("NRR", nrr, ">= 120% → +6", 6));
-  else if(nrr >= 110) parts.push(_siRuleHit("NRR", nrr, ">= 110% → +3", 3));
-  else if(nrr < 100 && nrr>0) parts.push(_siRuleHit("NRR", nrr, "< 100% → -6", -6));
-  else parts.push(_siRuleHit("NRR", nrr||null, "missing/neutral → +0", 0));
-
-  if(ltvCac >= 5) parts.push(_siRuleHit("LTV/CAC", ltvCac, ">= 5 → +6", 6));
-  else if(ltvCac >= 3) parts.push(_siRuleHit("LTV/CAC", ltvCac, ">= 3 → +3", 3));
-  else if(ltvCac > 0 && ltvCac < 2) parts.push(_siRuleHit("LTV/CAC", ltvCac, "< 2 → -6", -6));
-  else parts.push(_siRuleHit("LTV/CAC", ltvCac||null, "missing/neutral → +0", 0));
-
-  const delta = parts.reduce((a,b)=>a + (Number(b.points)||0), 0);
-  let total = base + delta;
-  total = Math.max(0, Math.min(100, Math.round(total)));
-
-  return {
-    anon_id,
-    base,
-    delta,
-    total,
-    computed_at: Date.now(),
-    parts
+  const labels = {
+    lt: "unter",
+    lte: "maximal",
+    gt: "über",
+    gte: "mindestens",
+    eq: "genau",
+    neq: "nicht"
   };
+  return (labels[op] || op) + " " + fmt(value);
 }
 
-function buildSignalLegendHTML(){
+function buildCustomBreakdownHTML(anon_id, res){
+  const rules = (typeof getCustomRulesV6 === "function") ? getCustomRulesV6() : {};
+  const rulesetName = rules.name || "Ruleset";
+  const score = (res && res.score !== null && res.score !== undefined) ? res.score : "—";
+  const breakdown = (res && Array.isArray(res.breakdown)) ? res.breakdown : [];
+  const startScore = rules.scoring?.start_score ?? 50;
+
+  const triggered = breakdown.filter(b => !b.skipped);
+
+  const rows = triggered.map(b => {
+    const kpiDef = rules.kpi_map?.[b.kpi] || {};
+    const kpiLabel = kpiDef.label || b.kpi;
+    const unit = kpiDef.unit || "";
+    const pts = Number(b.points || 0);
+    const sign = pts > 0 ? "+" : "";
+    const opLabel = formatOperatorLabel(b.operator, b.threshold, unit);
+    const icon = pts > 0 ? "✓" : (pts < 0 ? "⚠" : "—");
+    const cls = pts > 0 ? "breakdown-positive" : (pts < 0 ? "breakdown-negative" : "breakdown-zero");
+
+    return `
+      <div class="breakdown-item">
+        <div class="breakdown-rule">${escapeHTML(icon)} ${escapeHTML(kpiLabel)} ${escapeHTML(opLabel)}</div>
+        <div class="breakdown-points ${cls}">${sign}${pts} Pkt.</div>
+      </div>
+    `;
+  }).join("");
+
+  const delta = triggered.reduce((sum, b) => sum + Number(b.points || 0), 0);
+  const deltaSign = delta >= 0 ? "+" : "";
+  const ts = res?.computed_at ? new Date(res.computed_at).toLocaleString("de-DE") : "—";
+
   return `
-    <h4>Signal Index – Erklärung (Demo)</h4>
-    <div class="muted">Signal Index ist ein Demo-Score zur Orientierung und ersetzt keine Due Diligence.</div>
-    <ul>
-      <li><b>Basis</b>: Startwert 50</li>
-      <li><b>Signals</b>: UE/RQ/CE (badges) beeinflussen den Score</li>
-      <li><b>KPIs</b>: MRR, Growth, Runway, Burn, NRR, LTV/CAC liefern zusätzliche Punkte</li>
-    </ul>
-    <div class="mini">Tipp: In der Pipeline kannst du auch auf das kleine ⓘ neben einem konkreten Wert klicken, um den Breakdown pro Deal zu sehen.</div>
-    <div class="mini" style="margin-top:8px;">Hinweis: Anonymisierte Demo. Daten können unvollständig/ungeprüft sein.</div>
+    <div style="min-width:300px; max-width:400px; padding:4px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div style="font-weight:950; font-size:1.02rem;">Score Breakdown</div>
+        <div style="font-size:0.8rem; color:var(--muted); font-weight:800;">${escapeHTML(rulesetName)}</div>
+      </div>
+      <div style="font-weight:950; font-size:2rem; margin-bottom:14px; line-height:1;">
+        ${escapeHTML(String(score))} <span style="font-size:1rem; color:var(--muted); font-weight:700;">/ 100</span>
+      </div>
+      <div style="border-top:1px solid var(--border); padding-top:10px;">
+        ${rows || `<div style="color:var(--muted); font-size:0.9rem; padding:8px 0;">Keine Regeln getriggert.</div>`}
+      </div>
+      <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--border); font-size:0.8rem; color:var(--muted);">
+        Basis ${escapeHTML(String(startScore))} ${deltaSign}${escapeHTML(String(delta))} Pkt. = ${escapeHTML(String(score))}
+        <br>Zuletzt berechnet: ${escapeHTML(ts)}
+      </div>
+    </div>
   `;
 }
 
-function buildSignalBreakdownHTML(anon_id){
-  const b = buildSignalIndexBreakdown(anon_id);
-  const rows = (b.parts||[]).map(p=>`
-    <tr>
-      <td>${escapeHTML(String(p.label||""))}</td>
-      <td>${escapeHTML(p.value===null || p.value===undefined ? "—" : String(p.value))}</td>
-      <td>${escapeHTML(String(p.rule||""))}</td>
-      <td>${escapeHTML(String(p.points||0))}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <h4>Signal Index – Breakdown</h4>
-    <div class="muted">Startup: <b>${escapeHTML(anon_id)}</b> • Gesamt: <b>${escapeHTML(String(b.total))}</b> (Basis ${escapeHTML(String(b.base))} + Delta ${escapeHTML(String(b.delta))})</div>
-    <table>
-      <thead>
-        <tr><th>Faktor</th><th>Wert</th><th>Regel (Demo)</th><th>Punkte</th></tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div class="mini" style="margin-top:8px;">Zuletzt berechnet: ${new Date(b.computed_at||Date.now()).toLocaleString("de-DE")}</div>
-    <div class="mini">Signal Index ist ein Demo-Score zur Orientierung und ersetzt keine Due Diligence.</div>
-  `;
+function openScoreBreakdown(anon_id, anchorEl){
+  const res = computeCustomIndexV6(anon_id);
+  const html = buildCustomBreakdownHTML(anon_id, res);
+  openSignalPopover(anchorEl, html, anon_id);
 }
 
 // Close popover on outside click
@@ -236,15 +165,14 @@ document.addEventListener("click",(e)=>{
   }
 });
 window.addEventListener("resize", ()=>{
-  // close on resize to avoid awkward positions
   if(_signalPopoverState.open) closeSignalPopover();
 });
 
 /* =========================
-   V4.1 JS patches (requested)
+   V4.1 JS patches
 ========================= */
 
-// Lock background scroll while Signal popover is open
+// Lock background scroll while popover is open
 (function(){
   if(typeof openSignalPopover === "function" && !openSignalPopover._v41){
     const _o = openSignalPopover;
@@ -264,10 +192,8 @@ window.addEventListener("resize", ()=>{
   }
 })();
 
-// Make Signal class a bit more "realistic" (less optimistic) in V4.1
 function sigClassFromScore(score){
   const n = Number(score||0);
-  // slightly stricter thresholds
   if(n >= 80) return "HIGH";
   if(n >= 55) return "MID";
   return "LOW";
@@ -277,70 +203,6 @@ function sigToneFromClass(cls){
   if(cls==="HIGH") return "high";
   if(cls==="MID") return "mid";
   return "low";
-}
-
-// Expand Signal popover with an (i) legend for classes + signal badges
-function buildSignalExplainHTML(anon_id){
-  const score = computeSignalIndex(anon_id);
-  const cls = sigClassFromScore(score);
-  const tone = sigToneFromClass(cls);
-
-  const breakdown = (typeof buildSignalIndexBreakdown === "function")
-    ? buildSignalIndexBreakdown(anon_id)
-    : null;
-
-  let breakdownHtml = "";
-  if(breakdown){
-    const rows = (breakdown.parts||[]).map(p=>`
-      <tr>
-        <td>${escapeHTML(String(p.label||""))}</td>
-        <td>${escapeHTML(p.value===null || p.value===undefined ? "—" : String(p.value))}</td>
-        <td>${escapeHTML(String(p.rule||""))}</td>
-        <td>${escapeHTML(String(p.points||0))}</td>
-      </tr>
-    `).join("");
-    breakdownHtml = `
-      <div class="sig-mini">Komponenten (Demo):</div>
-      <div class="sig-reasons" style="margin-top:8px;">
-        <div class="t">Breakdown</div>
-        <table>
-          <thead><tr><th>Faktor</th><th>Wert</th><th>Regel</th><th>Punkte</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  const legendId = "sigLegend_" + anon_id.replace(/[^a-z0-9]/gi,"");
-  return `
-    <div class="panel" style="border-radius:14px;">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-        <div style="font-weight:950;">
-          Signal Index: <span class="mono">${score}</span>
-          <span class="badge ${tone==="high"?"good":(tone==="mid"?"hot":"watch")}">${cls}</span>
-          <button class="btn secondary small" style="padding:2px 8px; margin-left:6px;" data-toggle-legend="${legendId}" aria-label="Erklärung öffnen">(i)</button>
-        </div>
-        <div class="muted-note" style="font-weight:900;">Demo-Score • ersetzt keine Due Diligence</div>
-      </div>
-
-      <div id="${legendId}" style="display:none; margin-top:10px;">
-        <div class="helper" style="margin-bottom:10px;">
-          <b>Signal Klassen (realistisch/konservativ)</b><br>
-          HIGH: ≥ 80 • MID: 55–79 • LOW: &lt; 55<br>
-          Zusätzlich: fehlende KPIs werden als <i>Missing</i> ausgewiesen (kein Schönrechnen).
-        </div>
-        <div class="helper">
-          <b>Hot / Watch / Standard</b> (Signals): entstehen aus Kombinationen von Momentum (Growth), Risiko (Runway/Burn) und Effizienz (LTV/CAC/NRR), nicht aus einem einzigen KPI.
-        </div>
-      </div>
-
-      ${breakdownHtml}
-
-      <div class="helper" style="margin-top:10px;">
-        Hinweis: Anonymisierte Demo. KPI/Signale sind indikativ und können unvollständig/ungeprüft sein.
-      </div>
-    </div>
-  `;
 }
 
 // Toggle legend inside popover (event delegation)
@@ -359,5 +221,5 @@ function statusTone(status){
   if(s==="passed") return "bad";
   if(s==="invested" || s==="term sheet") return "good";
   if(s==="ic" || s==="diligence" || s==="contacted") return "warn";
-  return ""; // screening/unknown neutral
+  return "";
 }
