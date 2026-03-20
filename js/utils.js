@@ -88,7 +88,7 @@ function fmtTicket(n){
   return v + "€";
 }
 function startupLabel(s){
-  return `Startup ${s?.anon_id || "—"}`;
+  return s?.company_name || `Startup ${s?.anon_id || "—"}`;
 }
 function computeBadge(s){
   const ue = classifyUE(s), rq = classifyRQ(s), ce = classifyCE(s);
