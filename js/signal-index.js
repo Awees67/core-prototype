@@ -172,25 +172,7 @@ window.addEventListener("resize", ()=>{
    V4.1 JS patches
 ========================= */
 
-// Lock background scroll while popover is open
-(function(){
-  if(typeof openSignalPopover === "function" && !openSignalPopover._v41){
-    const _o = openSignalPopover;
-    openSignalPopover = function(anchorEl, html, anon_id=null){
-      document.body.classList.add("no-scroll");
-      _o(anchorEl, html, anon_id);
-    };
-    openSignalPopover._v41 = true;
-  }
-  if(typeof closeSignalPopover === "function" && !closeSignalPopover._v41){
-    const _c = closeSignalPopover;
-    closeSignalPopover = function(){
-      document.body.classList.remove("no-scroll");
-      _c();
-    };
-    closeSignalPopover._v41 = true;
-  }
-})();
+// V4.1 patch: no-scroll body lock removed — caused scroll-reset & freeze for cards below the fold
 
 function sigClassFromScore(score){
   const n = Number(score||0);

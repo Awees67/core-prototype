@@ -439,8 +439,10 @@ function renderSubmissions(){
       failed:  { cls:"badge plaus-failed",  icon:"✗", label:"Failed"  }
     };
     const m = map[status] || map.failed;
-    const tooltip = (flags && flags.length) ? flags.join(", ") : "";
-    return `<span class="${m.cls}" title="${escapeHTML(tooltip)}">${m.icon} ${m.label}</span>`;
+    const flagsHtml = (status !== "passed" && flags && flags.length)
+      ? `<div style="font-size:0.78rem; color:var(--muted); margin-top:4px; line-height:1.4;">${escapeHTML(flags.join(" · "))}</div>`
+      : "";
+    return `<span class="${m.cls}">${m.icon} ${m.label}</span>${flagsHtml}`;
   };
 
   viewSub.innerHTML = `
@@ -511,7 +513,7 @@ function renderSubmissions(){
               <td><button class="btn secondary small" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(ss?.company_name || sub.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(sub.anon_id)}</small></td>
               <td>${escapeHTML(sectorStr)}</td>
               <td>${escapeHTML(sub.stage||"—")}</td>
-              <td class="mono">${Math.round(sub.signal_index||0)}</td>
+              <td class="mono" style="white-space:nowrap;">${Math.round(sub.signal_index||0)} <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(sub.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button></td>
               <td>${plausiBadge(sub.plausibility_status, sub.plausibility_flags)}</td>
               <td class="mono" style="font-size:0.88rem;">${dt}</td>
               <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
@@ -527,6 +529,9 @@ function renderSubmissions(){
 
   mount.querySelectorAll("[data-open]").forEach(b=>{
     b.onclick = ()=>openModalByAnonId(b.getAttribute("data-open"), startups);
+  });
+  mount.querySelectorAll("[data-action='scoreinfo']").forEach(b=>{
+    b.onclick = (e)=>{ openScoreBreakdown(b.getAttribute("data-id"), b); e.stopPropagation(); };
   });
   mount.querySelectorAll("[data-accept]").forEach(b=>{
     b.onclick = ()=>{
