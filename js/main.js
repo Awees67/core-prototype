@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       closeFilterModal();
       closePrivacy();
       closeSignalPopover();
+      if(typeof closeDeclineDialog === "function") closeDeclineDialog();
     }
     if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="k"){
       e.preventDefault();

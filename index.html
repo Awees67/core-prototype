@@ -320,6 +320,24 @@
     </div>
   </div>
 
+  <!-- DECLINE DIALOG -->
+  <div class="decline-dialog" id="declineDialog" style="display:none;" role="dialog" aria-modal="true" aria-label="Deal ablehnen">
+    <div class="decline-dialog-inner">
+      <h4>Deal ablehnen</h4>
+      <p class="decline-dialog-deal" id="declineDealName"></p>
+      <label for="declineReasonSelect">Grund (Pflicht)</label>
+      <select id="declineReasonSelect">
+        <option value="">— Bitte auswählen —</option>
+      </select>
+      <label for="declineNoteInput">Ergänzende Notiz (optional)</label>
+      <textarea id="declineNoteInput" rows="2" maxlength="300" placeholder="z.B. Gründer war unvorbereitet im Call..."></textarea>
+      <div class="decline-dialog-actions">
+        <button class="btn" id="declineConfirmBtn">Ablehnen</button>
+        <button class="btn secondary" id="declineCancelBtn">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast" style="display:none;">
     <div id="toastTitle">Gespeichert</div>
     <small id="toastSub">Lokale Demo-Aktion</small>

@@ -59,6 +59,24 @@ const FILTER_OPTIONS = {
 };
 
 /* =========================
+   DECLINE REASONS
+========================= */
+const DECLINE_REASONS = [
+  { key: "sector_mismatch",       label: "Sektor passt nicht zum Fonds" },
+  { key: "too_early",             label: "Zu frühes Stadium" },
+  { key: "too_late",              label: "Zu spätes Stadium (über Fonds-Scope)" },
+  { key: "weak_traction",         label: "Traction zu schwach" },
+  { key: "unit_economics",        label: "Unit Economics nicht überzeugend" },
+  { key: "cap_table",             label: "Cap Table problematisch" },
+  { key: "team_concerns",         label: "Team-Bedenken" },
+  { key: "market_size",           label: "Markt zu klein" },
+  { key: "competitive_landscape", label: "Wettbewerbsumfeld zu stark" },
+  { key: "runway_risk",           label: "Runway-Risiko zu hoch" },
+  { key: "duplicate",             label: "Bereits im Portfolio / Duplikat" },
+  { key: "other",                 label: "Anderer Grund" }
+];
+
+/* =========================
    SECTOR TAXONOMY (Sub-Sektoren)
 ========================= */
 const SECTOR_MAP = {
