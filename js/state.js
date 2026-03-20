@@ -140,7 +140,9 @@ function getPipeline(){
       owner: (x.owner===undefined || x.owner===null) ? "" : String(x.owner),
       signal_index: (x.signal_index===undefined || x.signal_index===null) ? 0 : Number(x.signal_index),
       last_updated: (x.last_updated===undefined || x.last_updated===null) ? Date.now() : Number(x.last_updated),
-      created_at: (x.created_at===undefined || x.created_at===null) ? (Number(x.last_updated)||Date.now()) : Number(x.created_at)
+      created_at: (x.created_at===undefined || x.created_at===null) ? (Number(x.last_updated)||Date.now()) : Number(x.created_at),
+      decline_reason: (x.decline_reason || null),
+      decline_note: (x.decline_note || '')
     };
   }).filter(x=>!!x.anon_id);
 }
@@ -273,7 +275,7 @@ function pipelineAdd(anon_id, initialStatus){
   return { created:true, item };
 }
 
-function pipelineSetStatus(anon_id, toStatus){
+function pipelineSetStatus(anon_id, toStatus, declineReason, declineNote){
   const p = getPipeline();
   const idx = p.findIndex(x=>x.anon_id===anon_id);
   if(idx<0) return false;
@@ -290,11 +292,22 @@ function pipelineSetStatus(anon_id, toStatus){
     return false;
   }
 
+  if(toStatus === "Declined" && !declineReason){
+    return false;
+  }
+
   p[idx].status = toStatus;
   p[idx].last_updated = Date.now();
   p[idx].signal_index = computeSignalIndex(anon_id);
+  p[idx].decline_reason = (toStatus === "Declined") ? declineReason : null;
+  p[idx].decline_note   = (toStatus === "Declined") ? (declineNote || '') : '';
   setPipeline(p);
-  activityLogAppend("STATUS_CHANGED", anon_id, { from, to: toStatus });
+  activityLogAppend("STATUS_CHANGED", anon_id, {
+    from,
+    to: toStatus,
+    decline_reason: (toStatus === "Declined") ? (declineReason || null) : null,
+    decline_note:   (toStatus === "Declined") ? (declineNote || '') : ''
+  });
   return true;
 }
 

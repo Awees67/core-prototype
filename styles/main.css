@@ -1330,3 +1330,18 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
 .notes-count { font-size:0.85rem; font-weight:700; color:var(--muted); margin-left:6px; }
 
 .card-notes-indicator { font-size:0.78rem; color:var(--muted); font-weight:700; display:inline-flex; align-items:center; gap:3px; }
+
+/* =========================
+   DECLINE DIALOG
+========================= */
+.decline-dialog { position:fixed; inset:0; background:var(--overlay); display:flex; align-items:center; justify-content:center; z-index:9999; }
+.decline-dialog-inner { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; max-width:420px; width:90%; box-shadow:var(--shadow); }
+.decline-dialog-inner h4 { margin:0 0 8px 0; font-size:1.05rem; }
+.decline-dialog-inner label { display:block; margin-top:12px; font-weight:800; font-size:0.88rem; }
+.decline-dialog-inner select, .decline-dialog-inner textarea { width:100%; margin-top:4px; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--soft); color:inherit; font-size:0.92rem; font-family:inherit; }
+.decline-dialog-inner select:focus, .decline-dialog-inner textarea:focus { outline:none; box-shadow:var(--focus); border-color:var(--brand2); }
+.decline-dialog-actions { display:flex; gap:8px; margin-top:16px; }
+.decline-dialog-deal { font-weight:900; margin:0 0 8px 0; color:var(--muted); font-size:0.92rem; }
+.decline-reason-text { font-size:0.78rem; color:var(--muted); margin-top:3px; font-weight:700; }
+.shake { animation:shake 0.3s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);} }

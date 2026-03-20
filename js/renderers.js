@@ -664,12 +664,17 @@ function renderPipeline(){
             const ps = startups.find(x=>x.anon_id===item.anon_id);
             const nc = noteCountMap[item.anon_id] || 0;
 
+            const declineReasonLabel = item.status === "Declined" && item.decline_reason
+              ? (DECLINE_REASONS.find(r => r.key === item.decline_reason)?.label || item.decline_reason)
+              : null;
+
             const statusCell = item.status === "Synced"
               ? `<span class="synced-label">✓ Synced to CRM</span>`
               : `<select class="statusSel" data-status data-pipe-id="${escapeHTML(item.anon_id)}" style="min-width:130px;">
                    <option value="${escapeHTML(item.status)}" selected>${escapeHTML(item.status)}</option>
                    ${(PIPELINE_TRANSITIONS[item.status]||[]).map(t=>`<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`).join("")}
-                 </select>`;
+                 </select>
+                 ${declineReasonLabel ? `<div class="decline-reason-text"${item.decline_note ? ` title="${escapeHTML(item.decline_note)}"` : ""}>${escapeHTML(declineReasonLabel)}</div>` : ""}`;
 
             const actionsCell = item.status === "Synced"
               ? `<button class="btn secondary small" disabled>✓ Im CRM</button>`
@@ -701,7 +706,13 @@ function renderPipeline(){
   mount.querySelectorAll("[data-pipe-id]").forEach(sel=>{
     sel.onchange=()=>{
       const id = sel.getAttribute("data-pipe-id");
-      const ok = pipelineSetStatus(id, sel.value);
+      const newStatus = sel.value;
+      if(newStatus === "Declined"){
+        const prevStatus = getPipeline().find(x=>x.anon_id===id)?.status || "In Review";
+        openDeclineDialog(id, prevStatus, sel);
+        return;
+      }
+      const ok = pipelineSetStatus(id, newStatus);
       if(ok === false){ sel.value = getPipeline().find(x=>x.anon_id===id)?.status || sel.value; return; }
       renderPipeline();
     };
@@ -887,6 +898,80 @@ function closeModal(){
   const backdrop = document.getElementById("modalBackdrop");
   backdrop.style.display = "none";
   backdrop.setAttribute("aria-hidden", "true");
+}
+
+/* =========================
+   DECLINE DIALOG
+========================= */
+let _declineAnonId = null;
+let _declinePrevStatus = null;
+let _declineSelectEl = null;
+
+function openDeclineDialog(anon_id, prevStatus, selectEl){
+  _declineAnonId = anon_id;
+  _declinePrevStatus = prevStatus;
+  _declineSelectEl = selectEl;
+
+  const dlg = document.getElementById("declineDialog");
+  const dealNameEl = document.getElementById("declineDealName");
+  const reasonSel = document.getElementById("declineReasonSelect");
+  const noteInput = document.getElementById("declineNoteInput");
+  if(!dlg || !dealNameEl || !reasonSel || !noteInput) return;
+
+  // Set deal name
+  const startup = startups.find(x => x.anon_id === anon_id);
+  dealNameEl.textContent = startup ? startupLabel(startup) : anon_id;
+
+  // Fill reason dropdown
+  reasonSel.innerHTML = `<option value="">— Bitte auswählen —</option>` +
+    DECLINE_REASONS.map(r => `<option value="${escapeHTML(r.key)}">${escapeHTML(r.label)}</option>`).join("");
+  reasonSel.classList.remove("shake");
+
+  // Clear note
+  noteInput.value = "";
+
+  dlg.style.display = "flex";
+
+  const confirmBtn = document.getElementById("declineConfirmBtn");
+  const cancelBtn  = document.getElementById("declineCancelBtn");
+
+  // Clone buttons to remove old listeners
+  const newConfirm = confirmBtn.cloneNode(true);
+  const newCancel  = cancelBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+  cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+  newConfirm.addEventListener("click", ()=>{
+    const reason = document.getElementById("declineReasonSelect").value;
+    if(!reason){
+      const sel = document.getElementById("declineReasonSelect");
+      sel.classList.remove("shake");
+      void sel.offsetWidth; // reflow to restart animation
+      sel.classList.add("shake");
+      toast("Pflichtfeld", "Bitte einen Grund auswählen");
+      return;
+    }
+    const note = document.getElementById("declineNoteInput").value.trim();
+    const ok = pipelineSetStatus(_declineAnonId, "Declined", reason, note);
+    closeDeclineDialog();
+    if(ok){ renderPipeline(); }
+  });
+
+  newCancel.addEventListener("click", ()=>{
+    // Revert dropdown to previous status
+    if(_declineSelectEl){
+      _declineSelectEl.value = _declinePrevStatus || "";
+    }
+    closeDeclineDialog();
+  });
+}
+
+function closeDeclineDialog(){
+  const dlg = document.getElementById("declineDialog");
+  if(dlg) dlg.style.display = "none";
+  _declineAnonId = null;
+  _declinePrevStatus = null;
+  _declineSelectEl = null;
 }
 
 function copyText(text){
@@ -1112,6 +1197,24 @@ function renderDashboard(){
     `;
   }).join("");
 
+  // Decline reasons distribution
+  const declinedWithReason = pipeline.filter(x => x.status === "Declined" && x.decline_reason);
+  const declineReasonDist = groupBy(declinedWithReason, x => x.decline_reason);
+  const maxDeclineCount = declineReasonDist.length > 0 ? declineReasonDist[0][1] : 1;
+  const declineHtml = declineReasonDist.length === 0
+    ? `<div class="hint">Noch keine Deals abgelehnt.</div>`
+    : declineReasonDist.map(([key, cnt]) => {
+        const label = DECLINE_REASONS.find(r => r.key === key)?.label || key;
+        const w = pctOf(cnt, maxDeclineCount);
+        return `
+          <div class="hbar-row">
+            <div class="hbar-label" title="${escapeHTML(label)}">${escapeHTML(label)}</div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:${w}%;"></div></div>
+            <div class="hbar-value">${cnt}</div>
+          </div>
+        `;
+      }).join("");
+
   // Recent activity
   const recentEvents = activity.slice(0,10);
   const activityHtml = recentEvents.length === 0
@@ -1168,6 +1271,13 @@ function renderDashboard(){
         <div class="dash-panel-title">Stage Verteilung</div>
         ${stageHtml || '<div class="hint">Keine Daten.</div>'}
       </div>
+      <div class="dash-panel">
+        <div class="dash-panel-title">Häufigste Absage-Gründe</div>
+        ${declineHtml}
+      </div>
+    </div>
+
+    <div class="dash-grid dash-grid-2" style="margin-top:16px;">
       <div class="dash-panel">
         <div class="dash-panel-title">Letzte Aktivitäten</div>
         ${activityHtml}
