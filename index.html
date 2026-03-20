@@ -18,6 +18,8 @@
     <div class="topbar">
 <div class="nav">
         <button class="navbtn" id="navHome">Übersicht</button>
+        <button class="navbtn" id="navSubmissions">New Submissions</button>
+        <button class="navbtn" id="navPipeline">Pipeline</button>
         <button class="navbtn" id="navCompare">Compare</button>
         <button class="navbtn" id="navActivity">Activity</button>
         <button class="navbtn" id="navInbox">Anfragen</button>
@@ -60,6 +62,8 @@
     <div class="activechips" id="activeChips"></div>
 
     <div class="card-grid" id="cardGrid"></div>
+    <div id="viewSubmissions" class="view" style="display:none;"></div>
+    <div id="viewPipeline" class="view" style="display:none;"></div>
     <div id="viewCompare" class="view" style="display:none;"></div>
     <div id="viewActivity" class="view" style="display:none;"></div>
     <div id="viewInbox" class="view" style="display:none;"></div>
@@ -131,6 +135,8 @@
           <button class="btn secondary" id="nextBtn">Weiter</button>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn secondary" id="addToPipelineBtn">Add to Pipeline</button>
+          <button class="btn" id="pushToCrmBtn" style="font-weight:950;">Push to CRM</button>
           <button class="btn secondary" id="addCompareBtn">Add to Compare</button>
         </div>
       </div>

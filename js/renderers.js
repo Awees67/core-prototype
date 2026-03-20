@@ -93,6 +93,8 @@ function renderCards(){
   }
 
   const saved = getSavedSet();
+  const pipelineItems = getPipeline();
+  const pipelineMap = new Map(pipelineItems.map(x=>[x.anon_id, x.status]));
   const frag = document.createDocumentFragment();
 
   list.forEach((s, idx)=>{
@@ -106,6 +108,10 @@ function renderCards(){
     const ue = classifyUE(s);
     const rq = classifyRQ(s);
     const ce = classifyCE(s);
+    const pipelineStatus = pipelineMap.get(s.anon_id) || null;
+    const pipelineBtnText = pipelineStatus === "Synced" ? "✓ Synced" :
+                             pipelineStatus ? "✓ In Pipeline" : "Add to Pipeline";
+    const pipelineBtnDisabled = pipelineStatus ? "disabled" : "";
 
     const marketLabel = s.market_served.includes("DACH") ? "DACH (DE•AT•CH)" : (s.market_served[0] || "—");
 
@@ -164,6 +170,7 @@ function renderCards(){
 
       <div class="card-actions">
         <button class="btn" data-action="open" data-id="${s.anon_id}">Details öffnen</button>
+        <button class="btn secondary" data-action="addpipeline" data-id="${s.anon_id}" ${pipelineBtnDisabled}>${pipelineBtnText}</button>
         <button class="btn secondary" data-action="compare" data-id="${s.anon_id}">Add to Compare</button>
       </div>
     `;
@@ -177,6 +184,7 @@ function renderCards(){
         const id = btn.dataset.id;
         if(action==="open") open();
         if(action==="compare") addToCompare(id);
+        if(action==="addpipeline" && !btn.disabled) handleAddToPipeline(id);
         e.stopPropagation();
         return;
       }
@@ -370,8 +378,300 @@ function renderInbox(){
 }
 
 /* =========================
+   NEW SUBMISSIONS TAB
+========================= */
+function renderSubmissions(){
+  hideAllViews();
+  const viewSub = document.getElementById("viewSubmissions");
+  if(!viewSub) return;
+  viewSub.style.display = "";
+
+  const allSubs = getSubmissions().slice().sort((a,b)=>b.submitted_at-a.submitted_at);
+  const statusFilter = renderSubmissions._filter || "Alle";
+  const list = statusFilter === "Alle" ? allSubs : allSubs.filter(x=>x.plausibility_status===statusFilter);
+
+  const resultCount = document.getElementById("resultCount");
+  const activeFilterCount = document.getElementById("activeFilterCount");
+  if(resultCount) resultCount.textContent = allSubs.length + " Bewerbungen";
+  if(activeFilterCount) activeFilterCount.textContent = "0 Filter aktiv";
+
+  const plausiBadge = (status, flags)=>{
+    const map = {
+      passed: { cls:"badge plaus-passed", icon:"✓", label:"Passed" },
+      flagged: { cls:"badge plaus-flagged", icon:"⚠", label:"Flagged" },
+      failed:  { cls:"badge plaus-failed",  icon:"✗", label:"Failed"  }
+    };
+    const m = map[status] || map.failed;
+    const tooltip = (flags && flags.length) ? flags.join(", ") : "";
+    return `<span class="${m.cls}" title="${escapeHTML(tooltip)}">${m.icon} ${m.label}</span>`;
+  };
+
+  viewSub.innerHTML = `
+    <div class="panelhead">
+      <h2>New Submissions</h2>
+      <div class="note">Neue Bewerbungen via CoreLink. Plausibility Check + Score bereits berechnet.</div>
+    </div>
+    <div class="controls" style="margin-top:0;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <span class="pill">${allSubs.length} neue Bewerbungen</span>
+        <select class="select" id="submissionsFilter">
+          <option value="Alle" ${statusFilter==="Alle"?"selected":""}>Alle</option>
+          <option value="passed" ${statusFilter==="passed"?"selected":""}>Passed</option>
+          <option value="flagged" ${statusFilter==="flagged"?"selected":""}>Flagged</option>
+          <option value="failed" ${statusFilter==="failed"?"selected":""}>Failed</option>
+        </select>
+      </div>
+      <div class="cell-actions">
+        <button class="btn secondary small" id="submissionsExportBtn">Export JSON</button>
+        <button class="btn small" id="acceptAllBtn">Alle annehmen</button>
+      </div>
+    </div>
+    <div id="submissionsMount"></div>
+  `;
+
+  document.getElementById("submissionsFilter").onchange = e=>{
+    renderSubmissions._filter = e.target.value;
+    renderSubmissions();
+  };
+  document.getElementById("submissionsExportBtn").onclick = ()=>{
+    downloadJSON("core_submissions_export.json", getSubmissions());
+  };
+  document.getElementById("acceptAllBtn").onclick = ()=>{
+    const all = getSubmissions();
+    all.forEach(x=>acceptSubmission(x.anon_id));
+    activityLogAppend("SUBMISSION_ACCEPTED", null, { count: all.length, bulk: true });
+    toast("OK", all.length + " Bewerbungen angenommen");
+    renderSubmissions();
+    if(currentView==="home") renderCards();
+  };
+
+  const mount = document.getElementById("submissionsMount");
+  if(list.length === 0){
+    mount.innerHTML = `<div class="empty">Keine neuen Bewerbungen.<div class="hint">Wenn Startups sich über deinen CoreLink bewerben, erscheinen sie hier.</div></div>`;
+    return;
+  }
+
+  mount.innerHTML = `
+    <div class="compareTableWrap">
+      <table class="compareTable">
+        <thead>
+          <tr>
+            <th>Startup</th>
+            <th>Sektor</th>
+            <th>Stage</th>
+            <th>Signal Index</th>
+            <th>Plausibility</th>
+            <th>Eingereicht am</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(sub=>{
+            const dt = sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString("de-DE") : "—";
+            const sectorStr = sub.sector + (sub.sub_sector ? ` › ${sub.sub_sector}` : "");
+            return `<tr>
+              <td><button class="btn secondary small" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(sub.anon_id)}</button></td>
+              <td>${escapeHTML(sectorStr)}</td>
+              <td>${escapeHTML(sub.stage||"—")}</td>
+              <td class="mono">${Math.round(sub.signal_index||0)}</td>
+              <td>${plausiBadge(sub.plausibility_status, sub.plausibility_flags)}</td>
+              <td class="mono" style="font-size:0.88rem;">${dt}</td>
+              <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                <button class="btn small" data-accept="${escapeHTML(sub.anon_id)}">Annehmen</button>
+                <button class="btn secondary small" data-decline="${escapeHTML(sub.anon_id)}">Ablehnen</button>
+              </td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  mount.querySelectorAll("[data-open]").forEach(b=>{
+    b.onclick = ()=>openModalByAnonId(b.getAttribute("data-open"), startups);
+  });
+  mount.querySelectorAll("[data-accept]").forEach(b=>{
+    b.onclick = ()=>{
+      const id = b.getAttribute("data-accept");
+      acceptSubmission(id);
+      activityLogAppend("SUBMISSION_ACCEPTED", id);
+      toast("Angenommen", "Deal erscheint jetzt in der Übersicht");
+      renderSubmissions();
+    };
+  });
+  mount.querySelectorAll("[data-decline]").forEach(b=>{
+    b.onclick = ()=>{
+      const id = b.getAttribute("data-decline");
+      declineSubmission(id);
+      activityLogAppend("SUBMISSION_DECLINED", id);
+      toast("Abgelehnt", "Bewerbung entfernt");
+      renderSubmissions();
+    };
+  });
+}
+
+/* =========================
+   PIPELINE TAB
+========================= */
+function stageBadgeClass(stage){
+  const map = {
+    "In Review": "stage-badge-review",
+    "Hot Deal":  "stage-badge-hot",
+    "Watching":  "stage-badge-watching",
+    "Declined":  "stage-badge-declined",
+    "Synced":    "stage-badge-synced"
+  };
+  return map[stage] || "";
+}
+
+function renderPipeline(){
+  hideAllViews();
+  const viewPipeline = document.getElementById("viewPipeline");
+  if(!viewPipeline) return;
+  viewPipeline.style.display = "";
+
+  const pipeline = getPipeline();
+  const stages = ["In Review","Hot Deal","Watching","Declined","Synced"];
+  const stageCounts = {};
+  stages.forEach(st=>{ stageCounts[st] = 0; });
+  pipeline.forEach(x=>{ if(stageCounts[x.status]!==undefined) stageCounts[x.status]++; });
+
+  const statusFilter = renderPipeline._statusFilter || "Alle";
+  const searchFilter = (renderPipeline._search || "").toLowerCase().trim();
+
+  let list = pipeline.slice();
+  if(statusFilter !== "Alle") list = list.filter(x=>x.status===statusFilter);
+  if(searchFilter) list = list.filter(x=>
+    x.anon_id.toLowerCase().includes(searchFilter) ||
+    (x.owner||"").toLowerCase().includes(searchFilter)
+  );
+
+  const resultCount = document.getElementById("resultCount");
+  const activeFilterCount = document.getElementById("activeFilterCount");
+  if(resultCount) resultCount.textContent = pipeline.length + " Deals";
+  if(activeFilterCount) activeFilterCount.textContent = "0 Filter aktiv";
+
+  viewPipeline.innerHTML = `
+    <div class="panelhead">
+      <h2>Pipeline</h2>
+      <div class="note">Screening-Layer: Qualifiziere Deals bevor sie ins CRM gehen.</div>
+    </div>
+
+    <div class="stage-badges">
+      ${stages.map(st=>{
+        const count = stageCounts[st]||0;
+        const cls = stageBadgeClass(st);
+        return `<div class="stage-badge ${cls}${statusFilter===st?' active':''}" data-stage-filter="${escapeHTML(st)}">${escapeHTML(st)}: ${count}</div>`;
+      }).join("")}
+      ${statusFilter!=="Alle" ? `<div class="stage-badge" data-stage-filter="Alle" style="background:var(--soft2);border-color:var(--border);color:var(--muted);">Alle anzeigen</div>` : ""}
+    </div>
+
+    <div class="controls" style="margin-top:0;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <select class="select" id="pipelineStatusFilter">
+          ${["Alle",...stages].map(st=>`<option value="${st}"${statusFilter===st?" selected":""}>${st}</option>`).join("")}
+        </select>
+        <input class="select" style="max-width:240px;" id="pipelineSearch" placeholder="Suche: ID, Owner" value="${escapeHTML(renderPipeline._search||"")}">
+      </div>
+      <div class="cell-actions">
+        <button class="btn secondary small" id="pipelineExportBtn">Export JSON</button>
+      </div>
+    </div>
+
+    <div id="pipelineTableMount"></div>
+  `;
+
+  viewPipeline.querySelectorAll("[data-stage-filter]").forEach(badge=>{
+    badge.style.cursor="pointer";
+    badge.onclick=()=>{ renderPipeline._statusFilter = badge.getAttribute("data-stage-filter"); renderPipeline(); };
+  });
+  document.getElementById("pipelineStatusFilter").onchange = e=>{
+    renderPipeline._statusFilter = e.target.value; renderPipeline();
+  };
+  document.getElementById("pipelineSearch").oninput = e=>{
+    renderPipeline._search = e.target.value; renderPipeline();
+  };
+  document.getElementById("pipelineExportBtn").onclick = ()=>{
+    downloadJSON("core_pipeline_export.json", getPipeline());
+  };
+
+  const mount = document.getElementById("pipelineTableMount");
+  if(list.length === 0){
+    mount.innerHTML = `<div class="empty">Noch keine Deals in der Pipeline.<div class="hint">Füge Deals aus der Übersicht hinzu.</div></div>`;
+    return;
+  }
+
+  mount.innerHTML = `
+    <div class="compareTableWrap">
+      <table class="compareTable">
+        <thead>
+          <tr>
+            <th>Startup</th>
+            <th>Status</th>
+            <th>Signal Index</th>
+            <th>Owner</th>
+            <th>Last Updated</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(item=>{
+            const dt = item.last_updated ? new Date(item.last_updated).toLocaleDateString("de-DE") : "—";
+            const signal = Math.round(item.signal_index||0);
+
+            const statusCell = item.status === "Synced"
+              ? `<span class="synced-label">✓ Synced to CRM</span>`
+              : `<select class="statusSel" data-status data-pipe-id="${escapeHTML(item.anon_id)}" style="min-width:130px;">
+                   <option value="${escapeHTML(item.status)}" selected>${escapeHTML(item.status)}</option>
+                   ${(PIPELINE_TRANSITIONS[item.status]||[]).map(t=>`<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`).join("")}
+                 </select>`;
+
+            const actionsCell = item.status === "Synced"
+              ? `<button class="btn secondary small" disabled>✓ Im CRM</button>`
+              : `<button class="btn crm-push-btn small" data-crm="${escapeHTML(item.anon_id)}">Push to CRM</button>
+                 <button class="btn secondary small" data-pipe-remove="${escapeHTML(item.anon_id)}">Remove</button>`;
+
+            return `<tr>
+              <td><button class="btn secondary small" data-open="${escapeHTML(item.anon_id)}">${escapeHTML(item.anon_id)}</button></td>
+              <td>${statusCell}</td>
+              <td class="mono">${signal}</td>
+              <td><input class="owner-input" data-owner-id="${escapeHTML(item.anon_id)}" value="${escapeHTML(item.owner||"")}" placeholder="—" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:inherit;font-weight:900;padding:2px 4px;width:100px;"></td>
+              <td class="mono" style="font-size:0.88rem;">${dt}</td>
+              <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">${actionsCell}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  mount.querySelectorAll("[data-open]").forEach(b=>{
+    b.onclick=()=>openModalByAnonId(b.getAttribute("data-open"), startups);
+  });
+  mount.querySelectorAll("[data-pipe-id]").forEach(sel=>{
+    sel.onchange=()=>{
+      const id = sel.getAttribute("data-pipe-id");
+      const ok = pipelineSetStatus(id, sel.value);
+      if(ok === false){ sel.value = getPipeline().find(x=>x.anon_id===id)?.status || sel.value; return; }
+      renderPipeline();
+    };
+  });
+  mount.querySelectorAll("[data-crm]").forEach(b=>{
+    b.onclick=()=>{ pipelinePushToCRM(b.getAttribute("data-crm")); renderPipeline(); };
+  });
+  mount.querySelectorAll("[data-pipe-remove]").forEach(b=>{
+    b.onclick=()=>{ pipelineRemove(b.getAttribute("data-pipe-remove")); renderPipeline(); };
+  });
+  mount.querySelectorAll("[data-owner-id]").forEach(inp=>{
+    inp.onchange=()=>pipelineSetOwner(inp.getAttribute("data-owner-id"), inp.value);
+  });
+}
+
+/* =========================
    DETAILS MODAL
 ========================= */
+let _modalStartup = null;
+
 function openModalByIndex(idx, list){
   if(!list || !list.length) return;
   modalIndex = Math.max(0, Math.min(idx, list.length-1));
@@ -389,6 +689,7 @@ function openModalById(id){
 }
 
 function openModalWithStartup(s, list){
+  _modalStartup = s;
   const backdrop = document.getElementById("modalBackdrop");
   backdrop.style.display = "flex";
   backdrop.setAttribute("aria-hidden", "false");
@@ -447,6 +748,7 @@ function openModalWithStartup(s, list){
   document.getElementById("kpiHint").textContent = s.notes || "—";
   document.getElementById("modalSub").textContent = `${s.sector}${s.sub_sector ? " › " + s.sub_sector : ""} • ${s.stage}`;
   bindLeadFormForStartup(s);
+  syncModalPipelineButtons(s);
 
   document.getElementById("nextBtn").onclick = ()=>{
     const arr = (list && list.length) ? list : [s];
@@ -486,13 +788,15 @@ function copyText(text){
 ========================= */
 function setActiveNav(){
   const ids = [
-    "navHome","navCompare","navActivity","navInbox"
+    "navHome","navSubmissions","navPipeline","navCompare","navActivity","navInbox"
   ];
   const btns = ids.map(id=>document.getElementById(id)).filter(Boolean);
   btns.forEach(b=>b.classList.remove("primary"));
 
   const map = {
     home:"navHome",
+    submissions:"navSubmissions",
+    pipeline:"navPipeline",
     compare:"navCompare",
     activity:"navActivity",
     inbox:"navInbox"
@@ -506,6 +810,8 @@ function renderCurrent(){
   setActiveNav();
 
   if(currentView==="home") renderCards();
+  if(currentView==="submissions") renderSubmissions();
+  if(currentView==="pipeline") renderPipeline();
   if(currentView==="compare") renderCompare();
   if(currentView==="activity") renderActivity();
   if(currentView==="inbox") renderInbox();
@@ -545,7 +851,7 @@ function loadUIState(){
   const state = safeGetJSON(LS_KEYS.ui, null);
   if(!state) return;
 
-  if(state.view) currentView = (["home","compare","activity","inbox"].includes(state.view) ? state.view : "home");
+  if(state.view) currentView = (["home","submissions","pipeline","compare","activity","inbox"].includes(state.view) ? state.view : "home");
   if(typeof state.search==="string") document.getElementById("searchInput").value = state.search;
   if(typeof state.sort==="string") document.getElementById("sortSelect").value = state.sort;
 
@@ -598,11 +904,18 @@ function resetDemo(){
     localStorage.removeItem(LS_KEYS.leads);
     localStorage.removeItem(LS_KEYS.savedFilters);
     localStorage.removeItem(LS_KEYS.activity);
+    localStorage.removeItem(LS_KEYS.submissions);
   }catch(e){}
   resetFiltersAll();
   document.getElementById("searchInput").value = "";
   document.getElementById("sortSelect").value = "mrr_desc";
   currentView = "home";
+  // Re-seed submissions
+  const seed = safeGetJSON(LS_KEYS.seed, 1337);
+  const rng = mulberry32(seed + 42);
+  const rawSubs = generateSubmissionsFromStartups(startups, rng);
+  const seededSubs = rawSubs.map(x=>({ ...x, signal_index: computeSignalIndex(x.anon_id) }));
+  setSubmissions(seededSubs);
   renderCurrent();
   toast("Reset", "Demo-Daten wurden zurückgesetzt");
 }
@@ -614,6 +927,12 @@ function randomizeDataset(){
   window.startups = startups;
   try{ _cache = {}; }catch(_){}
   ensurePipelineIdsExist();
+  // Re-seed submissions
+  localStorage.removeItem(LS_KEYS.submissions);
+  const rng = mulberry32(newSeed + 42);
+  const rawSubs = generateSubmissionsFromStartups(startups, rng);
+  const seededSubs = rawSubs.map(x=>({ ...x, signal_index: computeSignalIndex(x.anon_id) }));
+  setSubmissions(seededSubs);
   toast("Gemischt", "30 Startups neu generiert");
   renderCurrent();
   updateCompareTray();
@@ -624,7 +943,7 @@ function randomizeDataset(){
 ========================= */
 function hideAllViews(){
   const grid = document.getElementById("cardGrid");
-  const ids = ["viewCompare","viewActivity","viewInbox"];
+  const ids = ["viewSubmissions","viewPipeline","viewCompare","viewActivity","viewInbox"];
   grid.style.display = "none";
   ids.forEach(id=>{
     const el = document.getElementById(id);
@@ -725,9 +1044,31 @@ const ACTIVITY_TYPES = [
   "Alle",
   "SAVED","UNSAVED",
   "COMPARE_ADDED","COMPARE_REMOVED","COMPARE_CLEARED","COMPARE_OPENED",
-  "INTERESTED","INTERESTED_AGAIN","STATUS_CHANGED","OWNER_SET","PIPELINE_REMOVED","PASSED",
+  "SUBMISSION_ACCEPTED","SUBMISSION_DECLINED",
+  "PIPELINE_ADDED","CRM_PUSHED",
+  "STATUS_CHANGED","OWNER_SET","PIPELINE_REMOVED",
   "FILTER_SAVED","FILTER_APPLIED","FILTER_DELETED","LEAD_SAVED"
 ];
+
+const ACTIVITY_LABELS = {
+  "SAVED": "Gemerkt",
+  "UNSAVED": "Entgemerkt",
+  "COMPARE_ADDED": "Compare hinzugefügt",
+  "COMPARE_REMOVED": "Compare entfernt",
+  "COMPARE_CLEARED": "Compare geleert",
+  "COMPARE_OPENED": "Compare geöffnet",
+  "SUBMISSION_ACCEPTED": "📥 Submission angenommen",
+  "SUBMISSION_DECLINED": "📥 Submission abgelehnt",
+  "PIPELINE_ADDED": "📋 Zur Pipeline hinzugefügt",
+  "CRM_PUSHED": "🔗 An CRM übergeben",
+  "STATUS_CHANGED": "Status geändert",
+  "OWNER_SET": "Owner gesetzt",
+  "PIPELINE_REMOVED": "Aus Pipeline entfernt",
+  "FILTER_SAVED": "Filter gespeichert",
+  "FILTER_APPLIED": "Filter angewendet",
+  "FILTER_DELETED": "Filter gelöscht",
+  "LEAD_SAVED": "Lead gespeichert"
+};
 
 function renderActivity(){
   hideAllViews();
@@ -822,10 +1163,11 @@ function renderActivity(){
     const card = document.createElement("div");
     card.className = "startup-card";
     card.style.marginBottom = "10px";
+    const evLabel = ACTIVITY_LABELS[ev.event] || escapeHTML(ev.event || "EVENT");
     card.innerHTML = `
       <div class="card-head">
         <div>
-          <h3>${escapeHTML(ev.event || "EVENT")}</h3>
+          <h3>${evLabel}</h3>
           <div class="tagrow">
             <span class="tag">${new Date(ev.ts||Date.now()).toLocaleString("de-DE")}</span>
             <span class="tag">${ev.anon_id ? escapeHTML(ev.anon_id) : "—"}</span>
@@ -954,7 +1296,6 @@ function saveCurrentFilters(){
   setSavedFilters(list);
   activityLogAppend("FILTER_SAVED", null, { name });
   toast("Saved Filters","Gespeichert");
-  if(currentView==="savedFilters") renderSavedFilters();
 }
 
 function applySavedFilter(id){
@@ -988,11 +1329,51 @@ function openModalByAnonId(anon_id, list){
   if(idx>=0) openModalByIndex(idx, arr);
 }
 
-/* Wire 'Interested' + Compare actions */
-function handleInterested(anon_id){
-  const res = pipelineUpsertInterested(anon_id);
-  toast("Pipeline", res.created ? "Deal hinzugefügt: Screening" : "Deal bereits in Pipeline");
-  updateCompareTray();
+/* Pipeline + CRM actions */
+function handleAddToPipeline(anon_id){
+  const p = getPipeline();
+  const existing = p.find(x=>x.anon_id===anon_id);
+  if(existing){
+    toast("Pipeline", "Deal ist bereits in der Pipeline");
+    return;
+  }
+  pipelineAdd(anon_id, "In Review");
+  toast("Pipeline", "Deal zur Pipeline hinzugefügt");
+  if(currentView === "home") renderCards();
+  if(currentView === "pipeline") renderPipeline();
+}
+
+function syncModalPipelineButtons(s){
+  if(!s) return;
+  const p = getPipeline();
+  const item = p.find(x=>x.anon_id===s.anon_id);
+
+  const addBtn = document.getElementById("addToPipelineBtn");
+  const crmBtn = document.getElementById("pushToCrmBtn");
+  if(!addBtn || !crmBtn) return;
+
+  if(!item){
+    addBtn.textContent = "Add to Pipeline";
+    addBtn.disabled = false;
+    addBtn.title = "";
+    crmBtn.textContent = "Push to CRM";
+    crmBtn.disabled = false;
+    crmBtn.style.opacity = "";
+  } else if(item.status === "Synced"){
+    addBtn.textContent = "In Pipeline ✓";
+    addBtn.disabled = true;
+    addBtn.title = "Status: Synced";
+    crmBtn.textContent = "✓ Synced to CRM";
+    crmBtn.disabled = true;
+    crmBtn.style.opacity = "0.5";
+  } else {
+    addBtn.textContent = "In Pipeline ✓";
+    addBtn.disabled = true;
+    addBtn.title = `Status: ${item.status}`;
+    crmBtn.textContent = "Push to CRM";
+    crmBtn.disabled = false;
+    crmBtn.style.opacity = "";
+  }
 }
 
 function attachWorkspaceHandlers(){
@@ -1012,9 +1393,38 @@ function attachWorkspaceHandlers(){
   const addCompareBtn = document.getElementById("addCompareBtn");
   if(addCompareBtn){
     addCompareBtn.addEventListener("click", ()=>{
-      const s = startups[modalIndex];
+      const s = _modalStartup || startups[modalIndex];
       if(!s) return;
       addToCompare(s.anon_id);
+    });
+  }
+
+  const addToPipelineBtn = document.getElementById("addToPipelineBtn");
+  if(addToPipelineBtn){
+    addToPipelineBtn.addEventListener("click", ()=>{
+      if(!_modalStartup) return;
+      const anon_id = _modalStartup.anon_id;
+      const existing = getPipeline().find(x=>x.anon_id===anon_id);
+      if(existing) return;
+      pipelineAdd(anon_id, "In Review");
+      toast("Pipeline", "Deal zur Pipeline hinzugefügt");
+      syncModalPipelineButtons(_modalStartup);
+      if(currentView === "pipeline") renderPipeline();
+    });
+  }
+
+  const pushToCrmBtn = document.getElementById("pushToCrmBtn");
+  if(pushToCrmBtn){
+    pushToCrmBtn.addEventListener("click", ()=>{
+      if(!_modalStartup) return;
+      const anon_id = _modalStartup.anon_id;
+      const item = getPipeline().find(x=>x.anon_id===anon_id);
+      if(item && item.status === "Declined"){
+        if(!confirm("Dieser Deal wurde declined. Trotzdem ins CRM pushen?")) return;
+      }
+      pipelinePushToCRM(anon_id);
+      syncModalPipelineButtons(_modalStartup);
+      if(currentView === "pipeline") renderPipeline();
     });
   }
 

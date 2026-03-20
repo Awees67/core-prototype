@@ -1012,3 +1012,103 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
   padding:2px 8px !important;
 }
 .compareTop{ color:var(--goodText) !important; }
+
+/* =========================
+   PIPELINE: Synced label
+========================= */
+.synced-label{
+  font-weight:950;
+  color:var(--ok);
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+
+/* =========================
+   PIPELINE: Stage counter badges
+========================= */
+.stage-badges{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.stage-badge{
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:0.85rem;
+  font-weight:800;
+  cursor:pointer;
+  border:1px solid;
+  transition:opacity .15s;
+  user-select:none;
+}
+.stage-badge:hover{ opacity:0.8; }
+.stage-badge.active{ box-shadow:0 0 0 2px var(--brand2); }
+.stage-badge-review{
+  background:var(--chip);
+  border-color:var(--chipBorder);
+  color:var(--brand2);
+}
+.stage-badge-hot{
+  background:var(--dangerBg);
+  border-color:var(--dangerBorder);
+  color:var(--dangerText);
+}
+.stage-badge-watching{
+  background:var(--warnBg);
+  border-color:var(--warnBorder);
+  color:var(--warnText);
+}
+.stage-badge-declined{
+  background:var(--soft2);
+  border-color:var(--border);
+  color:var(--muted);
+  opacity:0.75;
+}
+.stage-badge-synced{
+  background:var(--goodBg);
+  border-color:var(--goodBorder);
+  color:var(--goodText);
+}
+
+/* =========================
+   SUBMISSIONS: Plausibility badges
+========================= */
+.plaus-passed{
+  background:var(--goodBg);
+  color:var(--goodText);
+  border-color:var(--goodBorder) !important;
+}
+.plaus-flagged{
+  background:var(--warnBg);
+  color:var(--warnText);
+  border-color:var(--warnBorder) !important;
+}
+.plaus-failed{
+  background:var(--dangerBg);
+  color:var(--dangerText);
+  border-color:var(--dangerBorder) !important;
+}
+
+/* =========================
+   PIPELINE: CRM push button
+========================= */
+.crm-push-btn{
+  background:var(--ok) !important;
+  color:#fff !important;
+  font-weight:950;
+  border-color:var(--ok) !important;
+}
+.crm-push-btn:hover{ opacity:0.88; }
+.crm-push-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+/* Owner input in pipeline table */
+.owner-input{
+  font-size:0.92rem;
+  font-weight:900;
+  max-width:110px;
+}
