@@ -511,7 +511,7 @@ function renderSubmissions(){
             <th>Score</th>
             <th>Plausibility</th>
             <th>Eingereicht am</th>
-            <th>Aktionen</th>
+            <th style="min-width:200px;">Aktionen</th>
           </tr>
         </thead>
         <tbody>
@@ -526,10 +526,10 @@ function renderSubmissions(){
               <td class="mono" style="white-space:nowrap;">${Math.round(sub.signal_index||0)} <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(sub.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button></td>
               <td>${plausiBadge(sub)}</td>
               <td class="mono" style="font-size:0.88rem;">${dt}</td>
-              <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+              <td style="white-space:nowrap;"><div class="cell-actions">
                 <button class="btn small" data-accept="${escapeHTML(sub.anon_id)}">Annehmen</button>
                 <button class="btn secondary small" data-decline="${escapeHTML(sub.anon_id)}">Ablehnen</button>
-              </td>
+              </div></td>
             </tr>`;
           }).join("")}
         </tbody>
@@ -672,7 +672,7 @@ function renderPipeline(){
             <th>Owner</th>
             <th>Notes</th>
             <th>Last Updated</th>
-            <th>Aktionen</th>
+            <th style="min-width:200px;">Aktionen</th>
           </tr>
         </thead>
         <tbody>
@@ -710,7 +710,7 @@ function renderPipeline(){
               <td><input class="owner-input" data-owner-id="${escapeHTML(item.anon_id)}" value="${escapeHTML(item.owner||"")}" placeholder="—" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:inherit;font-weight:900;padding:2px 4px;width:100px;"></td>
               <td>${notesCell}</td>
               <td class="mono" style="font-size:0.88rem;">${dt}</td>
-              <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">${actionsCell}</td>
+              <td style="white-space:nowrap;"><div class="cell-actions">${actionsCell}</div></td>
             </tr>`;
           }).join("")}
         </tbody>
