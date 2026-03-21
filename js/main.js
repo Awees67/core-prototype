@@ -15,6 +15,21 @@ document.addEventListener("DOMContentLoaded", ()=>{
     setSubmissions(seededSubs);
   }
 
+  // Repair: recompute plausibility for submissions with empty checks
+  (function repairPlausibility(){
+    const subs = getSubmissions();
+    let dirty = false;
+    const repaired = subs.map(sub => {
+      if(sub.plausibility_checks && sub.plausibility_checks.length) return sub;
+      const s = startups.find(x => x.anon_id === sub.anon_id);
+      if(!s) return sub;
+      const plaus = computePlausibility(s);
+      dirty = true;
+      return { ...sub, plausibility_status: plaus.status, plausibility_checks: plaus.checks, plausibility_summary: plaus.summary };
+    });
+    if(dirty) setSubmissions(repaired);
+  })();
+
   on("openFilterBtn","click", openFilterModal);
   on("filterCloseBtn","click", closeFilterModal);
   on("filterBackdrop","click", (e)=>{
