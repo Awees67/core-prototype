@@ -1160,6 +1160,9 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
 }
 .infoicon:hover{ border-color:var(--brand2); color:var(--brand2); }
 
+.popover-drag-handle{ cursor:grab; user-select:none; }
+.popover-drag-handle:active{ cursor:grabbing; }
+
 /* =========================
    SCORE BREAKDOWN (Popover items)
 ========================= */
