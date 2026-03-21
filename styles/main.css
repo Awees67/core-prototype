@@ -1097,6 +1097,49 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
 }
 
 /* =========================
+   PLAUSIBILITY: Breakdown popover list
+========================= */
+.plaus-check{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  padding:8px 0;
+  border-bottom:1px solid var(--border);
+  font-size:0.88rem;
+}
+.plaus-check:last-child{ border-bottom:none; }
+.plaus-icon{
+  font-size:1rem;
+  min-width:20px;
+  text-align:center;
+  line-height:1.4;
+}
+.plaus-icon-pass{ color:var(--goodText); }
+.plaus-icon-fail-soft{ color:var(--warnText); }
+.plaus-icon-fail-hard{ color:var(--dangerText); }
+.plaus-check-body{ flex:1; }
+.plaus-check-label{ font-weight:900; }
+.plaus-check-message{
+  color:var(--muted);
+  margin-top:2px;
+}
+.plaus-check-kategorie{
+  font-size:0.75rem;
+  color:var(--muted);
+  background:var(--soft);
+  padding:1px 6px;
+  border-radius:4px;
+  margin-left:6px;
+  font-weight:700;
+}
+.plaus-summary{
+  font-size:0.82rem;
+  color:var(--muted);
+  margin-top:4px;
+  font-weight:700;
+}
+
+/* =========================
    PIPELINE: CRM push button
 ========================= */
 .crm-push-btn{

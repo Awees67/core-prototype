@@ -185,6 +185,91 @@ function openScoreBreakdown(anon_id, anchorEl){
   openSignalPopover(anchorEl, html, anon_id);
 }
 
+/* =========================
+   PLAUSIBILITY BREAKDOWN POPOVER
+========================= */
+function buildPlausibilityBreakdownHTML(anon_id){
+  const subs = (typeof getSubmissions === "function") ? getSubmissions() : [];
+  const sub = subs.find(x => x.anon_id === anon_id);
+  const startup = (typeof startups !== "undefined") ? startups.find(x => x.anon_id === anon_id) : null;
+  const name = startup ? (startup.company_name || anon_id) : anon_id;
+
+  if(!sub || !sub.plausibility_checks || !sub.plausibility_checks.length){
+    return `<div style="min-width:280px; padding:4px;">
+      <div style="font-weight:950; font-size:1rem; margin-bottom:8px;">Plausibility Check – ${escapeHTML(name)}</div>
+      <div style="color:var(--muted); font-size:0.9rem;">Keine Daten verfügbar.</div>
+    </div>`;
+  }
+
+  const status = sub.plausibility_status || "passed";
+  const summary = sub.plausibility_summary || {};
+  const checks = sub.plausibility_checks.slice();
+
+  // Sort: hard fails first, soft fails second, passes last
+  checks.sort((a, b) => {
+    const rank = (c) => c.result === "fail" && c.schwere === "hard" ? 0 : c.result === "fail" ? 1 : 2;
+    return rank(a) - rank(b);
+  });
+
+  const statusMap = {
+    passed: { cls: "plaus-passed", icon: "✓", label: "Passed" },
+    flagged: { cls: "plaus-flagged", icon: "⚠", label: "Flagged" },
+    failed:  { cls: "plaus-failed",  icon: "✗", label: "Failed" }
+  };
+  const sm = statusMap[status] || statusMap.failed;
+
+  const summaryText = (() => {
+    const t = summary.total || checks.length;
+    const p = summary.passed || checks.filter(c=>c.result==="pass").length;
+    const fh = summary.failed_hard || 0;
+    const fs = summary.failed_soft || 0;
+    const parts = [`${p} von ${t} Checks bestanden`];
+    if(fh > 0) parts.push(`${fh} kritisch`);
+    if(fs > 0) parts.push(`${fs} Hinweis${fs > 1 ? "e" : ""}`);
+    return parts.join(" • ");
+  })();
+
+  const checkRows = checks.map(c => {
+    let icon, cls;
+    if(c.result === "fail" && c.schwere === "hard"){ icon = "✗"; cls = "plaus-icon-fail-hard"; }
+    else if(c.result === "fail"){ icon = "⚠"; cls = "plaus-icon-fail-soft"; }
+    else { icon = "✓"; cls = "plaus-icon-pass"; }
+    return `
+      <div class="plaus-check">
+        <div class="plaus-icon ${cls}">${icon}</div>
+        <div class="plaus-check-body">
+          <span class="plaus-check-label">${escapeHTML(c.label)}</span>
+          <span class="plaus-check-kategorie">${escapeHTML(c.kategorie)}</span>
+          <div class="plaus-check-message">${escapeHTML(c.message)}</div>
+        </div>
+      </div>`;
+  }).join("");
+
+  return `
+    <div style="min-width:320px; max-width:420px; padding:4px;">
+      <div class="popover-drag-handle" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; cursor:grab; user-select:none;">
+        <div style="font-weight:950; font-size:1rem;">Plausibility Check</div>
+        <div style="font-size:0.8rem; color:var(--muted); font-weight:800;">${escapeHTML(name)}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <span class="badge ${sm.cls}" style="font-size:1rem; padding:4px 12px;">${sm.icon} ${sm.label}</span>
+        <span style="font-size:0.82rem; color:var(--muted); font-weight:700;">${escapeHTML(summaryText)}</span>
+      </div>
+      <div style="border-top:1px solid var(--border); padding-top:8px;">
+        ${checkRows}
+      </div>
+      <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--border); font-size:0.78rem; color:var(--muted); font-style:italic;">
+        Plausibilitätsprüfung ersetzt keine Due Diligence. Sie macht Inkonsistenzen sichtbar.
+      </div>
+    </div>
+  `;
+}
+
+function openPlausibilityBreakdown(anon_id, anchorEl){
+  const html = buildPlausibilityBreakdownHTML(anon_id);
+  openSignalPopover(anchorEl, html, anon_id);
+}
+
 // Close popover on outside click
 document.addEventListener("click",(e)=>{
   const pop = document.getElementById("signalIndexPopover");
