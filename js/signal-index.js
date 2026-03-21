@@ -31,30 +31,31 @@ function openSignalPopover(anchorEl, html, anon_id=null){
   pop.style.display = "block";
   _signalPopoverState = { open:true, anon_id: anon_id };
 
-  // Position near anchor (viewport safe)
+  // Popover uses position:fixed — coordinates are viewport-relative, no scroll offset needed
   const r = anchorEl.getBoundingClientRect();
   const pad = 10;
 
-  // make sure we can measure
   pop.style.left = "0px";
   pop.style.top = "0px";
   const pr = pop.getBoundingClientRect();
 
-  let left = r.left + window.scrollX;
-  let top = r.bottom + window.scrollY + 8;
+  let left = r.left;
+  let top = r.bottom + 8;
 
-  // clamp horizontally
-  left = Math.min(left, window.scrollX + window.innerWidth - pr.width - pad);
-  left = Math.max(left, window.scrollX + pad);
+  // clamp horizontally within viewport
+  left = Math.min(left, window.innerWidth - pr.width - pad);
+  left = Math.max(left, pad);
 
-  // if too low, place above
-  if(top + pr.height > window.scrollY + window.innerHeight - pad){
-    top = r.top + window.scrollY - pr.height - 8;
+  // if too low, place above anchor
+  if(top + pr.height > window.innerHeight - pad){
+    top = r.top - pr.height - 8;
   }
-  top = Math.max(top, window.scrollY + pad);
+  top = Math.max(top, pad);
 
   pop.style.left = left + "px";
   pop.style.top = top + "px";
+
+  _initPopoverDrag(pop);
 }
 
 /* =========================
@@ -130,7 +131,7 @@ function buildCustomBreakdownHTML(anon_id, res){
 
   return `
     <div style="min-width:300px; max-width:400px; padding:4px;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+      <div class="popover-drag-handle" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; cursor:grab; user-select:none;">
         <div style="font-weight:950; font-size:1.02rem;">Score Breakdown</div>
         <div style="font-size:0.8rem; color:var(--muted); font-weight:800;">${escapeHTML(rulesetName)}</div>
       </div>
@@ -146,6 +147,36 @@ function buildCustomBreakdownHTML(anon_id, res){
       </div>
     </div>
   `;
+}
+
+function _initPopoverDrag(pop){
+  if(pop._dragBound) return;
+  pop._dragBound = true;
+
+  pop.addEventListener("mousedown", (e)=>{
+    if(!e.target.closest(".popover-drag-handle")) return;
+    e.preventDefault();
+
+    let startX = e.clientX;
+    let startY = e.clientY;
+    let startLeft = parseInt(pop.style.left) || 0;
+    let startTop  = parseInt(pop.style.top)  || 0;
+
+    const onMove = (e)=>{
+      let newLeft = startLeft + (e.clientX - startX);
+      let newTop  = startTop  + (e.clientY - startY);
+      newLeft = Math.max(0, Math.min(newLeft, window.innerWidth  - pop.offsetWidth));
+      newTop  = Math.max(0, Math.min(newTop,  window.innerHeight - pop.offsetHeight));
+      pop.style.left = newLeft + "px";
+      pop.style.top  = newTop  + "px";
+    };
+    const onUp = ()=>{
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  });
 }
 
 function openScoreBreakdown(anon_id, anchorEl){
