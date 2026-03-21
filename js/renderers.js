@@ -432,17 +432,27 @@ function renderSubmissions(){
   if(resultCount) resultCount.textContent = allSubs.length + " Bewerbungen";
   if(activeFilterCount) activeFilterCount.textContent = "0 Filter aktiv";
 
-  const plausiBadge = (status, flags)=>{
+  const plausiBadge = (sub)=>{
+    const status = sub.plausibility_status || "passed";
+    const summary = sub.plausibility_summary || {};
     const map = {
       passed: { cls:"badge plaus-passed", icon:"✓", label:"Passed" },
       flagged: { cls:"badge plaus-flagged", icon:"⚠", label:"Flagged" },
       failed:  { cls:"badge plaus-failed",  icon:"✗", label:"Failed"  }
     };
     const m = map[status] || map.failed;
-    const flagsHtml = (status !== "passed" && flags && flags.length)
-      ? `<div style="font-size:0.78rem; color:var(--muted); margin-top:4px; line-height:1.4;">${escapeHTML(flags.join(" · "))}</div>`
+    const t = summary.total || 0;
+    const p = summary.passed || 0;
+    const fh = summary.failed_hard || 0;
+    const fs = summary.failed_soft || 0;
+    let summaryParts = [];
+    if(t > 0) summaryParts.push(`${p}/${t} bestanden`);
+    if(fh > 0) summaryParts.push(`${fh} kritisch`);
+    if(fs > 0) summaryParts.push(`${fs} Hinweis${fs > 1 ? "e" : ""}`);
+    const summaryHtml = summaryParts.length
+      ? `<div class="plaus-summary">${escapeHTML(summaryParts.join(" · "))}</div>`
       : "";
-    return `<span class="${m.cls}">${m.icon} ${m.label}</span>${flagsHtml}`;
+    return `<span class="${m.cls}">${m.icon} ${m.label}</span> <button class="infoicon" data-plaus="${escapeHTML(sub.anon_id)}" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button>${summaryHtml}`;
   };
 
   viewSub.innerHTML = `
@@ -514,7 +524,7 @@ function renderSubmissions(){
               <td>${escapeHTML(sectorStr)}</td>
               <td>${escapeHTML(sub.stage||"—")}</td>
               <td class="mono" style="white-space:nowrap;">${Math.round(sub.signal_index||0)} <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(sub.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button></td>
-              <td>${plausiBadge(sub.plausibility_status, sub.plausibility_flags)}</td>
+              <td>${plausiBadge(sub)}</td>
               <td class="mono" style="font-size:0.88rem;">${dt}</td>
               <td style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
                 <button class="btn small" data-accept="${escapeHTML(sub.anon_id)}">Annehmen</button>
@@ -532,6 +542,9 @@ function renderSubmissions(){
   });
   mount.querySelectorAll("[data-action='scoreinfo']").forEach(b=>{
     b.onclick = (e)=>{ openScoreBreakdown(b.getAttribute("data-id"), b); e.stopPropagation(); };
+  });
+  mount.querySelectorAll("[data-plaus]").forEach(b=>{
+    b.onclick = (e)=>{ openPlausibilityBreakdown(b.getAttribute("data-plaus"), b); e.stopPropagation(); };
   });
   mount.querySelectorAll("[data-accept]").forEach(b=>{
     b.onclick = ()=>{
@@ -817,6 +830,33 @@ function openModalWithStartup(s, list){
 
   document.getElementById("kpiHint").textContent = s.notes || "—";
   document.getElementById("modalSub").textContent = `${s.anon_id} • ${s.sector}${s.sub_sector ? " › " + s.sub_sector : ""} • ${s.stage}`;
+
+  // Plausibility badge in modal (shown if startup has a submission entry)
+  let plausModalEl = document.getElementById("modalPlausibilityBadge");
+  if(!plausModalEl){
+    plausModalEl = document.createElement("div");
+    plausModalEl.id = "modalPlausibilityBadge";
+    plausModalEl.style.cssText = "margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;";
+    const modalSub = document.getElementById("modalSub");
+    if(modalSub && modalSub.parentNode) modalSub.parentNode.insertBefore(plausModalEl, modalSub.nextSibling);
+  }
+  const subForModal = (typeof getSubmissions === "function") ? getSubmissions().find(x=>x.anon_id===s.anon_id) : null;
+  if(subForModal){
+    const statusMap2 = {
+      passed: { cls:"badge plaus-passed", icon:"✓", label:"Passed" },
+      flagged: { cls:"badge plaus-flagged", icon:"⚠", label:"Flagged" },
+      failed:  { cls:"badge plaus-failed",  icon:"✗", label:"Failed" }
+    };
+    const sm2 = statusMap2[subForModal.plausibility_status] || statusMap2.failed;
+    plausModalEl.innerHTML = `<span class="${sm2.cls}" style="font-size:0.82rem;">${sm2.icon} Plausibility: ${sm2.label}</span><button class="infoicon" id="modalPlausInfoBtn" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button>`;
+    plausModalEl.style.display = "flex";
+    const infoBtn = document.getElementById("modalPlausInfoBtn");
+    if(infoBtn) infoBtn.onclick = (e)=>{ openPlausibilityBreakdown(s.anon_id, infoBtn); e.stopPropagation(); };
+  } else {
+    plausModalEl.innerHTML = "";
+    plausModalEl.style.display = "none";
+  }
+
   bindLeadFormForStartup(s);
   syncModalPipelineButtons(s);
   renderModalNotes(s.anon_id);

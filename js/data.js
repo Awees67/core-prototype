@@ -350,34 +350,169 @@ function generateSubmissionsFromStartups(arr, rng){
   const shuffled = arr.slice().sort(()=> rng() - 0.5);
   const chosen = shuffled.slice(0, count);
 
-  const possibleFlags = ["missing_mrr","suspicious_growth","low_runway","high_burn_multiple","incomplete_data"];
-
-  return chosen.map(s => {
-    const r = rng();
-    let plausibility_status, plausibility_flags;
-    if(r < 0.70){
-      plausibility_status = "passed";
-      plausibility_flags = [];
-    } else if(r < 0.90){
-      plausibility_status = "flagged";
-      plausibility_flags = [possibleFlags[Math.floor(rng() * possibleFlags.length)]];
-    } else {
-      plausibility_status = "failed";
-      plausibility_flags = ["spam_detected", "invalid_data"];
-    }
-    // submitted_at: random time in last 7 days
+  const results = chosen.map(s => {
+    const plaus = computePlausibility(s);
     const submitted_at = Date.now() - Math.floor(rng() * 7 * 24 * 60 * 60 * 1000);
     return {
       anon_id: s.anon_id,
       signal_index: 0, // will be computed after signal-index.js loads
-      plausibility_status,
-      plausibility_flags,
+      plausibility_status: plaus.status,
+      plausibility_checks: plaus.checks,
+      plausibility_summary: plaus.summary,
       submitted_at,
       sector: s.sector,
       sub_sector: s.sub_sector || null,
       stage: s.stage
     };
   });
+
+  // Forced-fail: ensure at least 1 Failed case for demo visibility.
+  // Patch the last chosen startup with ownership > 100% so it always fails.
+  const failTarget = chosen[chosen.length - 1];
+  if(failTarget && results[results.length - 1].plausibility_status !== "failed"){
+    const patchedStartup = { ...failTarget, founder_pct: 80, esop_pct: 15, employees_pct: 10, mrr_eur: 0 };
+    const forcedPlaus = computePlausibility(patchedStartup);
+    const last = results[results.length - 1];
+    last.plausibility_status = forcedPlaus.status;
+    last.plausibility_checks = forcedPlaus.checks;
+    last.plausibility_summary = forcedPlaus.summary;
+  }
+
+  return results;
+}
+
+/* =========================
+   PLAUSIBILITY RULES + COMPUTE
+========================= */
+const PLAUSIBILITY_RULES = [
+  {
+    id: "mrr_arr_consistency",
+    label: "MRR/ARR Konsistenz",
+    kategorie: "Konsistenz",
+    schwere: "hard",
+    check: (s) => Math.abs((s.arr_eur || 0) - ((s.mrr_eur || 0) * 12)) < 1000,
+    fail_text: "ARR weicht von MRR × 12 ab",
+    pass_text: "ARR konsistent mit MRR"
+  },
+  {
+    id: "burn_vs_mrr",
+    label: "Burn/MRR Verhältnis",
+    kategorie: "Konsistenz",
+    schwere: "soft",
+    check: (s) => s.burn_eur_per_month > 0 && s.burn_eur_per_month < (s.mrr_eur * 10),
+    fail_text: "Burn unrealistisch hoch im Verhältnis zum MRR (>10x)",
+    pass_text: "Burn/MRR Verhältnis plausibel"
+  },
+  {
+    id: "runway_consistency",
+    label: "Runway Plausibilität",
+    kategorie: "Konsistenz",
+    schwere: "hard",
+    check: (s) => s.runway_months >= 2 && s.runway_months <= 48,
+    fail_text: "Runway außerhalb plausibler Spanne (2–48 Monate)",
+    pass_text: "Runway im plausiblen Bereich"
+  },
+  {
+    id: "growth_plausibility",
+    label: "Wachstum realistisch",
+    kategorie: "Konsistenz",
+    schwere: "soft",
+    check: (s) => s.growth && s.growth.value_pct >= -50 && s.growth.value_pct <= 200,
+    fail_text: "Wachstumsrate außerhalb plausibler Spanne (-50% bis 200%)",
+    pass_text: "Wachstumsrate im plausiblen Bereich"
+  },
+  {
+    id: "mrr_positive",
+    label: "MRR vorhanden",
+    kategorie: "Vollständigkeit",
+    schwere: "hard",
+    check: (s) => s.mrr_eur > 0,
+    fail_text: "Kein MRR angegeben oder 0€",
+    pass_text: "MRR vorhanden"
+  },
+  {
+    id: "ownership_total",
+    label: "Ownership-Summe",
+    kategorie: "Konsistenz",
+    schwere: "hard",
+    check: (s) => ((s.founder_pct || 0) + (s.esop_pct || 0) + (s.employees_pct || 0)) <= 100.5,
+    fail_text: "Ownership-Anteile summieren sich auf über 100%",
+    pass_text: "Ownership-Summe plausibel"
+  },
+  {
+    id: "ltv_cac_positive",
+    label: "LTV/CAC vorhanden",
+    kategorie: "Vollständigkeit",
+    schwere: "soft",
+    check: (s) => s.ltv_cac_ratio > 0 && s.cac_eur > 0,
+    fail_text: "LTV oder CAC fehlt",
+    pass_text: "Unit Economics angegeben"
+  },
+  {
+    id: "gross_margin_range",
+    label: "Gross Margin Spanne",
+    kategorie: "Konsistenz",
+    schwere: "soft",
+    check: (s) => s.gross_margin_pct >= 0 && s.gross_margin_pct <= 99,
+    fail_text: "Gross Margin außerhalb plausibler Spanne (0–99%)",
+    pass_text: "Gross Margin plausibel"
+  },
+  {
+    id: "ticket_range",
+    label: "Rundengröße plausibel",
+    kategorie: "Konsistenz",
+    schwere: "soft",
+    check: (s) => {
+      const ranges = {
+        "Pre-Seed": [50000, 2000000],
+        "Seed": [200000, 5000000],
+        "Pre-Series A": [500000, 8000000],
+        "Series A": [1000000, 15000000],
+        "Series B": [3000000, 50000000]
+      };
+      const r = ranges[s.stage];
+      if(!r) return true;
+      return s.ticket_eur >= r[0] && s.ticket_eur <= r[1];
+    },
+    fail_text: "Rundengröße ungewöhnlich für die angegebene Stage",
+    pass_text: "Rundengröße passt zur Stage"
+  },
+  {
+    id: "team_size_range",
+    label: "Teamgröße plausibel",
+    kategorie: "Vollständigkeit",
+    schwere: "soft",
+    check: (s) => s.team_size >= 1 && s.team_size <= 500,
+    fail_text: "Teamgröße außerhalb plausibler Spanne",
+    pass_text: "Teamgröße plausibel"
+  }
+];
+
+function computePlausibility(s){
+  const checks = PLAUSIBILITY_RULES.map(rule => {
+    let passed;
+    try { passed = !!rule.check(s); } catch(e) { passed = false; }
+    return {
+      id: rule.id,
+      label: rule.label,
+      kategorie: rule.kategorie,
+      schwere: rule.schwere,
+      result: passed ? "pass" : "fail",
+      message: passed ? rule.pass_text : rule.fail_text
+    };
+  });
+  const failed_hard = checks.filter(c => c.result === "fail" && c.schwere === "hard").length;
+  const failed_soft = checks.filter(c => c.result === "fail" && c.schwere === "soft").length;
+  const passed_count = checks.filter(c => c.result === "pass").length;
+  let status;
+  if(failed_hard > 0) status = "failed";
+  else if(failed_soft > 0) status = "flagged";
+  else status = "passed";
+  return {
+    status,
+    checks,
+    summary: { total: checks.length, passed: passed_count, failed_hard, failed_soft }
+  };
 }
 
 /* =========================
