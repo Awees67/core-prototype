@@ -8,6 +8,7 @@
     }
   },
   "enabledPlugins": {
-    "claude-code@anthropics": true
+    "claude-code@anthropics": true,
+    "frontend-design@claude-code-plugins": true
   }
 }
