@@ -6,6 +6,27 @@ let currentView = "dashboard"; // dashboard | home | submissions | pipeline | co
 let modalIndex = -1;
 let lastListContext = [];
 
+/* =========================
+   BULK SELECTION STATE
+========================= */
+let bulkSelection = new Set(); // Temporary, RAM-only. Cleared on every view change.
+
+function bulkToggle(id){ bulkSelection.has(id) ? bulkSelection.delete(id) : bulkSelection.add(id); }
+function bulkSelectAll(ids){ ids.forEach(id => bulkSelection.add(id)); }
+function bulkDeselectAll(){ bulkSelection.clear(); }
+function bulkIsSelected(id){ return bulkSelection.has(id); }
+function bulkCount(){ return bulkSelection.size; }
+
+/** Returns true if the pipeline transition from current status → toStatus is allowed (without side effects). */
+function isPipelineTransitionAllowed(anon_id, toStatus){
+  const item = getPipeline().find(x => x.anon_id === anon_id);
+  if(!item) return false;
+  const from = item.status;
+  if(from === "Synced") return false;
+  const allowed = PIPELINE_TRANSITIONS[from] || [];
+  return allowed.includes(toStatus) || toStatus === from;
+}
+
 const FILTER_DEFAULTS = {
   ue: "All", rq: "All", ce: "All",
   advEnabled: false,
