@@ -500,11 +500,27 @@ function renderSubmissions(){
     return;
   }
 
+  const visibleIds = list.map(s => s.anon_id);
+  const selectedCount = visibleIds.filter(id => bulkIsSelected(id)).length;
+  const allChecked = selectedCount === visibleIds.length && visibleIds.length > 0;
+  const someChecked = selectedCount > 0 && selectedCount < visibleIds.length;
+
+  const bulkToolbarHtml = bulkCount() > 0 ? `
+    <div class="bulk-toolbar" id="submBulkToolbar">
+      <span class="bulk-count">${bulkCount()} ausgewählt</span>
+      <button class="btn small" id="submBulkAccept">Alle annehmen</button>
+      <button class="btn secondary small" id="submBulkDecline">Alle ablehnen</button>
+      <button class="btn secondary small" id="submBulkDeselect">Auswahl aufheben</button>
+    </div>
+  ` : "";
+
   mount.innerHTML = `
+    ${bulkToolbarHtml}
     <div class="compareTableWrap">
       <table class="compareTable">
         <thead>
           <tr>
+            <th style="width:40px;"><input type="checkbox" id="submBulkAll" title="Alle auswählen" ${allChecked ? "checked" : ""}></th>
             <th>Startup</th>
             <th>Sektor</th>
             <th>Stage</th>
@@ -519,7 +535,9 @@ function renderSubmissions(){
             const dt = sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString("de-DE") : "—";
             const sectorStr = sub.sector + (sub.sub_sector ? ` › ${sub.sub_sector}` : "");
             const ss = startups.find(x=>x.anon_id===sub.anon_id);
-            return `<tr>
+            const isSelected = bulkIsSelected(sub.anon_id);
+            return `<tr class="${isSelected ? "bulk-selected" : ""}">
+              <td><input type="checkbox" class="bulk-check" data-bulk="${escapeHTML(sub.anon_id)}" ${isSelected ? "checked" : ""}></td>
               <td><button class="btn secondary small" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(ss?.company_name || sub.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(sub.anon_id)}</small></td>
               <td>${escapeHTML(sectorStr)}</td>
               <td>${escapeHTML(sub.stage||"—")}</td>
@@ -537,6 +555,56 @@ function renderSubmissions(){
     </div>
   `;
 
+  // Set indeterminate state on header checkbox
+  const submBulkAll = document.getElementById("submBulkAll");
+  if(submBulkAll) submBulkAll.indeterminate = someChecked;
+
+  // Select-All handler
+  if(submBulkAll){
+    submBulkAll.onchange = ()=>{
+      if(submBulkAll.checked) bulkSelectAll(visibleIds);
+      else bulkDeselectAll();
+      renderSubmissions();
+    };
+  }
+
+  // Individual checkbox handlers
+  mount.querySelectorAll(".bulk-check").forEach(cb=>{
+    cb.onchange = ()=>{
+      bulkToggle(cb.getAttribute("data-bulk"));
+      renderSubmissions();
+    };
+  });
+
+  // Bulk toolbar handlers
+  const submBulkAccept = document.getElementById("submBulkAccept");
+  const submBulkDecline = document.getElementById("submBulkDecline");
+  const submBulkDeselect = document.getElementById("submBulkDeselect");
+
+  if(submBulkAccept){
+    submBulkAccept.onclick = ()=>{
+      const ids = Array.from(bulkSelection);
+      const count = ids.length;
+      ids.forEach(id=>{ acceptSubmission(id); activityLogAppend("SUBMISSION_ACCEPTED", id); });
+      bulkDeselectAll();
+      toast("OK", `${count} Deal${count !== 1 ? "s" : ""} angenommen`);
+      renderSubmissions();
+    };
+  }
+  if(submBulkDecline){
+    submBulkDecline.onclick = ()=>{
+      const ids = Array.from(bulkSelection);
+      const count = ids.length;
+      ids.forEach(id=>{ declineSubmission(id); activityLogAppend("SUBMISSION_DECLINED", id); });
+      bulkDeselectAll();
+      toast("Abgelehnt", `${count} Bewerbung${count !== 1 ? "en" : ""} abgelehnt`);
+      renderSubmissions();
+    };
+  }
+  if(submBulkDeselect){
+    submBulkDeselect.onclick = ()=>{ bulkDeselectAll(); renderSubmissions(); };
+  }
+
   mount.querySelectorAll("[data-open]").forEach(b=>{
     b.onclick = ()=>openModalByAnonId(b.getAttribute("data-open"), startups);
   });
@@ -551,6 +619,7 @@ function renderSubmissions(){
       const id = b.getAttribute("data-accept");
       acceptSubmission(id);
       activityLogAppend("SUBMISSION_ACCEPTED", id);
+      bulkSelection.delete(id);
       toast("Angenommen", "Deal erscheint jetzt in der Übersicht");
       renderSubmissions();
     };
@@ -560,6 +629,7 @@ function renderSubmissions(){
       const id = b.getAttribute("data-decline");
       declineSubmission(id);
       activityLogAppend("SUBMISSION_DECLINED", id);
+      bulkSelection.delete(id);
       toast("Abgelehnt", "Bewerbung entfernt");
       renderSubmissions();
     };
@@ -661,11 +731,36 @@ function renderPipeline(){
   const noteCountMap = {};
   allNotes.forEach(n => { noteCountMap[n.anon_id] = (noteCountMap[n.anon_id] || 0) + 1; });
 
+  // Checkboxes only for non-Synced deals
+  const checkableIds = list.filter(item => item.status !== "Synced").map(item => item.anon_id);
+  const selectedCount = checkableIds.filter(id => bulkIsSelected(id)).length;
+  const allChecked = selectedCount === checkableIds.length && checkableIds.length > 0;
+  const someChecked = selectedCount > 0 && selectedCount < checkableIds.length;
+
+  const bulkToolbarHtml = bulkCount() > 0 ? `
+    <div class="bulk-toolbar" id="pipeBulkToolbar">
+      <span class="bulk-count">${bulkCount()} ausgewählt</span>
+      <label style="font-weight:700;font-size:0.85rem;">Status setzen &rarr;</label>
+      <select id="pipeBulkStatusSel">
+        <option value="">— wählen —</option>
+        <option value="In Review">In Review</option>
+        <option value="Hot Deal">Hot Deal</option>
+        <option value="Watching">Watching</option>
+        <option value="Declined">Declined</option>
+      </select>
+      <button class="btn small" id="pipeBulkCRM">Push to CRM</button>
+      <button class="btn secondary small" id="pipeBulkRemove">Entfernen</button>
+      <button class="btn secondary small" id="pipeBulkDeselect">Auswahl aufheben</button>
+    </div>
+  ` : "";
+
   mount.innerHTML = `
+    ${bulkToolbarHtml}
     <div class="compareTableWrap">
       <table class="compareTable">
         <thead>
           <tr>
+            <th style="width:40px;"><input type="checkbox" id="pipeBulkAll" title="Alle auswählen" ${allChecked ? "checked" : ""}></th>
             <th>Startup</th>
             <th>Status</th>
             <th>Score</th>
@@ -681,12 +776,14 @@ function renderPipeline(){
             const signal = Math.round(item.signal_index||0);
             const ps = startups.find(x=>x.anon_id===item.anon_id);
             const nc = noteCountMap[item.anon_id] || 0;
+            const isSynced = item.status === "Synced";
+            const isSelected = bulkIsSelected(item.anon_id);
 
             const declineReasonLabel = item.status === "Declined" && item.decline_reason
               ? (DECLINE_REASONS.find(r => r.key === item.decline_reason)?.label || item.decline_reason)
               : null;
 
-            const statusCell = item.status === "Synced"
+            const statusCell = isSynced
               ? `<span class="synced-label">✓ Synced to CRM</span>`
               : `<select class="statusSel" data-status data-pipe-id="${escapeHTML(item.anon_id)}" style="min-width:130px;">
                    <option value="${escapeHTML(item.status)}" selected>${escapeHTML(item.status)}</option>
@@ -694,7 +791,7 @@ function renderPipeline(){
                  </select>
                  ${declineReasonLabel ? `<div class="decline-reason-text"${item.decline_note ? ` title="${escapeHTML(item.decline_note)}"` : ""}>${escapeHTML(declineReasonLabel)}</div>` : ""}`;
 
-            const actionsCell = item.status === "Synced"
+            const actionsCell = isSynced
               ? `<button class="btn secondary small" disabled>✓ Im CRM</button>`
               : `<button class="btn crm-push-btn small" data-crm="${escapeHTML(item.anon_id)}">Push to CRM</button>
                  <button class="btn secondary small" data-pipe-remove="${escapeHTML(item.anon_id)}">Remove</button>`;
@@ -703,7 +800,12 @@ function renderPipeline(){
               ? `<span class="notes-badge" data-notes-open="${escapeHTML(item.anon_id)}">${nc}</span>`
               : `<span class="notes-badge empty">—</span>`;
 
-            return `<tr>
+            const checkboxCell = isSynced
+              ? `<td></td>`
+              : `<td><input type="checkbox" class="bulk-check" data-bulk="${escapeHTML(item.anon_id)}" ${isSelected ? "checked" : ""}></td>`;
+
+            return `<tr class="${isSelected ? "bulk-selected" : ""}">
+              ${checkboxCell}
               <td><button class="btn secondary small" data-open="${escapeHTML(item.anon_id)}">${escapeHTML(ps?.company_name || item.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(item.anon_id)}</small></td>
               <td>${statusCell}</td>
               <td class="mono">${signal}</td>
@@ -717,6 +819,95 @@ function renderPipeline(){
       </table>
     </div>
   `;
+
+  // Set indeterminate state on header checkbox
+  const pipeBulkAll = document.getElementById("pipeBulkAll");
+  if(pipeBulkAll) pipeBulkAll.indeterminate = someChecked;
+
+  // Select-All handler
+  if(pipeBulkAll){
+    pipeBulkAll.onchange = ()=>{
+      if(pipeBulkAll.checked) bulkSelectAll(checkableIds);
+      else bulkDeselectAll();
+      renderPipeline();
+    };
+  }
+
+  // Individual checkbox handlers
+  mount.querySelectorAll(".bulk-check").forEach(cb=>{
+    cb.onchange = ()=>{
+      bulkToggle(cb.getAttribute("data-bulk"));
+      renderPipeline();
+    };
+  });
+
+  // Bulk toolbar handlers
+  const pipeBulkStatusSel = document.getElementById("pipeBulkStatusSel");
+  const pipeBulkCRM = document.getElementById("pipeBulkCRM");
+  const pipeBulkRemove = document.getElementById("pipeBulkRemove");
+  const pipeBulkDeselect = document.getElementById("pipeBulkDeselect");
+
+  if(pipeBulkStatusSel){
+    pipeBulkStatusSel.onchange = ()=>{
+      const toStatus = pipeBulkStatusSel.value;
+      if(!toStatus) return;
+      pipeBulkStatusSel.value = "";
+
+      if(toStatus === "Declined"){
+        // Open decline dialog in bulk mode for all selected
+        const ids = Array.from(bulkSelection);
+        openDeclineDialog(null, null, null, ids);
+        return;
+      }
+
+      const ids = Array.from(bulkSelection);
+      let changed = 0;
+      let skipped = 0;
+      ids.forEach(id=>{
+        if(isPipelineTransitionAllowed(id, toStatus)){
+          pipelineSetStatus(id, toStatus);
+          changed++;
+        } else {
+          skipped++;
+        }
+      });
+
+      bulkDeselectAll();
+      if(skipped > 0){
+        toast("Status gesetzt", `${changed} Deal${changed!==1?"s":""} geändert, ${skipped} übersprungen (Status-Übergang nicht erlaubt)`);
+      } else {
+        toast("Status gesetzt", `${changed} Deal${changed!==1?"s":""} geändert`);
+      }
+      renderPipeline();
+    };
+  }
+
+  if(pipeBulkCRM){
+    pipeBulkCRM.onclick = ()=>{
+      const ids = Array.from(bulkSelection);
+      const count = ids.length;
+      ids.forEach(id=>pipelinePushToCRM(id));
+      bulkDeselectAll();
+      toast("CRM", `${count} Deal${count!==1?"s":""} an CRM übergeben`);
+      renderPipeline();
+    };
+  }
+
+  if(pipeBulkRemove){
+    pipeBulkRemove.onclick = ()=>{
+      const ids = Array.from(bulkSelection);
+      const count = ids.length;
+      if(!confirm(`${count} Deal${count!==1?"s":""} aus der Pipeline entfernen?`)) return;
+      ids.forEach(id=>pipelineRemove(id));
+      bulkDeselectAll();
+      toast("Entfernt", `${count} Deal${count!==1?"s":""} entfernt`);
+      renderPipeline();
+    };
+  }
+
+  if(pipeBulkDeselect){
+    pipeBulkDeselect.onclick = ()=>{ bulkDeselectAll(); renderPipeline(); };
+  }
 
   mount.querySelectorAll("[data-open]").forEach(b=>{
     b.onclick=()=>openModalByAnonId(b.getAttribute("data-open"), startups);
@@ -951,11 +1142,13 @@ function closeModal(){
 let _declineAnonId = null;
 let _declinePrevStatus = null;
 let _declineSelectEl = null;
+let _declineBulkIds = null; // non-null = bulk mode
 
-function openDeclineDialog(anon_id, prevStatus, selectEl){
+function openDeclineDialog(anon_id, prevStatus, selectEl, bulkIds){
   _declineAnonId = anon_id;
   _declinePrevStatus = prevStatus;
   _declineSelectEl = selectEl;
+  _declineBulkIds = bulkIds || null;
 
   const dlg = document.getElementById("declineDialog");
   const dealNameEl = document.getElementById("declineDealName");
@@ -963,9 +1156,13 @@ function openDeclineDialog(anon_id, prevStatus, selectEl){
   const noteInput = document.getElementById("declineNoteInput");
   if(!dlg || !dealNameEl || !reasonSel || !noteInput) return;
 
-  // Set deal name
-  const startup = startups.find(x => x.anon_id === anon_id);
-  dealNameEl.textContent = startup ? startupLabel(startup) : anon_id;
+  // Set deal name (bulk vs. single)
+  if(_declineBulkIds){
+    dealNameEl.textContent = `${_declineBulkIds.length} ausgewählte Deals (Grund gilt für alle)`;
+  } else {
+    const startup = startups.find(x => x.anon_id === anon_id);
+    dealNameEl.textContent = startup ? startupLabel(startup) : anon_id;
+  }
 
   // Fill reason dropdown
   reasonSel.innerHTML = `<option value="">— Bitte auswählen —</option>` +
@@ -997,14 +1194,38 @@ function openDeclineDialog(anon_id, prevStatus, selectEl){
       return;
     }
     const note = document.getElementById("declineNoteInput").value.trim();
-    const ok = pipelineSetStatus(_declineAnonId, "Declined", reason, note);
-    closeDeclineDialog();
-    if(ok){ renderPipeline(); }
+
+    if(_declineBulkIds){
+      // Bulk decline mode: apply reason to all selected IDs
+      const ids = _declineBulkIds;
+      let changed = 0;
+      let skipped = 0;
+      ids.forEach(id=>{
+        if(isPipelineTransitionAllowed(id, "Declined")){
+          pipelineSetStatus(id, "Declined", reason, note);
+          changed++;
+        } else {
+          skipped++;
+        }
+      });
+      bulkDeselectAll();
+      closeDeclineDialog();
+      if(skipped > 0){
+        toast("Declined", `${changed} Deal${changed!==1?"s":""} abgelehnt, ${skipped} übersprungen`);
+      } else {
+        toast("Declined", `${changed} Deal${changed!==1?"s":""} abgelehnt`);
+      }
+      renderPipeline();
+    } else {
+      const ok = pipelineSetStatus(_declineAnonId, "Declined", reason, note);
+      closeDeclineDialog();
+      if(ok){ renderPipeline(); }
+    }
   });
 
   newCancel.addEventListener("click", ()=>{
-    // Revert dropdown to previous status
-    if(_declineSelectEl){
+    // Revert dropdown to previous status (single mode only)
+    if(_declineSelectEl && !_declineBulkIds){
       _declineSelectEl.value = _declinePrevStatus || "";
     }
     closeDeclineDialog();
@@ -1357,6 +1578,7 @@ function setActiveNav(){
 
 function renderCurrent(){
   setActiveNav();
+  bulkSelection.clear(); // Clear bulk selection on every view change to prevent leaking across tabs
 
   if(currentView==="dashboard") renderDashboard();
   if(currentView==="home") renderCards();
