@@ -157,7 +157,10 @@ function getSubmissions(){
     anon_id: String(x?.anon_id || ""),
     signal_index: Number(x?.signal_index || 0),
     plausibility_status: String(x?.plausibility_status || "passed"),
-    plausibility_flags: Array.isArray(x?.plausibility_flags) ? x.plausibility_flags : [],
+    plausibility_checks: Array.isArray(x?.plausibility_checks) ? x.plausibility_checks : [],
+    plausibility_summary: (x?.plausibility_summary && typeof x.plausibility_summary === "object")
+      ? x.plausibility_summary
+      : { total: 0, passed: 0, failed_hard: 0, failed_soft: 0 },
     submitted_at: Number(x?.submitted_at || 0),
     sector: String(x?.sector || ""),
     sub_sector: x?.sub_sector ? String(x.sub_sector) : null,

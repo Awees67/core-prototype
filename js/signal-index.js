@@ -185,6 +185,99 @@ function openScoreBreakdown(anon_id, anchorEl){
   openSignalPopover(anchorEl, html, anon_id);
 }
 
+/* =========================
+   Plausibility Breakdown Popover
+========================= */
+function buildPlausibilityBreakdownHTML(anon_id){
+  const subs = getSubmissions();
+  const sub = subs.find(x => x.anon_id === anon_id);
+  const s = (typeof startups !== "undefined") ? startups.find(x => x.anon_id === anon_id) : null;
+  const name = s ? (s.company_name || anon_id) : anon_id;
+
+  // Use stored checks if available; otherwise compute fresh
+  let checks, summary, status;
+  if(sub && sub.plausibility_checks && sub.plausibility_checks.length > 0){
+    checks = sub.plausibility_checks;
+    summary = sub.plausibility_summary;
+    status = sub.plausibility_status;
+  } else if(s && typeof computePlausibility === "function"){
+    const plaus = computePlausibility(s);
+    checks = plaus.checks;
+    summary = plaus.summary;
+    status = plaus.status;
+  } else {
+    checks = [];
+    summary = { total: 0, passed: 0, failed_hard: 0, failed_soft: 0 };
+    status = "passed";
+  }
+
+  const statusMap = {
+    passed: { cls: "badge plaus-passed", icon: "✓", label: "Passed" },
+    flagged: { cls: "badge plaus-flagged", icon: "⚠", label: "Flagged" },
+    failed:  { cls: "badge plaus-failed",  icon: "✗", label: "Failed" }
+  };
+  const sm = statusMap[status] || statusMap.failed;
+
+  const tot = summary.total || checks.length || 0;
+  const pas = summary.passed || 0;
+  const fh  = summary.failed_hard || 0;
+  const fs  = summary.failed_soft || 0;
+
+  // Sort: hard fails first, then soft fails, then passes
+  const sorted = checks.slice().sort((a, b) => {
+    const rank = (c) => c.result === "fail" && c.schwere === "hard" ? 0
+      : c.result === "fail" && c.schwere === "soft" ? 1
+      : 2;
+    return rank(a) - rank(b);
+  });
+
+  const checksHtml = sorted.map(c => {
+    const isPass = c.result === "pass";
+    const isSoft = c.result === "fail" && c.schwere === "soft";
+    const isHard = c.result === "fail" && c.schwere === "hard";
+    const icon = isPass ? "✓" : (isSoft ? "⚠" : "✗");
+    const iconCls = isPass ? "plaus-icon-pass" : (isSoft ? "plaus-icon-soft" : "plaus-icon-hard");
+    return `
+      <div class="plaus-check">
+        <div class="plaus-icon ${iconCls}">${icon}</div>
+        <div class="plaus-check-body">
+          <span class="plaus-check-label">${escapeHTML(c.label)}</span>
+          <span class="plaus-check-kategorie">${escapeHTML(c.kategorie)}</span>
+          <div class="plaus-check-message">${escapeHTML(c.message)}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  let summaryLine = `${pas} von ${tot} Checks bestanden`;
+  if(fh > 0) summaryLine += ` • ${fh} kritisch`;
+  if(fs > 0) summaryLine += ` • ${fs} Hinweis${fs > 1 ? "e" : ""}`;
+
+  return `
+    <div style="min-width:320px; max-width:440px; padding:4px;">
+      <div class="popover-drag-handle" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; cursor:grab; user-select:none;">
+        <div style="font-weight:950; font-size:1.02rem;">Plausibility Check</div>
+        <div style="font-size:0.8rem; color:var(--muted); font-weight:800;">${escapeHTML(name)}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span class="${sm.cls}" style="font-size:0.9rem;">${sm.icon} ${sm.label}</span>
+        <span class="plaus-summary">${escapeHTML(summaryLine)}</span>
+      </div>
+      <div style="border-top:1px solid var(--border); padding-top:6px;">
+        ${checksHtml || `<div style="color:var(--muted); font-size:0.9rem; padding:8px 0;">Keine Regeln verfügbar.</div>`}
+      </div>
+      <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--border); font-size:0.78rem; color:var(--muted); line-height:1.5;">
+        Plausibilitätsprüfung ersetzt keine Due Diligence. Sie macht Inkonsistenzen sichtbar.
+      </div>
+    </div>
+  `;
+}
+
+function openPlausibilityBreakdown(anon_id, anchorEl){
+  const html = buildPlausibilityBreakdownHTML(anon_id);
+  openSignalPopover(anchorEl, html, anon_id);
+}
+
 // Close popover on outside click
 document.addEventListener("click",(e)=>{
   const pop = document.getElementById("signalIndexPopover");
