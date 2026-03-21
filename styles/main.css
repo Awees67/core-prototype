@@ -653,7 +653,7 @@
   border-radius:12px; font-weight:700; color:var(--muted);
 }
 .tablewrap{
-  border:1px solid var(--border); border-radius:14px; overflow:hidden; background:var(--card);
+  border:1px solid var(--border); border-radius:14px; overflow-x:auto; overflow-y:hidden; background:var(--card);
   box-shadow:var(--shadow);
 }
 table{
@@ -670,7 +670,7 @@ tbody td{
   vertical-align:middle;
 }
 tbody tr:hover{ background:rgba(25,118,210,0.06); }
-.cell-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.cell-actions{ display:flex; gap:8px; flex-wrap:nowrap; align-items:center; }
 .small{ padding:7px 10px; border-radius:10px; font-weight:900; font-size:0.86rem; }
 .select{
   width:100%; max-width:220px;

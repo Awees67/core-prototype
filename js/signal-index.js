@@ -194,16 +194,23 @@ function buildPlausibilityBreakdownHTML(anon_id){
   const startup = (typeof startups !== "undefined") ? startups.find(x => x.anon_id === anon_id) : null;
   const name = startup ? (startup.company_name || anon_id) : anon_id;
 
-  if(!sub || !sub.plausibility_checks || !sub.plausibility_checks.length){
+  let plausData = null;
+  if(sub && sub.plausibility_checks && sub.plausibility_checks.length){
+    plausData = { status: sub.plausibility_status || "passed", checks: sub.plausibility_checks, summary: sub.plausibility_summary || {} };
+  } else if(startup && typeof computePlausibility === "function"){
+    plausData = computePlausibility(startup);
+  }
+
+  if(!plausData){
     return `<div style="min-width:280px; padding:4px;">
       <div style="font-weight:950; font-size:1rem; margin-bottom:8px;">Plausibility Check – ${escapeHTML(name)}</div>
-      <div style="color:var(--muted); font-size:0.9rem;">Keine Daten verfügbar.</div>
+      <div style="color:var(--muted); font-size:0.9rem;">Plausibility Check konnte nicht berechnet werden.</div>
     </div>`;
   }
 
-  const status = sub.plausibility_status || "passed";
-  const summary = sub.plausibility_summary || {};
-  const checks = sub.plausibility_checks.slice();
+  const status = plausData.status;
+  const summary = plausData.summary;
+  const checks = plausData.checks.slice();
 
   // Sort: hard fails first, soft fails second, passes last
   checks.sort((a, b) => {
