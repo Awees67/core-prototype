@@ -124,8 +124,8 @@ function setTheme(mode){
 }
 function loadTheme(){
   const t = safeGetJSON(LS_KEYS.theme, null);
-  if(t === "dark") setTheme("dark");
-  else setTheme("light");
+  if(t === "light") setTheme("light");
+  else setTheme("dark");
 }
 function toggleTheme(){
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
