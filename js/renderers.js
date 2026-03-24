@@ -1351,13 +1351,13 @@ function renderDashboard(){
   // KPI Header
   const subsPulse = subs.length > 0 ? ' dash-pulse' : '';
   const kpiHtml = `
-    <div class="dash-grid dash-grid-4">
-      <div class="dash-kpi">
+    <div class="dash-grid dash-grid-4 dash-kpi-grid">
+      <div class="dash-kpi dash-kpi-priority-1">
         <div class="dash-kpi-value">${funnelTotal}</div>
         <div class="dash-kpi-label">📊 Gesamt Deals</div>
         <div class="dash-kpi-sub">Im aktuellen Dataset</div>
       </div>
-      <div class="dash-kpi${subsPulse}">
+      <div class="dash-kpi dash-kpi-priority-1${subsPulse}">
         <div class="dash-kpi-value">${subs.length}</div>
         <div class="dash-kpi-label">📥 Neue Submissions</div>
         <div class="dash-kpi-sub">Warten auf Review</div>
@@ -1395,7 +1395,7 @@ function renderDashboard(){
         <div class="funnel-bar-wrap">
           <div class="funnel-bar" style="width:${w}%; background:${step.color}; border:1px solid ${step.border};"></div>
         </div>
-        <div class="funnel-value">${step.val}</div>
+        <div class="funnel-value"><span class="mono">${step.val}</span></div>
       </div>
     `;
   }).join("");
@@ -1503,51 +1503,60 @@ function renderDashboard(){
     `;
 
   view.innerHTML = `
-    <div style="padding:4px 0 8px;">
-      <h2 style="margin:0 0 4px; font-size:1.4rem; font-weight:950;">Dashboard</h2>
-      <div class="hint">Gesamtüberblick – live berechnet aus allen Datenquellen.</div>
+    <div class="dash-shell">
+    <div class="dash-head">
+      <h2 class="dash-title">Dashboard</h2>
+      <div class="dash-subtitle">Gesamtüberblick über Dealflow, Pipeline und Score-Verteilung (Live aus der lokalen Demo).</div>
     </div>
 
     ${kpiHtml}
 
-    <div class="dash-grid dash-grid-2" style="margin-top:16px;">
+    <div class="dash-grid dash-grid-2 dash-section">
       <div class="dash-panel">
         <div class="dash-panel-title">Dealflow Funnel</div>
+        <div class="dash-panel-sub">Vom Eingang bis zur CRM-Übergabe.</div>
         ${funnelHtml}
       </div>
       <div class="dash-panel">
         <div class="dash-panel-title">Pipeline Status</div>
+        <div class="dash-panel-sub">Verteilung nach aktuellem Bearbeitungsstatus.</div>
         ${pipeSegHtml}
       </div>
     </div>
 
-    <div class="dash-grid dash-grid-2" style="margin-top:16px;">
+    <div class="dash-grid dash-grid-2 dash-section">
       <div class="dash-panel">
         <div class="dash-panel-title">Score Verteilung</div>
+        <div class="dash-panel-sub">Anzahl Deals pro Score-Bereich.</div>
         ${histoHtml}
       </div>
       <div class="dash-panel">
         <div class="dash-panel-title">Sektor Verteilung</div>
+        <div class="dash-panel-sub">Top-Sektoren im aktuellen Datensatz.</div>
         ${sectorHtml || '<div class="hint">Keine Daten.</div>'}
       </div>
     </div>
 
-    <div class="dash-grid dash-grid-2" style="margin-top:16px;">
+    <div class="dash-grid dash-grid-2 dash-section">
       <div class="dash-panel">
         <div class="dash-panel-title">Stage Verteilung</div>
+        <div class="dash-panel-sub">Pipeline-Reife über alle Deals.</div>
         ${stageHtml || '<div class="hint">Keine Daten.</div>'}
       </div>
       <div class="dash-panel">
         <div class="dash-panel-title">Häufigste Absage-Gründe</div>
+        <div class="dash-panel-sub">Nur Deals mit Status „Declined“.</div>
         ${declineHtml}
       </div>
     </div>
 
-    <div class="dash-grid dash-grid-2" style="margin-top:16px;">
+    <div class="dash-grid dash-grid-2 dash-section">
       <div class="dash-panel">
         <div class="dash-panel-title">Letzte Aktivitäten</div>
+        <div class="dash-panel-sub">Die 10 neuesten Workspace-Events.</div>
         ${activityHtml}
       </div>
+    </div>
     </div>
   `;
 }
