@@ -1,82 +1,198 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Core – Own the Future (Offline Demo)</title>
+  <title>CORE – Own the Future</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            headline: ['Inter', 'sans-serif'],
+            body:     ['Inter', 'sans-serif'],
+            label:    ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'background':                '#0b1326',
+            'surface':                   '#0b1326',
+            'surface-dim':               '#0b1326',
+            'surface-container-lowest':  '#060e20',
+            'surface-container-low':     '#131b2e',
+            'surface-container':         '#171f33',
+            'surface-container-high':    '#222a3d',
+            'surface-container-highest': '#2d3449',
+            'surface-bright':            '#31394d',
+            'surface-variant':           '#2d3449',
+            'surface-tint':              '#adc7ff',
+            'on-background':             '#dae2fd',
+            'on-surface':                '#dae2fd',
+            'on-surface-variant':        '#c0c6d6',
+            'inverse-surface':           '#dae2fd',
+            'inverse-on-surface':        '#283044',
+            'primary':                   '#adc7ff',
+            'primary-fixed':             '#d8e2ff',
+            'primary-fixed-dim':         '#adc7ff',
+            'primary-container':         '#4a8eff',
+            'on-primary':                '#002e68',
+            'on-primary-container':      '#00285b',
+            'on-primary-fixed':          '#001a41',
+            'on-primary-fixed-variant':  '#004493',
+            'inverse-primary':           '#005bc0',
+            'secondary':                 '#b7c8e1',
+            'secondary-fixed':           '#d3e4fe',
+            'secondary-fixed-dim':       '#b7c8e1',
+            'secondary-container':       '#3a4a5f',
+            'on-secondary':              '#213145',
+            'on-secondary-container':    '#a9bad3',
+            'on-secondary-fixed':        '#0b1c30',
+            'on-secondary-fixed-variant':'#38485d',
+            'tertiary':                  '#00dfc1',
+            'tertiary-fixed':            '#26fedc',
+            'tertiary-fixed-dim':        '#00dfc1',
+            'tertiary-container':        '#00a38d',
+            'on-tertiary':               '#00382f',
+            'on-tertiary-container':     '#003028',
+            'on-tertiary-fixed':         '#00201a',
+            'on-tertiary-fixed-variant': '#005144',
+            'outline':                   '#8b91a0',
+            'outline-variant':           '#414754',
+            'error':                     '#ffb4ab',
+            'error-container':           '#93000a',
+            'on-error':                  '#690005',
+            'on-error-container':        '#ffdad6',
+            'accent-blue':               '#0A84FF',
+          }
+        }
+      }
+    }
+  </script>
+
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body>
+<body style="font-family:'Inter',sans-serif; background-color:#0b1326; color:#dae2fd;">
 
-  <header>
-    <h1>Core – Own the Future</h1>
-    <p>Anonyme, KPI-basierte Startup-Suche</p>
+  <!-- TOP APP BAR -->
+  <header class="bg-[#0b1326]/60 backdrop-blur-xl shadow-2xl shadow-blue-900/20 fixed top-0 w-full z-50 flex justify-between items-center px-8 py-4">
+    <span class="text-xl font-black tracking-tighter text-white uppercase">CORE – OWN THE FUTURE</span>
+
+    <nav class="hidden md:flex gap-8 items-center text-sm font-medium tracking-wide">
+      <button id="navHome"        class="nav-item text-[#0A84FF] border-b-2 border-[#0A84FF] pb-1 transition-all duration-300">Discover</button>
+      <button id="navPipeline"    class="nav-item text-slate-400 hover:text-white transition-colors">Pipeline</button>
+      <button id="navSubmissions" class="nav-item text-slate-400 hover:text-white transition-colors">New Submissions</button>
+      <button id="navDashboard"   class="nav-item text-slate-400 hover:text-white transition-colors">Dashboard</button>
+      <button id="navCompare"     class="nav-item text-slate-400 hover:text-white transition-colors">Compare</button>
+      <button id="navActivity"    class="nav-item text-slate-400 hover:text-white transition-colors">Activity</button>
+      <button id="navInbox"       class="nav-item text-slate-400 hover:text-white transition-colors">Anfragen</button>
+    </nav>
+
+    <div class="flex items-center gap-4">
+      <button id="navScore"       class="material-symbols-outlined text-slate-400 hover:text-white active:scale-95 transition-all p-2 rounded-lg hover:bg-white/5" title="Score Konfiguration" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">tune</button>
+      <button id="openFilterBtn"  class="material-symbols-outlined text-slate-400 hover:text-white active:scale-95 transition-all p-2 rounded-lg hover:bg-white/5" title="Filter" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">filter_list</button>
+      <button id="toggleThemeBtn" class="material-symbols-outlined text-slate-400 hover:text-white active:scale-95 transition-all p-2 rounded-lg hover:bg-white/5" title="Theme wechseln" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">dark_mode</button>
+      <div class="w-9 h-9 rounded-full border border-outline-variant bg-surface-container-high flex items-center justify-center">
+        <span class="material-symbols-outlined text-slate-400 text-base" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">person</span>
+      </div>
+    </div>
   </header>
 
-  <div class="container">
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="md:hidden fixed bottom-0 left-0 w-full bg-[#0b1326] flex justify-around items-center py-4 border-t border-white/5 z-50">
+    <button id="mobileNavHome"     class="flex flex-col items-center gap-1 text-[#0A84FF]">
+      <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">explore</span>
+      <span class="text-[10px] font-bold">Discover</span>
+    </button>
+    <button id="mobileNavPipeline" class="flex flex-col items-center gap-1 text-slate-400">
+      <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">stacked_line_chart</span>
+      <span class="text-[10px] font-bold">Pipeline</span>
+    </button>
+    <button id="mobileNavInbox"    class="flex flex-col items-center gap-1 text-slate-400">
+      <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">account_balance_wallet</span>
+      <span class="text-[10px] font-bold">Portfolio</span>
+    </button>
+    <button id="mobileNavProfile"  class="flex flex-col items-center gap-1 text-slate-400">
+      <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">person</span>
+      <span class="text-[10px] font-bold">Profil</span>
+    </button>
+  </nav>
 
-    <div class="topbar">
-      <div class="menu-wrap" id="topMenuWrap">
-        <button class="menu-toggle" id="menuToggleBtn" aria-label="Navigation öffnen" aria-expanded="false" aria-controls="topMenuDropdown">☰</button>
-        <div class="menu-dropdown" id="topMenuDropdown">
-          <div class="nav">
-            <button class="navbtn" id="navDashboard">Dashboard</button>
-            <button class="navbtn" id="navHome">Übersicht</button>
-            <button class="navbtn" id="navSubmissions">New Submissions</button>
-            <button class="navbtn" id="navPipeline">Pipeline</button>
-            <button class="navbtn" id="navCompare">Compare</button>
-            <button class="navbtn" id="navActivity">Activity</button>
-            <button class="navbtn" id="navInbox">Anfragen</button>
-            <button class="navbtn" id="navScore">Score</button>
-            <button class="navbtn" id="openFilterBtn">Filter</button>
-            <button class="navbtn" id="toggleThemeBtn">Dark Mode</button>
-            <button class="navbtn primary" id="navReset">Demo reset</button>
-          </div>
+  <!-- MAIN WRAPPER -->
+  <main class="pt-24 pb-20 md:pb-12 px-4 md:px-8 max-w-[1600px] mx-auto">
+
+    <!-- FILTER BAR -->
+    <section class="mb-10 p-6 bg-surface-container-low rounded-xl flex flex-col gap-6 controls" id="controlsSection">
+
+      <div class="flex flex-wrap gap-4 items-center">
+        <!-- Search -->
+        <div class="flex-grow min-w-[300px] relative search-box">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-tertiary text-lg" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">search</span>
+          <input type="text" id="searchInput"
+            placeholder="Suche: ID, HQ, Markt, Stage, Sektor…"
+            autocomplete="off"
+            class="w-full bg-surface-container-lowest border-none rounded-lg pl-12 pr-4 py-3 text-sm focus:ring-1 focus:ring-tertiary transition-all placeholder:text-slate-500 text-on-surface">
+        </div>
+
+        <!-- Actions -->
+        <div class="filters-inline flex gap-3 flex-wrap">
+          <button id="clearAllFiltersBtn" class="bg-surface-container-highest hover:bg-outline-variant/30 text-on-surface text-sm font-medium px-5 py-3 rounded-lg transition-all active:scale-95 flex items-center gap-2">
+            <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">filter_list_off</span>
+            Filter löschen
+          </button>
+          <button id="randomizeBtn" class="bg-surface-container-highest hover:bg-outline-variant/30 text-on-surface text-sm font-medium px-5 py-3 rounded-lg transition-all active:scale-95 flex items-center gap-2">
+            <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">shuffle</span>
+            Dataset mischen
+          </button>
+          <button id="navReset" class="bg-surface-container-highest hover:bg-outline-variant/30 text-on-surface text-sm font-medium px-5 py-3 rounded-lg transition-all active:scale-95">
+            Demo Reset
+          </button>
         </div>
       </div>
-    </div>
 
-    <div class="controls">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Suche: ID (z. B. L-7507), HQ, Markt, Stage, Sektor" autocomplete="off">
+      <!-- Stats row + sort -->
+      <div class="summarybar flex justify-between items-center border-t border-white/5 pt-4">
+        <div class="summary-left flex gap-3 flex-wrap items-center">
+          <span class="text-slate-400 text-xs uppercase tracking-widest font-bold" id="resultCount">0 Ergebnisse</span>
+          <span class="text-slate-400 text-xs uppercase tracking-widest font-bold" id="activeFilterCount">0 Filter aktiv</span>
+          <span class="text-slate-400 text-xs uppercase tracking-widest font-bold" id="savedCount">0 gemerkt</span>
+        </div>
+        <div class="sortbox">
+          <select id="sortSelect" aria-label="Sortierung" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 cursor-pointer py-1 pr-8 text-right">
+            <option value="mrr_desc">MRR (hoch → niedrig)</option>
+            <option value="growth_desc">Wachstum (hoch → niedrig)</option>
+            <option value="runway_desc">Runway (hoch → niedrig)</option>
+            <option value="burn_asc">Burn (niedrig → hoch)</option>
+            <option value="nrr_desc">NRR (hoch → niedrig)</option>
+            <option value="ltvcac_desc">LTV/CAC (hoch → niedrig)</option>
+            <option value="ticket_desc">Ticket (hoch → niedrig)</option>
+            <option value="arr_desc">ARR (hoch → niedrig)</option>
+          </select>
+        </div>
       </div>
-      <div class="filters-inline">
-        <button class="btn secondary" id="clearAllFiltersBtn">Filter löschen</button>
-        <button class="btn secondary" id="randomizeBtn">Dataset neu mischen</button>
-      </div>
-    </div>
 
-    <div class="summarybar">
-      <div class="summary-left">
-        <div class="pill" id="resultCount">0 Ergebnisse</div>
-        <div class="pill" id="activeFilterCount">0 Filter aktiv</div>
-        <div class="pill" id="savedCount">0 gemerkt</div>
-      </div>
-      <div class="sortbox">
-        <select id="sortSelect" aria-label="Sortierung">
-          <option value="mrr_desc">Sortierung: MRR (hoch → niedrig)</option>
-          <option value="growth_desc">Sortierung: Wachstum (hoch → niedrig)</option>
-          <option value="runway_desc">Sortierung: Runway (hoch → niedrig)</option>
-          <option value="burn_asc">Sortierung: Burn (niedrig → hoch)</option>
-          <option value="nrr_desc">Sortierung: NRR (hoch → niedrig)</option>
-          <option value="ltvcac_desc">Sortierung: LTV/CAC (hoch → niedrig)</option>
-          <option value="ticket_desc">Sortierung: Ticket (Rundengröße) (hoch → niedrig)</option>
-          <option value="arr_desc">Sortierung: ARR (hoch → niedrig)</option>
-        </select>
-      </div>
-    </div>
+      <!-- Active filter chips -->
+      <div class="activechips flex gap-2 flex-wrap" id="activeChips"></div>
 
-    <div class="activechips" id="activeChips"></div>
+    </section>
 
     <div id="viewDashboard" class="view" style="display:none;"></div>
-    <div class="card-grid" id="cardGrid"></div>
+    <div class="card-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="cardGrid"></div>
     <div id="viewSubmissions" class="view" style="display:none;"></div>
     <div id="viewPipeline" class="view" style="display:none;"></div>
     <div id="viewCompare" class="view" style="display:none;"></div>
     <div id="viewActivity" class="view" style="display:none;"></div>
     <div id="viewInbox" class="view" style="display:none;"></div>
 
-  </div>
+  </main>
 
 <!-- ✅ COMPARE TRAY (offline, additive) -->
 <div class="compare-tray" id="compareTray" aria-live="polite">

@@ -115,17 +115,22 @@ function setTheme(mode){
   const root = document.documentElement;
   if(mode === "dark"){
     root.setAttribute("data-theme","dark");
-    document.getElementById("toggleThemeBtn").textContent = "Light Mode";
+    root.classList.add("dark");
+    const btn = document.getElementById("toggleThemeBtn");
+    if(btn && !btn.classList.contains("material-symbols-outlined")) btn.textContent = "Light Mode";
   }else{
     root.removeAttribute("data-theme");
-    document.getElementById("toggleThemeBtn").textContent = "Dark Mode";
+    root.classList.remove("dark");
+    const btn = document.getElementById("toggleThemeBtn");
+    if(btn && !btn.classList.contains("material-symbols-outlined")) btn.textContent = "Dark Mode";
   }
   safeSetJSON(LS_KEYS.theme, mode);
 }
 function loadTheme(){
   const t = safeGetJSON(LS_KEYS.theme, null);
-  if(t === "dark") setTheme("dark");
-  else setTheme("light");
+  // Default to dark (design system is dark-only)
+  if(t === "light") setTheme("light");
+  else setTheme("dark");
 }
 function toggleTheme(){
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
