@@ -79,12 +79,36 @@ function showControls(){
   if(chipsBar) chipsBar.style.display = "";
 }
 
+function _makeSkeletonCard(){
+  const c = document.createElement("div");
+  c.className = "skeleton-card";
+  c.innerHTML = `
+    <div class="skeleton-line skeleton-line--title"></div>
+    <div class="skeleton-line skeleton-line--tag"></div>
+    <div class="skeleton-line skeleton-line--score"></div>
+    <div class="skeleton-metrics">
+      <div class="skeleton-metric"></div>
+      <div class="skeleton-metric"></div>
+      <div class="skeleton-metric"></div>
+      <div class="skeleton-metric"></div>
+    </div>`;
+  return c;
+}
+
 function renderCards(){
   hideAllViews();
   showControls();
   const grid = document.getElementById("cardGrid");
   grid.style.display = "";
 
+  // Show skeleton while computing filtered list
+  grid.innerHTML = "";
+  for(let i=0; i<6; i++) grid.appendChild(_makeSkeletonCard());
+
+  requestAnimationFrame(()=>{ _renderCardsContent(grid); });
+}
+
+function _renderCardsContent(grid){
   const list = buildFilteredList();
   lastListContext = list;
 
@@ -96,9 +120,18 @@ function renderCards(){
   grid.innerHTML = "";
   if(list.length===0){
     const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.innerHTML = `Keine Treffer.<div class="hint">Filter anpassen oder Suche nutzen.</div>`;
+    empty.className = "empty-state";
+    empty.innerHTML = `
+      <div class="empty-state__icon">🔍</div>
+      <p class="empty-state__title">Keine Treffer</p>
+      <p class="empty-state__sub">Keine Startups entsprechen den aktiven Filtern. Filter anpassen oder zurücksetzen.</p>
+      <button class="empty-state__cta" id="emptyStateResetBtn">Filter zurücksetzen</button>`;
     grid.appendChild(empty);
+    const resetBtn = document.getElementById("emptyStateResetBtn");
+    if(resetBtn) resetBtn.addEventListener("click", ()=>{
+      if(typeof resetFiltersAll === "function") resetFiltersAll();
+      else { renderCards(); }
+    });
     return;
   }
 
@@ -121,6 +154,8 @@ function renderCards(){
     const card = document.createElement("div");
     card.className = "startup-card";
     card.tabIndex = 0;
+    // Stagger entrance animation
+    card.style.animationDelay = (idx * 30) + "ms";
 
     const g = s.growth?.value_pct ?? null;
     const gCls = g>0 ? "trend-up" : (g<0 ? "trend-down" : "");
