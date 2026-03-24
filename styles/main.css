@@ -1792,3 +1792,127 @@ tbody td,
     grid-template-columns:1fr;
   }
 }
+
+/* =========================
+   HOTFIX: Dark Mode Contrast Normalization
+   Visual-only (no behavior changes)
+========================= */
+[data-theme="dark"]{
+  --surface-0:#0b1220;
+  --surface-1:#101a2c;
+  --surface-2:#152238;
+  --surface-3:#1a2a44;
+  --text-strong:#eef3fb;
+  --text-soft:#b7c3d7;
+}
+
+[data-theme="dark"] body{
+  background:var(--surface-0);
+  color:var(--text-strong);
+}
+
+[data-theme="dark"] .menu-toggle,
+[data-theme="dark"] .menu-dropdown,
+[data-theme="dark"] .navbtn:not(.primary),
+[data-theme="dark"] .btn.secondary,
+[data-theme="dark"] .pill,
+[data-theme="dark"] .achip,
+[data-theme="dark"] .tag,
+[data-theme="dark"] .badge,
+[data-theme="dark"] .metric,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .filter-section,
+[data-theme="dark"] .dash-panel,
+[data-theme="dark"] .dash-kpi,
+[data-theme="dark"] .tablewrap,
+[data-theme="dark"] .compare-inner,
+[data-theme="dark"] .compareTableWrap,
+[data-theme="dark"] .bulk-toolbar,
+[data-theme="dark"] .toggle-row,
+[data-theme="dark"] .dd-btn,
+[data-theme="dark"] .dd-item,
+[data-theme="dark"] .dd-pill,
+[data-theme="dark"] .dd-panel,
+[data-theme="dark"] .custom-panel,
+[data-theme="dark"] .rules-group,
+[data-theme="dark"] .rule-row,
+[data-theme="dark"] .custom-scorebox{
+  background:var(--surface-1);
+  border-color:var(--border);
+  color:var(--text-strong);
+}
+
+[data-theme="dark"] .startup-card,
+[data-theme="dark"] .modal,
+[data-theme="dark"] .filter-modal,
+[data-theme="dark"] .custom-sheet,
+[data-theme="dark"] .privacy-content{
+  background:var(--surface-1);
+  border-color:var(--border);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .filter-header,
+[data-theme="dark"] .custom-head,
+[data-theme="dark"] .privacy-header{
+  background:linear-gradient(180deg, var(--surface-2), var(--surface-1));
+}
+
+[data-theme="dark"] thead th,
+[data-theme="dark"] .compareTable th{
+  background:var(--surface-2);
+  color:var(--text-soft);
+  border-bottom-color:var(--border);
+}
+
+[data-theme="dark"] tbody tr:hover{
+  background:rgba(76,121,189,0.14);
+}
+
+[data-theme="dark"] tbody td,
+[data-theme="dark"] .compareTable td{
+  color:var(--text-strong);
+}
+
+[data-theme="dark"] select,
+[data-theme="dark"] .select,
+[data-theme="dark"] .search-box input,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] .dd-search,
+[data-theme="dark"] .custom-row input,
+[data-theme="dark"] .custom-row select,
+[data-theme="dark"] .decline-dialog-inner select,
+[data-theme="dark"] .decline-dialog-inner textarea{
+  background:var(--surface-2);
+  border-color:var(--border);
+  color:var(--text-strong);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder{
+  color:var(--text-soft);
+  opacity:0.9;
+}
+
+[data-theme="dark"] .summary-left,
+[data-theme="dark"] .helper,
+[data-theme="dark"] .muted-note,
+[data-theme="dark"] .dash-subtitle,
+[data-theme="dark"] .dash-panel-sub,
+[data-theme="dark"] .card-desc,
+[data-theme="dark"] .plaus-check-message,
+[data-theme="dark"] .plaus-summary{
+  color:var(--text-soft);
+}
+
+[data-theme="dark"] .privacy-bar{
+  background:rgba(16,26,44,0.95);
+  border-top-color:var(--border);
+}
+
+[data-theme="dark"] .custom-row{
+  border-bottom-color:color-mix(in srgb, var(--border) 85%, transparent);
+}
