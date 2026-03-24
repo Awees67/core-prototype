@@ -111,17 +111,17 @@ function _buildScoreRing(score, rulesetName, anonId) {
   const offset = (circ * (1 - n / 100)).toFixed(2);
   const displayScore = (score !== null && score !== undefined) ? escapeHTML(String(n)) : '—';
   return `
-    <div class="score-ring-wrap">
+    <div class="score-wrap">
       <div class="score-ring">
         <svg viewBox="0 0 56 56">
           <circle cx="28" cy="28" r="${R}" fill="none" stroke="${trackColor}" stroke-width="4"/>
           <circle cx="28" cy="28" r="${R}" fill="none" stroke="${ringColor}" stroke-width="4"
             stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
         </svg>
-        <span class="score-ring__num" style="color:${textColor}">${displayScore}</span>
+        <span class="score-num" style="color:${textColor}">${displayScore}</span>
       </div>
       <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(String(anonId))}" type="button" aria-label="Score Breakdown">ⓘ</button>
-      <span class="score-ring__label">${escapeHTML(rulesetName)}</span>
+      <span class="score-lbl">${escapeHTML(rulesetName)}</span>
     </div>`;
 }
 
@@ -131,23 +131,21 @@ function _scoreRing(scoreRaw, rulesetName, anonId) {
   const circ = +(2 * Math.PI * R).toFixed(2);
   const off  = +(circ * (1 - n / 100)).toFixed(2);
   let ring, track, txt;
-  if (n >= 70) { ring = '#00dfc1'; track = 'rgba(0,223,193,0.14)'; txt = '#00dfc1'; }
+  if (n >= 70)      { ring = '#00dfc1'; track = 'rgba(0,223,193,0.14)';  txt = '#00dfc1'; }
   else if (n >= 40) { ring = '#f97316'; track = 'rgba(249,115,22,0.14)'; txt = '#f97316'; }
-  else             { ring = '#ef4444'; track = 'rgba(239,68,68,0.14)'; txt = '#ef4444'; }
+  else              { ring = '#ef4444'; track = 'rgba(239,68,68,0.14)';  txt = '#ef4444'; }
   const disp = (scoreRaw !== null && scoreRaw !== undefined) ? String(n) : '—';
-  return `<div class="score-ring-wrap">
+  return `<div class="score-wrap">
     <div class="score-ring">
       <svg viewBox="0 0 64 64">
         <circle cx="32" cy="32" r="${R}" fill="none" stroke="${track}" stroke-width="5"/>
         <circle cx="32" cy="32" r="${R}" fill="none" stroke="${ring}" stroke-width="5"
           stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"/>
       </svg>
-      <span class="score-ring__num" style="color:${txt}">${escapeHTML(disp)}</span>
+      <span class="score-num" style="color:${txt}">${escapeHTML(disp)}</span>
     </div>
-    <div class="score-ring__info">
-      <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(anonId)}" type="button" aria-label="Score Breakdown">ⓘ</button>
-    </div>
-    <span class="score-ring__label">${escapeHTML(rulesetName)}</span>
+    <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(anonId)}" type="button" aria-label="Score Breakdown">ⓘ</button>
+    <span class="score-lbl">${escapeHTML(rulesetName)}</span>
   </div>`;
 }
 
@@ -232,54 +230,56 @@ function _renderCardsContent(grid){
 
     card.innerHTML = `
   <div class="card-head">
-    <div style="flex:1;min-width:0;">
-      <h3>${escapeHTML(startupLabel(s))}</h3>
-      <div class="tagrow">
-        <span class="tag tag--id">ID: ${escapeHTML(s.anon_id)}</span>
-        <span class="tag">HQ: ${escapeHTML(s.origin_country)}</span>
-        <span class="tag">Markt: ${escapeHTML(marketLabel)}</span>
-        <span class="tag tag--stage">${escapeHTML(s.stage)}</span>
+    <div class="card-head-left">
+      <div class="card-name">
+        ${escapeHTML(startupLabel(s))}
+        <span class="cid">${escapeHTML(s.anon_id)}</span>
+      </div>
+      <div class="tags">
+        <span class="tag">🌍 ${escapeHTML(s.origin_country)}</span>
+        <span class="tag">${escapeHTML(marketLabel)}</span>
+        <span class="tag stage">${escapeHTML(s.stage)}</span>
         <span class="tag">${escapeHTML(s.sector)}</span>
         ${s.sub_sector ? `<span class="tag">${escapeHTML(s.sub_sector)}</span>` : ''}
       </div>
-      ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ''}
+      ${s.description ? `<p class="desc">${escapeHTML(s.description)}</p>` : ''}
       ${nc > 0 ? `<span class="card-notes-indicator" style="margin-top:4px;display:inline-flex;">📝 ${nc}</span>` : ''}
     </div>
     ${_scoreRing(_scoreRaw, activeRulesetName, s.anon_id)}
   </div>
 
-  <div class="metrics">
-    <div class="metric">
-      <strong class="mono">${escapeHTML(fmtEUR(s.mrr_eur))}</strong>
-      <small>MRR</small>
+  <div class="kpi-grid">
+    <div class="kpi-tile">
+      <span class="kpi-val">${escapeHTML(fmtEUR(s.mrr_eur))}</span>
+      <span class="kpi-lbl">MRR</span>
     </div>
-    <div class="metric">
-      <strong class="mono${g > 0 ? ' kpi-positive' : g < 0 ? ' kpi-negative' : ''}">${g === null ? '—' : escapeHTML(fmtPct(g))}</strong>
-      <small>Wachstum (${escapeHTML(s.growth?.type || '—')})</small>
+    <div class="kpi-tile">
+      <span class="kpi-val${g > 0 ? ' pos' : g < 0 ? ' neg' : ''}">${g === null ? '—' : escapeHTML(fmtPct(g))}</span>
+      <span class="kpi-lbl">Wachstum (${escapeHTML(s.growth?.type || '—')})</span>
     </div>
-    <div class="metric">
-      <strong class="mono kpi-negative">${escapeHTML(fmtEUR(s.burn_eur_per_month))}</strong>
-      <small>Burn / Monat</small>
+    <div class="kpi-tile">
+      <span class="kpi-val neg">${escapeHTML(fmtEUR(s.burn_eur_per_month))}</span>
+      <span class="kpi-lbl">Burn / Monat</span>
     </div>
-    <div class="metric">
-      <strong class="mono">${escapeHTML(String(s.runway_months))} Monate</strong>
-      <small>Runway</small>
+    <div class="kpi-tile">
+      <span class="kpi-val">${escapeHTML(String(s.runway_months))} M</span>
+      <span class="kpi-lbl">Runway</span>
     </div>
-    <div class="metric">
-      <strong class="mono">${escapeHTML(String(s.nrr_pct))}%</strong>
-      <small>NRR</small>
+    <div class="kpi-tile">
+      <span class="kpi-val">${escapeHTML(String(s.nrr_pct))}%</span>
+      <span class="kpi-lbl">NRR</span>
     </div>
-    <div class="metric">
-      <strong class="mono">${escapeHTML(s.ltv_cac_ratio.toFixed(1))}</strong>
-      <small>LTV/CAC</small>
+    <div class="kpi-tile">
+      <span class="kpi-val">${escapeHTML(s.ltv_cac_ratio.toFixed(1))}</span>
+      <span class="kpi-lbl">LTV/CAC</span>
     </div>
   </div>
 
-  <div class="card-actions">
-    <button class="btn-primary-card" data-action="open" data-id="${escapeHTML(s.anon_id)}">Details öffnen</button>
-    <div class="card-actions-row">
-      <button class="btn-secondary-card" data-action="addpipeline" data-id="${escapeHTML(s.anon_id)}" ${pipelineBtnDisabled}>${escapeHTML(pipelineBtnText)}</button>
-      <button class="btn-secondary-card" data-action="compare" data-id="${escapeHTML(s.anon_id)}">⇄ Compare</button>
+  <div class="actions">
+    <button class="btn-primary" data-action="open" data-id="${escapeHTML(s.anon_id)}">Details öffnen</button>
+    <div class="btn-row">
+      <button class="btn-secondary" data-action="addpipeline" data-id="${escapeHTML(s.anon_id)}" ${pipelineBtnDisabled}>${escapeHTML(pipelineBtnText)}</button>
+      <button class="btn-secondary" data-action="compare" data-id="${escapeHTML(s.anon_id)}">⇄ Compare</button>
     </div>
   </div>
 `;
