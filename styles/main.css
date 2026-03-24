@@ -1491,8 +1491,8 @@ tr.bulk-selected { background: var(--soft2); }
   --shadow:0 1px 2px rgba(16,24,40,0.08);
   --brand:#10243f;
   --brand2:#1c3f73;
-  --soft:#f4f6f9;
-  --soft2:#eef2f7;
+  --soft:#f8faff;
+  --soft2:#edf5ff;
 }
 
 [data-theme="dark"]{
