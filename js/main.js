@@ -82,6 +82,35 @@ document.addEventListener("DOMContentLoaded", ()=>{
   on("navReset","click", resetDemo);
   on("toggleThemeBtn","click", toggleTheme);
 
+  const menuWrap = document.getElementById("topMenuWrap");
+  const menuToggleBtn = document.getElementById("menuToggleBtn");
+  const topMenuDropdown = document.getElementById("topMenuDropdown");
+
+  function closeTopMenu(){
+    if(!menuWrap || !menuToggleBtn) return;
+    menuWrap.classList.remove("open");
+    menuToggleBtn.setAttribute("aria-expanded", "false");
+  }
+
+  if(menuWrap && menuToggleBtn){
+    menuToggleBtn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const willOpen = !menuWrap.classList.contains("open");
+      menuWrap.classList.toggle("open", willOpen);
+      menuToggleBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+  }
+
+  if(topMenuDropdown){
+    topMenuDropdown.addEventListener("click", (e)=>{
+      if(e.target.closest(".navbtn")) closeTopMenu();
+    });
+  }
+
+  document.addEventListener("click", (e)=>{
+    if(menuWrap && !menuWrap.contains(e.target)) closeTopMenu();
+  });
+
   on("clearAllFiltersBtn","click", ()=>{
     resetFiltersAll();
     toast("OK","Filter gelöscht");
@@ -106,6 +135,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       closeFilterModal();
       closePrivacy();
       closeSignalPopover();
+      closeTopMenu();
       if(typeof closeDeclineDialog === "function") closeDeclineDialog();
     }
     if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="k"){
