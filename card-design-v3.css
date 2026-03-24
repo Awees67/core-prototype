@@ -1,0 +1,261 @@
+/* =========================
+   CARD DESIGN v3 — 2026-03-24 (final approved)
+   APPEND THIS BLOCK TO THE END OF styles/main.css
+   New class names: .card-head-left, .card-name, .cid,
+   .tags, .tag.stage, .desc, .score-wrap, .score-num, .score-lbl,
+   .kpi-grid, .kpi-tile, .kpi-val (.pos / .neg), .kpi-lbl,
+   .actions, .btn-primary, .btn-row, .btn-secondary
+========================= */
+
+/* ── Card shell (overrides previous v2 block) ── */
+.startup-card {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  background: #141e30 !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 12px !important;
+  padding: 18px !important;
+  gap: 12px !important;
+  box-shadow: none !important;
+  animation: card-enter-v3 0.2s ease both;
+  transition: transform 0.22s ease, border-color 0.22s ease !important;
+}
+.startup-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(173,199,255,0.18) !important;
+  box-shadow: none !important;
+}
+@keyframes card-enter-v3 {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .startup-card { animation: none !important; transition: none !important; }
+}
+
+/* ── Card head ── */
+.startup-card .card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.card-head-left {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Startup name + ID chip ── */
+.card-name {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.cid {
+  font-size: 9px;
+  background: rgba(255,255,255,0.05);
+  color: #8b91a0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* ── Tags row ── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 0;
+}
+/* Override .startup-card .tag from existing code */
+.startup-card .tags .tag {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(58,74,95,0.55) !important;
+  color: #b7c8e1 !important;
+  border: none !important;
+  white-space: nowrap !important;
+}
+.startup-card .tags .tag.stage {
+  background: rgba(74,142,255,0.14) !important;
+  color: #adc7ff !important;
+}
+
+/* ── Description ── */
+.startup-card .desc {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  color: #8b91a0;
+  font-style: italic;
+  margin-top: 8px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Score ring ── */
+.score-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.startup-card .score-ring {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.startup-card .score-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.score-num {
+  position: relative;
+  z-index: 1;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.score-lbl {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b91a0;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Infoicon inside score wrap */
+.score-wrap .infoicon {
+  font-size: 11px !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: unset !important;
+  padding: 0 !important;
+  margin: 1px 0 !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: #8b91a0 !important;
+  background: transparent !important;
+}
+.score-wrap .infoicon:hover {
+  border-color: rgba(173,199,255,0.4) !important;
+  color: #adc7ff !important;
+}
+
+/* ── KPI grid ── */
+.kpi-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+.kpi-tile {
+  background: #1c2740 !important;
+  border-radius: 8px !important;
+  padding: 12px 14px !important;
+  border: none !important;
+}
+.kpi-val {
+  display: block;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #dae2fd;
+  line-height: 1.2;
+}
+.kpi-val.pos { color: #00dfc1; }
+.kpi-val.neg { color: #ff6b6b; }
+.kpi-lbl {
+  display: block;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b91a0;
+  margin-top: 4px;
+}
+
+/* ── Actions ── */
+.startup-card .actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+  flex-wrap: nowrap !important;
+}
+.startup-card .btn-primary {
+  width: 100%;
+  background: #4a8eff;
+  color: #001a41;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 1;
+  text-align: center;
+  transition: filter 0.15s ease;
+}
+.startup-card .btn-primary:hover { filter: brightness(1.1); }
+.startup-card .btn-primary:active { transform: scale(0.98); }
+.startup-card .btn-primary:focus { outline: none; box-shadow: 0 0 0 3px rgba(74,142,255,0.35); }
+
+.startup-card .btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.startup-card .btn-secondary {
+  background: #1e2d45;
+  color: #dae2fd;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+.startup-card .btn-secondary:hover { background: rgba(65,71,84,0.7); }
+.startup-card .btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.startup-card .btn-secondary:focus { outline: none; box-shadow: 0 0 0 3px rgba(74,142,255,0.2); }
