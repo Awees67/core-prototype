@@ -95,6 +95,36 @@ function _makeSkeletonCard(){
   return c;
 }
 
+// CARD RING DESIGN: approved 2026-03-24
+function _buildScoreRing(score, rulesetName, anonId) {
+  const n = Number(score ?? 0);
+  const R = 24;
+  const circ = (2 * Math.PI * R).toFixed(2);
+  let ringColor, trackColor, textColor;
+  if (n >= 70) {
+    ringColor = '#00dfc1'; trackColor = 'rgba(0,223,193,0.12)'; textColor = '#00dfc1';
+  } else if (n >= 40) {
+    ringColor = '#f97316'; trackColor = 'rgba(249,115,22,0.12)'; textColor = '#f97316';
+  } else {
+    ringColor = '#ef4444'; trackColor = 'rgba(239,68,68,0.12)'; textColor = '#ef4444';
+  }
+  const offset = (circ * (1 - n / 100)).toFixed(2);
+  const displayScore = (score !== null && score !== undefined) ? escapeHTML(String(n)) : '—';
+  return `
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="${R}" fill="none" stroke="${trackColor}" stroke-width="4"/>
+          <circle cx="28" cy="28" r="${R}" fill="none" stroke="${ringColor}" stroke-width="4"
+            stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+        </svg>
+        <span class="score-ring__num" style="color:${textColor}">${displayScore}</span>
+      </div>
+      <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(String(anonId))}" type="button" aria-label="Score Breakdown">ⓘ</button>
+      <span class="score-ring__label">${escapeHTML(rulesetName)}</span>
+    </div>`;
+}
+
 function renderCards(){
   hideAllViews();
   showControls();
@@ -169,19 +199,19 @@ function _renderCardsContent(grid){
     const marketLabel = s.market_served.includes("DACH") ? "DACH (DE•AT•CH)" : (s.market_served[0] || "—");
 
     // Compute score for this card
-    let scoreValue = "—";
-    let scoreColorClass = "";
+    let scoreValueRaw = null;
     try{
       const res = computeCustomIndexV6(s.anon_id);
       if(res && res.score !== null && res.score !== undefined){
-        scoreValue = String(res.score);
-        scoreColorClass = getScoreColorClass(res.score);
+        scoreValueRaw = res.score;
       }
     }catch(_){}
 
+    const gKpiClass = g > 0 ? 'kpi-positive' : (g < 0 ? 'kpi-negative' : '');
+
     card.innerHTML = `
       <div class="card-head">
-        <div>
+        <div style="flex:1;">
           <h3>${startupLabel(s)}</h3>
 
           <!-- Context only -->
@@ -189,24 +219,16 @@ function _renderCardsContent(grid){
             <span class="tag" style="opacity:0.7;">ID: ${s.anon_id}</span>
             <span class="tag">HQ: ${s.origin_country}</span>
             <span class="tag">Markt: ${marketLabel}</span>
-            <span class="tag">${s.stage}</span>
+            <span class="tag tag--stage">${s.stage}</span>
             <span class="tag">${s.sector}</span>
             ${s.sub_sector ? `<span class="tag">${s.sub_sector}</span>` : ""}
           </div>
 
-          <!-- Score Badge -->
-          <div class="score-row">
-            <div class="score-badge ${scoreColorClass}">
-              <span class="score-value">${escapeHTML(scoreValue)}</span>
-              <span class="score-label">/ 100</span>
-            </div>
-            <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(s.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button>
-            <span class="score-preset-name">${escapeHTML(activeRulesetName)}</span>
-            ${nc > 0 ? `<span class="card-notes-indicator">📝 ${nc}</span>` : ""}
-          </div>
+          ${nc > 0 ? `<span class="card-notes-indicator">📝 ${nc}</span>` : ""}
 
           ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ""}
         </div>
+        ${_buildScoreRing(scoreValueRaw, activeRulesetName, s.anon_id)}
       </div>
 
       <!-- 6 KPI TEASERS (hook) -->
@@ -216,12 +238,12 @@ function _renderCardsContent(grid){
           <small>MRR</small>
         </div>
         <div class="metric">
-          <strong class="mono"><span class="${gCls}">${g===null ? "—" : fmtPct(g)}</span></strong>
+          <strong class="mono ${gKpiClass}">${g===null ? "—" : fmtPct(g)}</strong>
           <small>Wachstum (${s.growth?.type || "—"})</small>
         </div>
 
         <div class="metric">
-          <strong class="mono">${fmtEUR(s.burn_eur_per_month)}</strong>
+          <strong class="mono kpi-negative">${fmtEUR(s.burn_eur_per_month)}</strong>
           <small>Burn / Monat</small>
         </div>
         <div class="metric">

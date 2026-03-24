@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
     :root{
       --bg:#f8f9fa;
@@ -21,7 +21,7 @@
       --soft2:#eef4ff;
 
       /* === Übersicht optimization tokens === */
-      --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
+      --font-ui: 'DM Sans', system-ui, sans-serif;
       --font-data: 'IBM Plex Mono', 'Courier New', monospace;
       --text-xs: 11px;
       --text-sm: 13px;
@@ -2319,3 +2319,95 @@ button:disabled,
     transition: none !important;
   }
 }
+
+/* // CARD RING DESIGN: approved 2026-03-24 */
+
+/* ── Score ring (replaces pill badge) ── */
+.score-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.score-ring {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.score-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.score-ring__num {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-data);
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.score-ring__label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b91a0;
+}
+
+/* ── Dark card overrides ── */
+[data-theme='dark'] .startup-card {
+  background: #141e30;
+  border-color: rgba(255,255,255,0.06);
+}
+[data-theme='dark'] .startup-card:hover {
+  border-color: rgba(173,199,255,0.18);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+[data-theme='dark'] .startup-card .metric {
+  background: #1c2740;
+  border-color: rgba(255,255,255,0.04);
+}
+[data-theme='dark'] .startup-card h3 {
+  color: #dae2fd;
+}
+[data-theme='dark'] .startup-card .metric strong {
+  color: #dae2fd;
+}
+[data-theme='dark'] .startup-card .tag {
+  background: rgba(58,74,95,0.55);
+  color: #b7c8e1;
+  border-color: transparent;
+}
+[data-theme='dark'] .startup-card .tag.tag--stage {
+  background: rgba(74,142,255,0.14);
+  color: #adc7ff;
+  border-color: transparent;
+}
+[data-theme='dark'] .startup-card .card-desc {
+  color: #8b91a0;
+}
+[data-theme='dark'] .startup-card .metric small {
+  color: #8b91a0;
+}
+[data-theme='dark'] .startup-card .btn:not(.secondary) {
+  background: #4a8eff;
+  color: #001a41;
+}
+[data-theme='dark'] .startup-card .btn.secondary {
+  background: #1e2d45;
+  color: #dae2fd;
+  border-color: rgba(255,255,255,0.06);
+}
+
+/* ── KPI semantic value colors ── */
+.kpi-positive { color: #00dfc1 !important; }
+.kpi-negative { color: #ff6b6b !important; }
+[data-theme='dark'] .startup-card .metric strong.kpi-positive { color: #00dfc1; }
+[data-theme='dark'] .startup-card .metric strong.kpi-negative { color: #ff6b6b; }
