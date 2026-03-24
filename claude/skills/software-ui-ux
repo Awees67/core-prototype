@@ -1,0 +1,280 @@
+---
+name: software-ui-ux
+description: Use when building application interfaces, dashboards, SaaS tools, admin panels, data-heavy screens, multi-step flows, or any software UI where usability and aesthetics must coexist. Use when the deliverable is a functional product interface rather than a marketing page or landing page.
+---
+
+# Software UI/UX Design
+
+## Overview
+
+Production-grade software interfaces demand a different discipline than marketing sites. Here, **function must drive form** — but "functional" is never an excuse for mediocrity. The goal is interfaces that feel crafted, not generated: opinionated visual systems, clear information hierarchies, and interactions that reward attention.
+
+This skill prevents two failure modes:
+1. **Functional but ugly** — developer-default grey boxes, no visual system, zero delight
+2. **Pretty but broken** — style-first layouts that ignore real data, edge cases, or cognitive load
+
+---
+
+## Design Thinking Before Code
+
+Before writing a single line, answer these four questions:
+
+**1. What is the primary job?**
+Is the user scanning (dashboard), acting (form/wizard), exploring (data table), or monitoring (status/analytics)? Every design decision should serve the primary job.
+
+**2. What is the data reality?**
+Empty states, loading states, error states, truncated text, 1 item vs 10.000 items — design for real data, not ideal data.
+
+**3. What is the visual identity?**
+Pick a precise aesthetic and commit. Examples:
+- *Precision instrument*: tight spacing, monospaced accents, muted palette with one sharp signal color
+- *Warm productivity*: generous whitespace, warm neutrals, soft shadows, approachable type
+- *Dense & powerful*: compressed layout, high information density, utility-first like Bloomberg or Linear
+- *Calm authority*: large type, structural grid, editorial restraint, no decoration
+
+**4. What makes it memorable?**
+One deliberate detail — a custom scrollbar, a distinctive empty state illustration style, an unexpected hover transition — elevates the whole system.
+
+---
+
+## Typography System
+
+Typography is the backbone of software UI. Establish a system before placing any component.
+
+**Rules:**
+- **Never use Inter, Roboto, or system-ui as the primary typeface.** These read as default, not designed.
+- Use a **pairing**: one geometric/humanist sans for UI labels + one monospaced or slab for data/emphasis
+- Good combinations:
+  - `Geist` (labels) + `Geist Mono` (data/code) — tight, technical
+  - `DM Sans` (body) + `Fraunces` (headings) — warm editorial
+  - `IBM Plex Sans` (UI) + `IBM Plex Mono` (values) — systematic, authoritative
+  - `Syne` (headings) + `Epilogue` (body) — contemporary, confident
+- **Scale**: use a strict typographic scale (12/14/16/20/24/32/48). Never freehand font sizes.
+- **Weight contrast**: the gap between regular (400) and bold (700) should be perceivable. Avoid medium (500) as the only "emphasis".
+
+```css
+/* Example: Precision Instrument system */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --font-ui: 'IBM Plex Sans', sans-serif;
+  --font-data: 'IBM Plex Mono', monospace;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+}
+```
+
+---
+
+## Color System
+
+**Build a token-based palette. Never hardcode hex values in components.**
+
+```css
+:root {
+  /* Surface hierarchy — 3 levels minimum */
+  --surface-base: #0f0f11;       /* canvas / outermost */
+  --surface-raised: #17171a;     /* cards, panels */
+  --surface-overlay: #1f1f23;    /* modals, dropdowns */
+
+  /* Border */
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.18);
+
+  /* Text */
+  --text-primary: #f0f0f2;
+  --text-secondary: #8a8a9a;
+  --text-tertiary: #55556a;
+
+  /* Signal — one color, used sparingly */
+  --accent: #5b8def;
+  --accent-subtle: rgba(91,141,239,0.12);
+
+  /* Semantic */
+  --success: #34c77b;
+  --warning: #f59f2a;
+  --danger: #f2453d;
+}
+```
+
+**Rules:**
+- Max **one accent color**. Secondary actions use ghost/outline styles, not a second hue.
+- Avoid gradients on interactive elements — they communicate "decoration," not "action."
+- Use opacity variants of the accent for hover/focus states, not lightness shifts.
+- Backgrounds must have at minimum 3 distinct surface levels (base → raised → overlay).
+
+---
+
+## Spacing & Layout
+
+**Use an 8px grid.** All spacing values are multiples of 4 (4, 8, 12, 16, 24, 32, 48, 64, 96).
+
+```css
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+}
+```
+
+**Layout principles:**
+- Use CSS Grid for page-level layouts. Use Flexbox for component-level alignment.
+- Sidebars: 240–280px fixed. Content area: fluid.
+- Avoid centering everything. Left-aligned content with a strong left edge reads faster.
+- **Density is a feature**: compressed layouts (like Linear, Vercel) convey power and respect user attention. Do not pad everything into oblivion.
+
+---
+
+## Component Patterns
+
+### Navigation (Sidebar)
+- Active state: left accent border (2–3px) + subtle background tint. Never a filled pill for primary nav items.
+- Group items with visible but subtle section headers (`text-tertiary`, `text-xs`, uppercase, `letter-spacing: 0.08em`).
+- Collapse toggle at bottom of sidebar, not top.
+
+### Data Tables
+- Alternating row backgrounds are outdated. Use border-bottom only.
+- Column headers: `text-secondary`, `text-xs`, uppercase + `letter-spacing`.
+- Numeric columns: right-aligned, monospaced font, consistent decimal places.
+- Always design empty state, loading skeleton, and error state.
+- Sticky header with scroll — never let headers scroll away.
+
+```css
+/* Table skeleton loader — CSS only */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-raised) 25%, var(--surface-overlay) 50%, var(--surface-raised) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+```
+
+### Forms
+- Labels above inputs, always. Placeholder text is not a label.
+- Input focus state: accent-color border + subtle glow (`box-shadow: 0 0 0 3px var(--accent-subtle)`).
+- Inline validation: show errors on blur, not on every keystroke.
+- Destructive actions (delete, disconnect): always require a secondary confirmation step.
+
+### Cards / Panels
+- Consistent border-radius system: 6px for inputs/buttons, 10px for cards, 16px for modals.
+- Prefer `border: 1px solid var(--border-default)` over box-shadow for dark themes.
+- For light themes, use `box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)`.
+
+### Buttons
+- Primary: filled accent. Secondary: outlined or ghost. Destructive: danger color, only on final confirmation.
+- Loading state: spinner replaces label — don't just disable and hope.
+- Icon buttons: always add `aria-label` and a tooltip on hover.
+
+### Status / Badges
+- Use semantic colors: success (green), warning (amber), danger (red), neutral (grey).
+- Pill shape with subtle background: `background: var(--success-subtle); color: var(--success); border-radius: 100px;`
+- Never use color alone to convey status — add an icon or text label.
+
+---
+
+## Motion & Interaction
+
+**Less is more. Every animation must earn its place.**
+
+```css
+/* Global easing tokens */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);     /* entrances */
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);       /* exits */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* playful bounce */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+}
+```
+
+**Rules:**
+- Page transitions: **fade + slide up (8px)**, `duration-slow`, `ease-out`. Never full-page flips.
+- Modals: **scale from 0.96 to 1 + fade**, not slide-in from edge.
+- List items appearing: **stagger 30ms** between items, `translateY(6px) → 0`.
+- Hover states: `duration-fast`. Never animate on hover longer than 150ms — it feels sluggish.
+- **Respect `prefers-reduced-motion`**: wrap all non-essential animations.
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+---
+
+## States Every Component Must Have
+
+For every interactive component, implement all five:
+
+| State | What it communicates |
+|---|---|
+| **Default** | Ready to interact |
+| **Hover** | Interactable, inviting action |
+| **Focus (keyboard)** | Accessible, current position |
+| **Active/Selected** | Chosen, confirmed |
+| **Disabled** | Unavailable, not clickable (50% opacity + `cursor: not-allowed`) |
+
+And for every data-driven component:
+
+| State | What to show |
+|---|---|
+| **Loading** | Skeleton (not spinner for layout-level content) |
+| **Empty** | Helpful empty state with CTA, not just "No data" |
+| **Error** | Specific message + recovery action |
+| **Populated** | The happy path |
+| **Overflow** | What happens with 1000 items, long strings, missing values |
+
+---
+
+## Accessibility Baseline (Non-Negotiable)
+
+- All interactive elements reachable via keyboard (`Tab`, `Enter`, `Space`, `Esc`)
+- Focus rings visible — never `outline: none` without a custom replacement
+- Color contrast: 4.5:1 for body text, 3:1 for large text and UI components (WCAG AA)
+- All images and icon-only buttons have `alt` / `aria-label`
+- Form inputs have associated `<label>` elements
+
+---
+
+## Anti-Patterns (Never Do These)
+
+| Pattern | Why It's Bad | Do This Instead |
+|---|---|---|
+| Purple gradient hero in a dashboard | Marketing aesthetic in product context | Flat surface with structural color |
+| Cards with border-radius > 16px | Looks toy-like in dense UIs | 8–12px for cards |
+| Centered full-page layouts for dashboards | Wastes horizontal space, breaks scanning | Left-anchored grid with sidebar |
+| Spinner for every loading state | Disorienting for layout-level content | Skeleton loaders |
+| Tooltip-as-label | Fails keyboard/screen reader users | Visible label above input |
+| Success toast auto-dismissed in 2s | User misses confirmation | 4–6s, manually dismissible |
+| Placeholder as only hint text | Disappears on focus | Label always visible, hint text below |
+| Multi-color accent palette | Visual noise, no hierarchy | One accent + semantic colors only |
+| All-caps body text | Reduces readability | All-caps for labels/metadata only |
+| `font-weight: 500` as primary emphasis | Not perceivably different from 400 | Jump to 600 or 700 for true emphasis |
+
+---
+
+## Quick Reference
+
+```
+Typography: IBM Plex, DM Sans, Syne, Geist — NOT Inter/Roboto
+Spacing: 4px base grid, multiples of 4
+Border-radius: 6px inputs, 10px cards, 16px modals
+Colors: 3 surface levels + 1 accent + semantic tokens
+Animation: 120-200ms ease-out, stagger lists at 30ms
+States: default, hover, focus, active, disabled + loading/empty/error
+Accessibility: keyboard nav, contrast 4.5:1, visible focus rings
+```
