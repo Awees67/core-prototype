@@ -2257,3 +2257,14 @@ tbody td,
 :root:not([data-theme="dark"]) .startup-card .btn-secondary:hover {
   background: #e2e8f0 !important;
 }
+
+/* =========================
+   CARD v3 — KPI Semantic Colors Fix
+   pos/neg müssen !important base override gewinnen
+========================= */
+.kpi-val.pos, :root:not([data-theme="dark"]) .kpi-val.pos {
+  color: #00dfc1 !important;
+}
+.kpi-val.neg, :root:not([data-theme="dark"]) .kpi-val.neg {
+  color: #ff6b6b !important;
+}
