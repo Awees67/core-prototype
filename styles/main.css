@@ -1107,16 +1107,14 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
    SUBMISSIONS: Plausibility badges
 ========================= */
 .plaus-passed{
-  background:#16a34a;
-  color:#ffffff;
-  border-color:#15803d !important;
-  font-weight:700;
+  background:var(--goodBg);
+  color:var(--goodText);
+  border-color:var(--goodBorder) !important;
 }
 .plaus-flagged{
-  background:#7c3aed;
-  color:#ffffff;
-  border-color:#6d28d9 !important;
-  font-weight:700;
+  background:var(--warnBg);
+  color:var(--warnText);
+  border-color:var(--warnBorder) !important;
 }
 .plaus-failed{
   background:var(--dangerBg);
@@ -1142,8 +1140,8 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
   text-align:center;
   line-height:1.4;
 }
-.plaus-icon-pass{ color:#15803d; }
-.plaus-icon-fail-soft{ color:#b45309; font-size:1.2rem; }
+.plaus-icon-pass{ color:var(--goodText); }
+.plaus-icon-fail-soft{ color:var(--warnText); }
 .plaus-icon-fail-hard{ color:var(--dangerText); }
 .plaus-check-body{ flex:1; }
 .plaus-check-label{ font-weight:900; }
@@ -1166,9 +1164,6 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
   margin-top:4px;
   font-weight:700;
 }
-.plaus-summary-pass{ color:#15803d; font-weight:700; }
-.plaus-summary-warn{ color:#b45309; font-weight:700; }
-.plaus-summary-crit{ color:var(--dangerText); font-weight:700; }
 
 /* =========================
    PIPELINE: CRM push button
@@ -1924,8 +1919,3 @@ tbody td,
 [data-theme="dark"] .custom-row{
   border-bottom-color:color-mix(in srgb, var(--border) 85%, transparent);
 }
-
-[data-theme="dark"] .plaus-icon-pass{ color:#86efac; }
-[data-theme="dark"] .plaus-icon-fail-soft{ color:#fbbf24; }
-[data-theme="dark"] .plaus-summary-pass{ color:#86efac; }
-[data-theme="dark"] .plaus-summary-warn{ color:#fbbf24; }
