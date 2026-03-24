@@ -1226,7 +1226,21 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
 /* =========================
    DASHBOARD STYLES
 ========================= */
+.dash-shell{ padding:4px 0 8px; }
+.dash-head{ margin-bottom:8px; }
+.dash-title{
+  margin:0 0 4px;
+  font-size:1.42rem;
+  font-weight:950;
+  letter-spacing:0.1px;
+}
+.dash-subtitle{
+  font-size:0.9rem;
+  color:var(--muted);
+  font-weight:800;
+}
 .dash-grid { display:grid; gap:16px; margin-top:16px; }
+.dash-section{ margin-top:18px; }
 .dash-grid-2 { grid-template-columns: 1fr 1fr; }
 .dash-grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 @media (max-width:768px) {
@@ -1237,6 +1251,13 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
 .dash-kpi {
   background:var(--card); border:1px solid var(--border);
   border-radius:var(--radius); padding:20px;
+}
+.dash-kpi-priority-1{
+  border-color:color-mix(in srgb, var(--brand2) 40%, var(--border));
+  box-shadow:0 6px 16px rgba(25,118,210,0.10);
+}
+[data-theme="dark"] .dash-kpi-priority-1{
+  box-shadow:0 6px 16px rgba(42,125,225,0.25);
 }
 .dash-kpi-value {
   font-size:2rem; font-weight:950;
@@ -1258,6 +1279,7 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
 }
 .dash-panel-sub {
   font-size:0.82rem; color:var(--muted); margin-bottom:12px;
+  line-height:1.35;
 }
 
 .funnel-row {
