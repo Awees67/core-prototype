@@ -1965,459 +1965,11 @@ tbody td,
   border-bottom-color:color-mix(in srgb, var(--border) 85%, transparent);
 }
 
-/* =========================
-   ÜBERSICHT OPTIMIZATION
-   // OPTIMIZED: software-ui-ux applied — 2026-03-24
-   Steps 3-12: card header, score-row, metrics, actions,
-   controls, chips, empty state, skeleton, motion, dark mode
-========================= */
-
-/* ── Step 3: Card header — h3 uses text-primary, not brand2 ── */
-.startup-card h3{
-  font-family: var(--font-ui);
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.25;
-}
-
-/* ── Tag row — secondary text, tighter look ── */
-.startup-card .tagrow{
-  gap: 4px;
-  margin-top: 6px !important;
-}
-.startup-card .tag{
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  color: var(--text-secondary);
-  background: transparent;
-  border-color: var(--border-default);
-  padding: 2px 6px;
-}
-
-/* ── Card description ── */
-.startup-card .card-desc{
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin-top: 6px;
-}
-
-/* ── Step 4: Score-row — score is the dominant visual element ── */
-.startup-card .score-row{
-  margin-top: 6px;
-  gap: 6px;
-  align-items: center;
-}
-.startup-card .score-badge{
-  border-radius: 6px;
-  padding: 4px 10px;
-  gap: 2px;
-}
-.startup-card .score-value{
-  font-family: var(--font-data);
-  font-size: var(--text-lg);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-.startup-card .score-label{
-  font-size: var(--text-xs);
-  font-weight: 400;
-  opacity: 0.65;
-}
-.startup-card .score-preset-name{
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  font-weight: 400;
-}
-.startup-card .infoicon{
-  font-size: var(--text-xs);
-  padding: 2px 6px;
-  border-color: var(--border-default);
-}
-.startup-card .infoicon:focus{
-  outline: none;
-  box-shadow: 0 0 0 3px var(--accent-subtle);
-}
-
-/* ── Step 5: Metrics grid — monospaced numbers, 8px grid ── */
-.startup-card .metrics{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px !important;
-}
-.startup-card .metric{
-  border-radius: 6px;
-  padding: 8px 10px !important;
-  background: var(--surface-overlay);
-  border: 1px solid var(--border-subtle);
-}
-.startup-card .metric strong{
-  display: block;
-  font-family: var(--font-data);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-.startup-card .metric small{
-  display: block;
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  color: var(--text-tertiary);
-  margin-top: 2px;
-  letter-spacing: 0.01em;
-}
-
-/* ── Step 6: Card actions ── */
-.startup-card .card-actions{
-  gap: 8px;
-  margin-top: 4px;
-}
-/* Primary CTA — visually dominant */
-.startup-card .btn:not(.secondary){
-  background: var(--accent);
-  color: #fff;
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
-  letter-spacing: 0.01em;
-  transition: background var(--duration-fast) var(--ease-out),
-              box-shadow var(--duration-fast) var(--ease-out);
-}
-.startup-card .btn:not(.secondary):hover{
-  background: color-mix(in srgb, var(--accent) 88%, #000);
-  box-shadow: 0 2px 8px var(--accent-subtle);
-}
-.startup-card .btn:not(.secondary):focus{
-  outline: none;
-  box-shadow: 0 0 0 3px var(--accent-subtle);
-}
-/* Secondary / ghost */
-.startup-card .btn.secondary{
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-default);
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: 400;
-  padding: 7px 12px;
-  border-radius: 6px;
-  transition: background var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out);
-}
-.startup-card .btn.secondary:hover{
-  background: var(--surface-overlay);
-  border-color: var(--border-strong);
-  color: var(--text-primary);
-}
-.startup-card .btn.secondary:focus{
-  outline: none;
-  box-shadow: 0 0 0 3px var(--accent-subtle);
-}
-/* Disabled state */
-.startup-card .btn:disabled,
-.startup-card button:disabled{
-  opacity: 0.45;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-/* Global disabled coverage */
-button:disabled,
-.btn:disabled{
-  cursor: not-allowed;
-}
-
-/* ── Step 7: Controls bar + search focus ── */
-.search-box input:focus{
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px var(--accent-subtle) !important;
-  outline: none;
-}
-
-/* ── Active chips — visible hover, remove affordance ── */
-.achip{
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  color: var(--text-secondary);
-  background: var(--surface-overlay);
-  border: 1px solid var(--border-default);
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out),
-              color var(--duration-fast) var(--ease-out);
-  cursor: pointer;
-}
-.achip:hover{
-  background: color-mix(in srgb, var(--accent-subtle) 80%, transparent);
-  border-color: var(--accent);
-  color: var(--text-primary);
-  filter: none;
-}
-
-/* ── Step 8: Empty state ── */
-.empty-state{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 48px 32px;
-  max-width: 400px;
-  margin: 32px auto;
-  background: var(--surface-raised);
-  border: 1px solid var(--border-default);
-  border-radius: 10px;
-  gap: 12px;
-}
-.empty-state__icon{
-  font-size: 32px;
-  line-height: 1;
-  opacity: 0.5;
-}
-.empty-state__title{
-  font-family: var(--font-ui);
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-.empty-state__sub{
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.5;
-}
-.empty-state__cta{
-  margin-top: 4px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  padding: 9px 20px;
-  border-radius: 6px;
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
-}
-.empty-state__cta:hover{
-  background: color-mix(in srgb, var(--accent) 85%, #000);
-}
-.empty-state__cta:focus{
-  outline: none;
-  box-shadow: 0 0 0 3px var(--accent-subtle);
-}
-
-/* ── Step 9: Skeleton loader ── */
-@keyframes shimmer{
-  to{ background-position: -200% 0; }
-}
-.skeleton-card{
-  background: var(--surface-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.skeleton-line{
-  border-radius: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--surface-raised) 25%,
-    var(--surface-overlay) 50%,
-    var(--surface-raised) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-}
-.skeleton-line--title{ height: 14px; width: 60%; }
-.skeleton-line--tag{ height: 10px; width: 80%; }
-.skeleton-line--score{ height: 24px; width: 40%; }
-.skeleton-metrics{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.skeleton-metric{
-  height: 44px;
-  border-radius: 6px;
-  background: linear-gradient(
-    90deg,
-    var(--surface-raised) 25%,
-    var(--surface-overlay) 50%,
-    var(--surface-raised) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-}
-.skeleton-metric:nth-child(2){ animation-delay: 0.1s; }
-.skeleton-metric:nth-child(3){ animation-delay: 0.2s; }
-.skeleton-metric:nth-child(4){ animation-delay: 0.3s; }
-
-/* ── Step 10: Card entrance animation + hover ── */
-@keyframes card-enter{
-  from{ opacity: 0; transform: translateY(6px); }
-  to{   opacity: 1; transform: translateY(0); }
-}
-.startup-card{
-  animation: card-enter var(--duration-base) var(--ease-out) both;
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
-}
-.startup-card:hover{
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--border-default));
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  transform: translateY(-1px);
-}
-
-/* ── Step 11: Dark mode specifics for new variables ── */
-[data-theme="dark"] .startup-card .metric{
-  background: var(--surface-overlay);
-  border-color: var(--border-subtle);
-}
-[data-theme="dark"] .startup-card .tag{
-  border-color: var(--border-default);
-}
-[data-theme="dark"] .empty-state{
-  background: var(--surface-raised);
-  border-color: var(--border-default);
-}
-[data-theme="dark"] .skeleton-card{
-  background: var(--surface-raised);
-  border-color: var(--border-subtle);
-}
-
-/* ── Step 12: Respect prefers-reduced-motion ── */
-@media (prefers-reduced-motion: reduce){
-  .startup-card{
-    animation: none !important;
-  }
-  .skeleton-line,
-  .skeleton-metric{
-    animation: none !important;
-    background: var(--surface-overlay);
-  }
-  .startup-card,
-  .startup-card .btn,
-  .achip,
-  .search-box input{
-    transition: none !important;
-  }
-}
-
-/* // CARD RING DESIGN: approved 2026-03-24 */
-
-/* ── Score ring (replaces pill badge) ── */
-.score-ring-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-}
-.score-ring {
-  position: relative;
-  width: 58px;
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.score-ring svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-.score-ring__num {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-data);
-  font-size: 15px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.score-ring__label {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #8b91a0;
-}
-
-/* ── Dark card overrides ── */
-[data-theme='dark'] .startup-card {
-  background: #141e30;
-  border-color: rgba(255,255,255,0.06);
-}
-[data-theme='dark'] .startup-card:hover {
-  border-color: rgba(173,199,255,0.18);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-}
-[data-theme='dark'] .startup-card .metric {
-  background: #1c2740;
-  border-color: rgba(255,255,255,0.04);
-}
-[data-theme='dark'] .startup-card h3 {
-  color: #dae2fd;
-}
-[data-theme='dark'] .startup-card .metric strong {
-  color: #dae2fd;
-}
-[data-theme='dark'] .startup-card .tag {
-  background: rgba(58,74,95,0.55);
-  color: #b7c8e1;
-  border-color: transparent;
-}
-[data-theme='dark'] .startup-card .tag.tag--stage {
-  background: rgba(74,142,255,0.14);
-  color: #adc7ff;
-  border-color: transparent;
-}
-[data-theme='dark'] .startup-card .card-desc {
-  color: #8b91a0;
-}
-[data-theme='dark'] .startup-card .metric small {
-  color: #8b91a0;
-}
-[data-theme='dark'] .startup-card .btn:not(.secondary) {
-  background: #4a8eff;
-  color: #001a41;
-}
-[data-theme='dark'] .startup-card .btn.secondary {
-  background: #1e2d45;
-  color: #dae2fd;
-  border-color: rgba(255,255,255,0.06);
-}
-
-/* ── KPI semantic value colors ── */
-.kpi-positive { color: #00dfc1 !important; }
-.kpi-negative { color: #ff6b6b !important; }
-[data-theme='dark'] .startup-card .metric strong.kpi-positive { color: #00dfc1; }
-[data-theme='dark'] .startup-card .metric strong.kpi-negative { color: #ff6b6b; }
 
 /* =========================
-   CARD REDESIGN v2 — approved 2026-03-24
-   Overrides all previous card styles.
+   CARD DESIGN v3 — 2026-03-24 (final)
 ========================= */
 
-/* ── Card shell ── */
 .startup-card {
   font-family: 'DM Sans', system-ui, sans-serif !important;
   background: #141e30 !important;
@@ -2426,55 +1978,62 @@ button:disabled,
   padding: 18px !important;
   gap: 12px !important;
   box-shadow: none !important;
+  animation: card-enter-v3 0.2s ease both;
   transition: transform 0.22s ease, border-color 0.22s ease !important;
-  animation: card-enter-v2 0.2s ease both;
 }
 .startup-card:hover {
   transform: translateY(-4px) !important;
   border-color: rgba(173,199,255,0.18) !important;
   box-shadow: none !important;
 }
-@keyframes card-enter-v2 {
+@keyframes card-enter-v3 {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@media (prefers-reduced-motion: reduce) {
+  .startup-card { animation: none !important; transition: none !important; }
+}
 
-/* ── Card head layout ── */
 .startup-card .card-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 0;
 }
-.startup-card .card-head > div:first-child {
+.card-head-left {
   flex: 1;
+  min-width: 0;
 }
 
-/* ── Startup name + ID ── */
-.startup-card h3 {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-  letter-spacing: 0 !important;
-  line-height: 1.2 !important;
-  margin: 0 0 4px 0 !important;
+.card-name {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 7px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-wrap: wrap;
 }
-
-/* ── Tags row ── */
-.startup-card .tagrow {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 6px !important;
-  margin-top: 6px !important;
-  margin-bottom: 0 !important;
+.cid {
+  font-size: 9px;
+  background: rgba(255,255,255,0.05);
+  color: #8b91a0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
-.startup-card .tag {
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.startup-card .tags .tag {
   font-family: 'DM Sans', system-ui, sans-serif !important;
   font-size: 9px !important;
   font-weight: 700 !important;
@@ -2487,45 +2046,31 @@ button:disabled,
   border: none !important;
   white-space: nowrap !important;
 }
-/* Stage tag gets accent tint */
-.startup-card .tag.tag--stage {
+.startup-card .tags .tag.stage {
   background: rgba(74,142,255,0.14) !important;
   color: #adc7ff !important;
 }
-/* ID tag is more muted */
-.startup-card .tag.tag--id {
-  background: rgba(255,255,255,0.05) !important;
-  color: #8b91a0 !important;
-  letter-spacing: -0.01em !important;
-  font-weight: 600 !important;
-}
 
-/* ── Description ── */
-.startup-card .card-desc {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
-  font-size: 12px !important;
-  font-style: italic !important;
-  color: #8b91a0 !important;
-  line-height: 1.4 !important;
-  margin: 8px 0 0 0 !important;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+.startup-card .desc {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  color: #8b91a0;
+  font-style: italic;
+  margin-top: 8px;
+  line-height: 1.4;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap !important;
-  -webkit-line-clamp: unset !important;
 }
 
-/* ── Score ring (top-right) ── */
-.score-ring-wrap {
+.score-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
   flex-shrink: 0;
 }
-.score-ring {
+.startup-card .score-ring {
   position: relative;
   width: 64px;
   height: 64px;
@@ -2533,14 +2078,14 @@ button:disabled,
   align-items: center;
   justify-content: center;
 }
-.score-ring svg {
+.startup-card .score-ring svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
 }
-.score-ring__num {
+.score-num {
   position: relative;
   z-index: 1;
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -2549,13 +2094,7 @@ button:disabled,
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
-.score-ring__info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 2px;
-}
-.score-ring__label {
+.score-lbl {
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 8px;
   font-weight: 700;
@@ -2569,64 +2108,62 @@ button:disabled,
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.score-ring .infoicon {
+.score-wrap .infoicon {
   font-size: 11px !important;
   width: 16px !important;
   height: 16px !important;
+  min-width: unset !important;
   padding: 0 !important;
-  margin: 0 !important;
+  margin: 1px 0 !important;
   border-color: rgba(255,255,255,0.15) !important;
   color: #8b91a0 !important;
   background: transparent !important;
 }
+.score-wrap .infoicon:hover {
+  border-color: rgba(173,199,255,0.4) !important;
+  color: #adc7ff !important;
+}
 
-/* ── KPI metrics grid ── */
-.startup-card .metrics {
+.kpi-grid {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   gap: 8px !important;
-  margin-top: 0 !important;
 }
-.startup-card .metric {
+.kpi-tile {
   background: #1c2740 !important;
   border-radius: 8px !important;
   padding: 12px 14px !important;
   border: none !important;
-  box-shadow: none !important;
 }
-.startup-card .metric small {
-  display: block !important;
-  font-family: 'DM Sans', system-ui, sans-serif !important;
-  font-size: 9px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  color: #8b91a0 !important;
-  margin-top: 3px !important;
-  line-height: 1 !important;
+.kpi-val {
+  display: block;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #dae2fd;
+  line-height: 1.2;
 }
-.startup-card .metric strong {
-  display: block !important;
-  font-family: 'DM Sans', system-ui, sans-serif !important;
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  color: #dae2fd !important;
-  line-height: 1.2 !important;
-  margin: 0 !important;
+.kpi-val.pos { color: #00dfc1; }
+.kpi-val.neg { color: #ff6b6b; }
+.kpi-lbl {
+  display: block;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b91a0;
+  margin-top: 4px;
 }
-.startup-card .metric strong.kpi-positive { color: #00dfc1 !important; }
-.startup-card .metric strong.kpi-negative { color: #ff6b6b !important; }
 
-/* ── Actions ── */
-.startup-card .card-actions {
+.startup-card .actions {
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
   margin-top: 4px !important;
   flex-wrap: nowrap !important;
 }
-/* Primary: 'Details öffnen' — full width */
-.startup-card .btn-primary-card {
+.startup-card .btn-primary {
   width: 100%;
   background: #4a8eff;
   color: #001a41;
@@ -2637,19 +2174,23 @@ button:disabled,
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: filter 0.15s ease;
-  text-align: center;
   line-height: 1;
+  text-align: center;
+  transition: filter 0.15s ease;
 }
-.startup-card .btn-primary-card:hover { filter: brightness(1.1); }
-.startup-card .btn-primary-card:active { transform: scale(0.98); }
-/* Secondary row: Pipeline + Compare */
-.startup-card .card-actions-row {
+.startup-card .btn-primary:hover { filter: brightness(1.1); }
+.startup-card .btn-primary:active { transform: scale(0.98); }
+.startup-card .btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74,142,255,0.35);
+}
+
+.startup-card .btn-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
-.startup-card .btn-secondary-card {
+.startup-card .btn-secondary {
   background: #1e2d45;
   color: #dae2fd;
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -2659,21 +2200,20 @@ button:disabled,
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease;
-  text-align: center;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  line-height: 1;
+  transition: background 0.15s ease;
 }
-.startup-card .btn-secondary-card:hover { background: rgba(65,71,84,0.7); }
-.startup-card .btn-secondary-card:disabled {
+.startup-card .btn-secondary:hover { background: rgba(65,71,84,0.7); }
+.startup-card .btn-secondary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .startup-card { animation: none !important; transition: none !important; }
+.startup-card .btn-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74,142,255,0.2);
 }
