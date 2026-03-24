@@ -2217,3 +2217,43 @@ tbody td,
   outline: none;
   box-shadow: 0 0 0 3px rgba(74,142,255,0.2);
 }
+
+/* =========================
+   CARD v3 — Light Mode Override
+   Fix: hardcoded dark hex farben überschreiben
+========================= */
+:root:not([data-theme="dark"]) .startup-card {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.08) !important;
+}
+:root:not([data-theme="dark"]) .startup-card:hover {
+  border-color: rgba(25,118,210,0.25) !important;
+}
+:root:not([data-theme="dark"]) .card-name {
+  color: #1a1f2e !important;
+}
+:root:not([data-theme="dark"]) .startup-card .tags .tag {
+  background: rgba(0,0,0,0.05) !important;
+  color: #4a5568 !important;
+}
+:root:not([data-theme="dark"]) .startup-card .tags .tag.stage {
+  background: rgba(25,118,210,0.10) !important;
+  color: #1565c0 !important;
+}
+:root:not([data-theme="dark"]) .startup-card .desc {
+  color: #6b7280 !important;
+}
+:root:not([data-theme="dark"]) .kpi-tile {
+  background: #f0f4ff !important;
+}
+:root:not([data-theme="dark"]) .kpi-val {
+  color: #1a1f2e !important;
+}
+:root:not([data-theme="dark"]) .startup-card .btn-secondary {
+  background: #f0f4ff !important;
+  color: #1a1f2e !important;
+  border-color: rgba(0,0,0,0.08) !important;
+}
+:root:not([data-theme="dark"]) .startup-card .btn-secondary:hover {
+  background: #e2e8f0 !important;
+}
