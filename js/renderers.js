@@ -151,6 +151,29 @@ function _scoreRing(scoreRaw, rulesetName, anonId) {
   </div>`;
 }
 
+// ringHTML — score ring helper for v2 card components
+function ringHTML(score, label) {
+  const n = Number(score ?? 0);
+  const R = 26, circ = +(2 * Math.PI * R).toFixed(2);
+  const off = +(circ * (1 - n / 100)).toFixed(2);
+  let ring, track, txt;
+  if (n >= 70)      { ring = '#00dfc1'; track = 'rgba(0,223,193,0.14)';  txt = '#00dfc1'; }
+  else if (n >= 40) { ring = '#f97316'; track = 'rgba(249,115,22,0.14)'; txt = '#f97316'; }
+  else              { ring = '#ef4444'; track = 'rgba(239,68,68,0.14)';  txt = '#ef4444'; }
+  return `
+    <div class="score-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="${R}" fill="none" stroke="${track}" stroke-width="5"/>
+          <circle cx="32" cy="32" r="${R}" fill="none" stroke="${ring}" stroke-width="5"
+            stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+        </svg>
+        <span class="score-num" style="color:${txt}">${n}</span>
+      </div>
+      <span class="score-lbl">${escapeHTML(label)}</span>
+    </div>`;
+}
+
 function renderCards(){
   hideAllViews();
   showControls();
