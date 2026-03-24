@@ -446,11 +446,11 @@ function renderSubmissions(){
     const fh = summary.failed_hard || 0;
     const fs = summary.failed_soft || 0;
     let summaryParts = [];
-    if(t > 0) summaryParts.push(`<span class="plaus-summary-pass">${escapeHTML(p + "/" + t + " bestanden")}</span>`);
-    if(fh > 0) summaryParts.push(`<span class="plaus-summary-crit">${escapeHTML(fh + " kritisch")}</span>`);
-    if(fs > 0) summaryParts.push(`<span class="plaus-summary-warn">${escapeHTML(fs + " Hinweis" + (fs > 1 ? "e" : ""))}</span>`);
+    if(t > 0) summaryParts.push(`${p}/${t} bestanden`);
+    if(fh > 0) summaryParts.push(`${fh} kritisch`);
+    if(fs > 0) summaryParts.push(`${fs} Hinweis${fs > 1 ? "e" : ""}`);
     const summaryHtml = summaryParts.length
-      ? `<div class="plaus-summary">${summaryParts.join(" · ")}</div>`
+      ? `<div class="plaus-summary">${escapeHTML(summaryParts.join(" · "))}</div>`
       : "";
     return `<span class="${m.cls}">${m.icon} ${m.label}</span> <button class="infoicon" data-plaus="${escapeHTML(sub.anon_id)}" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button>${summaryHtml}`;
   };
