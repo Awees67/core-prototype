@@ -144,70 +144,98 @@ function renderCards(){
       }
     }catch(_){}
 
+    // Score SVG circle
+    const scoreNum = (scoreValue !== "—") ? parseFloat(scoreValue) : null;
+    const dashArray = 176;
+    const dashOffset = scoreNum !== null ? (dashArray - (scoreNum / 100 * dashArray)) : dashArray;
+    const gValueClass = g > 0 ? "pos" : (g < 0 ? "neg" : "");
+
+    // Stage tag class
+    const stageLower = (s.stage || "").toLowerCase();
+    const stageTagClass = (stageLower.includes("series a") || stageLower.includes("series b")) ? "stage-a" : "stage-seed";
+
     card.innerHTML = `
+      <!-- CARD HEADER -->
       <div class="card-head">
-        <div>
-          <h3>${startupLabel(s)}</h3>
-
-          <!-- Context only -->
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <h3 style="margin:0;font-size:1.2rem;font-weight:700;color:#fff;">${startupLabel(s)}</h3>
+            <span style="font-size:10px;background:rgba(255,255,255,0.05);color:#8b91a0;padding:2px 6px;border-radius:4px;letter-spacing:-0.02em;">${escapeHTML(s.anon_id)}</span>
+            ${nc > 0 ? `<span style="font-size:10px;color:#c0c6d6;">📝 ${nc}</span>` : ""}
+          </div>
           <div class="tagrow">
-            <span class="tag" style="opacity:0.7;">ID: ${s.anon_id}</span>
-            <span class="tag">HQ: ${s.origin_country}</span>
-            <span class="tag">Markt: ${marketLabel}</span>
-            <span class="tag">${s.stage}</span>
-            <span class="tag">${s.sector}</span>
-            ${s.sub_sector ? `<span class="tag">${s.sub_sector}</span>` : ""}
+            <span class="tag">${escapeHTML(s.origin_country)}</span>
+            <span class="tag">${escapeHTML(marketLabel)}</span>
+            <span class="tag ${stageTagClass}">${escapeHTML(s.stage)}</span>
+            <span class="tag">${escapeHTML(s.sector)}</span>
+            ${s.sub_sector ? `<span class="tag">${escapeHTML(s.sub_sector)}</span>` : ""}
           </div>
+        </div>
 
-          <!-- Score Badge -->
-          <div class="score-row">
-            <div class="score-badge ${scoreColorClass}">
-              <span class="score-value">${escapeHTML(scoreValue)}</span>
-              <span class="score-label">/ 100</span>
-            </div>
-            <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(s.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button>
-            <span class="score-preset-name">${escapeHTML(activeRulesetName)}</span>
-            ${nc > 0 ? `<span class="card-notes-indicator">📝 ${nc}</span>` : ""}
+        <!-- SCORE WIDGET (SVG ring) -->
+        <div class="score-ring-wrapper">
+          <div style="position:relative;width:64px;height:64px;display:flex;align-items:center;justify-content:center;">
+            <svg class="score-ring-svg" style="position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="28" fill="transparent" stroke="#2d3449" stroke-width="4"/>
+              <circle cx="32" cy="32" r="28" fill="transparent" stroke="#00dfc1" stroke-width="4"
+                stroke-dasharray="${dashArray}"
+                stroke-dashoffset="${scoreNum !== null ? dashOffset.toFixed(1) : dashArray}"
+                stroke-linecap="round"/>
+            </svg>
+            <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(s.anon_id)}" type="button" aria-label="Score Breakdown"
+              style="background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;padding:0;z-index:1;">
+              <span class="score-ring-value">${escapeHTML(scoreValue)}</span>
+            </button>
           </div>
-
-          ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ""}
+          <span class="score-ring-label">${escapeHTML(activeRulesetName)}</span>
         </div>
       </div>
 
-      <!-- 6 KPI TEASERS (hook) -->
+      ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ""}
+
+      <!-- 6 KPI METRIC TILES -->
       <div class="metrics">
         <div class="metric">
-          <strong class="mono">${fmtEUR(s.mrr_eur)}</strong>
-          <small>MRR</small>
+          <span class="metric-label">MRR</span>
+          <span class="metric-value mono">${fmtEUR(s.mrr_eur)}</span>
         </div>
         <div class="metric">
-          <strong class="mono"><span class="${gCls}">${g===null ? "—" : fmtPct(g)}</span></strong>
-          <small>Wachstum (${s.growth?.type || "—"})</small>
-        </div>
-
-        <div class="metric">
-          <strong class="mono">${fmtEUR(s.burn_eur_per_month)}</strong>
-          <small>Burn / Monat</small>
+          <span class="metric-label">Wachstum (${escapeHTML(s.growth?.type || "—")})</span>
+          <span class="metric-value mono ${gValueClass}">${g===null ? "—" : fmtPct(g)}</span>
         </div>
         <div class="metric">
-          <strong class="mono">${s.runway_months} Monate</strong>
-          <small>Runway</small>
-        </div>
-
-        <div class="metric">
-          <strong class="mono">${s.nrr_pct}%</strong>
-          <small>NRR</small>
+          <span class="metric-label">Burn / Monat</span>
+          <span class="metric-value mono neg">${fmtEUR(s.burn_eur_per_month)}</span>
         </div>
         <div class="metric">
-          <strong class="mono">${s.ltv_cac_ratio.toFixed(1)}</strong>
-          <small>LTV/CAC</small>
+          <span class="metric-label">Runway</span>
+          <span class="metric-value mono">${s.runway_months} Mo.</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">NRR (%)</span>
+          <span class="metric-value mono ${s.nrr_pct >= 100 ? "pos" : "neg"}">${s.nrr_pct}%</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">LTV/CAC</span>
+          <span class="metric-value mono ${s.ltv_cac_ratio >= 3 ? "pos" : ""}">${s.ltv_cac_ratio.toFixed(1)}</span>
         </div>
       </div>
 
+      <!-- ACTIONS -->
       <div class="card-actions">
         <button class="btn" data-action="open" data-id="${s.anon_id}">Details öffnen</button>
-        <button class="btn secondary" data-action="addpipeline" data-id="${s.anon_id}" ${pipelineBtnDisabled}>${pipelineBtnText}</button>
-        <button class="btn secondary" data-action="compare" data-id="${s.anon_id}">Add to Compare</button>
+        <div class="card-secondary-row">
+          <button class="btn secondary" data-action="addpipeline" data-id="${s.anon_id}" ${pipelineBtnDisabled}
+            style="display:flex;align-items:center;justify-content:center;gap:4px;">
+            <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">add</span>
+            Pipeline
+          </button>
+          <button class="btn secondary" data-action="compare" data-id="${s.anon_id}"
+            style="display:flex;align-items:center;justify-content:center;gap:4px;">
+            <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;">compare_arrows</span>
+            Compare
+          </button>
+        </div>
       </div>
     `;
 

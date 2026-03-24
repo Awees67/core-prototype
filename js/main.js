@@ -78,6 +78,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
   on("navActivity","click", ()=>{ currentView = "activity"; renderCurrent(); });
   on("navInbox","click", ()=>{ currentView = "inbox"; renderCurrent(); });
 
+  // Mobile nav buttons
+  on("mobileNavHome","click", ()=>{ currentView = "home"; renderCurrent(); });
+  on("mobileNavPipeline","click", ()=>{ currentView = "pipeline"; renderCurrent(); });
+  on("mobileNavInbox","click", ()=>{ currentView = "inbox"; renderCurrent(); });
+
   on("navScore","click", ()=>{ if(typeof openCustomIndex === "function") openCustomIndex(); });
   on("navReset","click", resetDemo);
   on("toggleThemeBtn","click", toggleTheme);
