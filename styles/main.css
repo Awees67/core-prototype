@@ -1499,6 +1499,9 @@ tr.bulk-selected { background: var(--soft2); }
   --brand:#0e1f38;
   --brand2:#4c79bd;
   --shadow:0 2px 8px rgba(0,0,0,0.35);
+  /* DM-1/DM-2/DM-3/DM-4/DM-5 fix: restore dark values overridden by :root block above */
+  --soft:#0c1526;
+  --soft2:#0d1a31;
 }
 
 body{
