@@ -145,13 +145,15 @@ function renderCards(){
     }catch(_){}
 
     card.innerHTML = `
-      <div class="card-head">
-        <div>
-          <h3>${startupLabel(s)}</h3>
+      <div class="card-head card-head-ops">
+        <div class="card-title-zone">
+          <div class="card-title-row">
+            <h3>${startupLabel(s)}</h3>
+            <span class="card-id-tag">ID: ${s.anon_id}</span>
+          </div>
 
           <!-- Context only -->
           <div class="tagrow">
-            <span class="tag" style="opacity:0.7;">ID: ${s.anon_id}</span>
             <span class="tag">HQ: ${s.origin_country}</span>
             <span class="tag">Markt: ${marketLabel}</span>
             <span class="tag">${s.stage}</span>
@@ -204,10 +206,10 @@ function renderCards(){
         </div>
       </div>
 
-      <div class="card-actions">
-        <button class="btn" data-action="open" data-id="${s.anon_id}">Details öffnen</button>
-        <button class="btn secondary" data-action="addpipeline" data-id="${s.anon_id}" ${pipelineBtnDisabled}>${pipelineBtnText}</button>
+      <div class="card-actions card-actions-ops">
+        <button class="btn secondary" data-action="open" data-id="${s.anon_id}">Details öffnen</button>
         <button class="btn secondary" data-action="compare" data-id="${s.anon_id}">Add to Compare</button>
+        <button class="btn btn-operational" data-action="addpipeline" data-id="${s.anon_id}" ${pipelineBtnDisabled}>${pipelineBtnText}</button>
       </div>
     `;
 
@@ -456,11 +458,11 @@ function renderSubmissions(){
   };
 
   viewSub.innerHTML = `
-    <div class="panelhead">
+    <div class="panelhead workspace-head">
       <h2>New Submissions</h2>
       <div class="note">Neue Bewerbungen via CoreLink. Plausibility Check + Score bereits berechnet.</div>
     </div>
-    <div class="controls" style="margin-top:0;">
+    <div class="controls workspace-controls" style="margin-top:0;">
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <span class="pill">${allSubs.length} neue Bewerbungen</span>
         <select class="select" id="submissionsFilter">
@@ -475,7 +477,7 @@ function renderSubmissions(){
         <button class="btn small" id="acceptAllBtn">Alle annehmen</button>
       </div>
     </div>
-    <div id="submissionsMount"></div>
+    <div id="submissionsMount" class="workspace-table-shell"></div>
   `;
 
   document.getElementById("submissionsFilter").onchange = e=>{
@@ -678,12 +680,12 @@ function renderPipeline(){
   if(activeFilterCount) activeFilterCount.textContent = "0 Filter aktiv";
 
   viewPipeline.innerHTML = `
-    <div class="panelhead">
+    <div class="panelhead workspace-head">
       <h2>Pipeline</h2>
       <div class="note">Screening-Layer: Qualifiziere Deals bevor sie ins CRM gehen.</div>
     </div>
 
-    <div class="stage-badges">
+    <div class="stage-badges workspace-stage-row">
       ${stages.map(st=>{
         const count = stageCounts[st]||0;
         const cls = stageBadgeClass(st);
@@ -692,7 +694,7 @@ function renderPipeline(){
       ${statusFilter!=="Alle" ? `<div class="stage-badge" data-stage-filter="Alle" style="background:var(--soft2);border-color:var(--border);color:var(--muted);">Alle anzeigen</div>` : ""}
     </div>
 
-    <div class="controls" style="margin-top:0;">
+    <div class="controls workspace-controls" style="margin-top:0;">
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <select class="select" id="pipelineStatusFilter">
           ${["Alle",...stages].map(st=>`<option value="${st}"${statusFilter===st?" selected":""}>${st}</option>`).join("")}
@@ -704,7 +706,7 @@ function renderPipeline(){
       </div>
     </div>
 
-    <div id="pipelineTableMount"></div>
+    <div id="pipelineTableMount" class="workspace-table-shell"></div>
   `;
 
   viewPipeline.querySelectorAll("[data-stage-filter]").forEach(badge=>{
@@ -1742,10 +1744,11 @@ function renderCompare(){
   const deals = ids.map(id => DATA.find(s => s.id === id)).filter(Boolean);
 
   v.innerHTML = `
-    <div class="panelhead">
+    <div class="panelhead workspace-head">
       <h2>Compare</h2>
+      <div class="note">Analytischer Direktvergleich zentraler KPIs für priorisierte Deals.</div>
     </div>
-        <div class="compareTableWrap">
+        <div class="compareTableWrap compare-analytical-wrap">
       <table class="compareTable" aria-label="Compare KPI Matrix">
         <thead>
           <tr>
