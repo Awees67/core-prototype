@@ -125,6 +125,32 @@ function _buildScoreRing(score, rulesetName, anonId) {
     </div>`;
 }
 
+function _scoreRing(scoreRaw, rulesetName, anonId) {
+  const n = Number(scoreRaw ?? 0);
+  const R = 26;
+  const circ = +(2 * Math.PI * R).toFixed(2);
+  const off  = +(circ * (1 - n / 100)).toFixed(2);
+  let ring, track, txt;
+  if (n >= 70) { ring = '#00dfc1'; track = 'rgba(0,223,193,0.14)'; txt = '#00dfc1'; }
+  else if (n >= 40) { ring = '#f97316'; track = 'rgba(249,115,22,0.14)'; txt = '#f97316'; }
+  else             { ring = '#ef4444'; track = 'rgba(239,68,68,0.14)'; txt = '#ef4444'; }
+  const disp = (scoreRaw !== null && scoreRaw !== undefined) ? String(n) : '—';
+  return `<div class="score-ring-wrap">
+    <div class="score-ring">
+      <svg viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${track}" stroke-width="5"/>
+        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${ring}" stroke-width="5"
+          stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+      </svg>
+      <span class="score-ring__num" style="color:${txt}">${escapeHTML(disp)}</span>
+    </div>
+    <div class="score-ring__info">
+      <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(anonId)}" type="button" aria-label="Score Breakdown">ⓘ</button>
+    </div>
+    <span class="score-ring__label">${escapeHTML(rulesetName)}</span>
+  </div>`;
+}
+
 function renderCards(){
   hideAllViews();
   showControls();
@@ -198,75 +224,65 @@ function _renderCardsContent(grid){
 
     const marketLabel = s.market_served.includes("DACH") ? "DACH (DE•AT•CH)" : (s.market_served[0] || "—");
 
-    // Compute score for this card
-    let scoreValueRaw = null;
-    try{
-      const res = computeCustomIndexV6(s.anon_id);
-      if(res && res.score !== null && res.score !== undefined){
-        scoreValueRaw = res.score;
-      }
-    }catch(_){}
-
-    const gKpiClass = g > 0 ? 'kpi-positive' : (g < 0 ? 'kpi-negative' : '');
+    let _scoreRaw = null;
+    try {
+      const _res = computeCustomIndexV6(s.anon_id);
+      if (_res && _res.score !== null && _res.score !== undefined) _scoreRaw = _res.score;
+    } catch(_) {}
 
     card.innerHTML = `
-      <div class="card-head">
-        <div style="flex:1;">
-          <h3>${startupLabel(s)}</h3>
-
-          <!-- Context only -->
-          <div class="tagrow">
-            <span class="tag" style="opacity:0.7;">ID: ${s.anon_id}</span>
-            <span class="tag">HQ: ${s.origin_country}</span>
-            <span class="tag">Markt: ${marketLabel}</span>
-            <span class="tag tag--stage">${s.stage}</span>
-            <span class="tag">${s.sector}</span>
-            ${s.sub_sector ? `<span class="tag">${s.sub_sector}</span>` : ""}
-          </div>
-
-          ${nc > 0 ? `<span class="card-notes-indicator">📝 ${nc}</span>` : ""}
-
-          ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ""}
-        </div>
-        ${_buildScoreRing(scoreValueRaw, activeRulesetName, s.anon_id)}
+  <div class="card-head">
+    <div style="flex:1;min-width:0;">
+      <h3>${escapeHTML(startupLabel(s))}</h3>
+      <div class="tagrow">
+        <span class="tag tag--id">ID: ${escapeHTML(s.anon_id)}</span>
+        <span class="tag">HQ: ${escapeHTML(s.origin_country)}</span>
+        <span class="tag">Markt: ${escapeHTML(marketLabel)}</span>
+        <span class="tag tag--stage">${escapeHTML(s.stage)}</span>
+        <span class="tag">${escapeHTML(s.sector)}</span>
+        ${s.sub_sector ? `<span class="tag">${escapeHTML(s.sub_sector)}</span>` : ''}
       </div>
+      ${s.description ? `<p class="card-desc">${escapeHTML(s.description)}</p>` : ''}
+      ${nc > 0 ? `<span class="card-notes-indicator" style="margin-top:4px;display:inline-flex;">📝 ${nc}</span>` : ''}
+    </div>
+    ${_scoreRing(_scoreRaw, activeRulesetName, s.anon_id)}
+  </div>
 
-      <!-- 6 KPI TEASERS (hook) -->
-      <div class="metrics">
-        <div class="metric">
-          <strong class="mono">${fmtEUR(s.mrr_eur)}</strong>
-          <small>MRR</small>
-        </div>
-        <div class="metric">
-          <strong class="mono ${gKpiClass}">${g===null ? "—" : fmtPct(g)}</strong>
-          <small>Wachstum (${s.growth?.type || "—"})</small>
-        </div>
+  <div class="metrics">
+    <div class="metric">
+      <strong class="mono">${escapeHTML(fmtEUR(s.mrr_eur))}</strong>
+      <small>MRR</small>
+    </div>
+    <div class="metric">
+      <strong class="mono${g > 0 ? ' kpi-positive' : g < 0 ? ' kpi-negative' : ''}">${g === null ? '—' : escapeHTML(fmtPct(g))}</strong>
+      <small>Wachstum (${escapeHTML(s.growth?.type || '—')})</small>
+    </div>
+    <div class="metric">
+      <strong class="mono kpi-negative">${escapeHTML(fmtEUR(s.burn_eur_per_month))}</strong>
+      <small>Burn / Monat</small>
+    </div>
+    <div class="metric">
+      <strong class="mono">${escapeHTML(String(s.runway_months))} Monate</strong>
+      <small>Runway</small>
+    </div>
+    <div class="metric">
+      <strong class="mono">${escapeHTML(String(s.nrr_pct))}%</strong>
+      <small>NRR</small>
+    </div>
+    <div class="metric">
+      <strong class="mono">${escapeHTML(s.ltv_cac_ratio.toFixed(1))}</strong>
+      <small>LTV/CAC</small>
+    </div>
+  </div>
 
-        <div class="metric">
-          <strong class="mono kpi-negative">${fmtEUR(s.burn_eur_per_month)}</strong>
-          <small>Burn / Monat</small>
-        </div>
-        <div class="metric">
-          <strong class="mono">${s.runway_months} Monate</strong>
-          <small>Runway</small>
-        </div>
-
-        <div class="metric">
-          <strong class="mono">${s.nrr_pct}%</strong>
-          <small>NRR</small>
-        </div>
-        <div class="metric">
-          <strong class="mono">${s.ltv_cac_ratio.toFixed(1)}</strong>
-          <small>LTV/CAC</small>
-        </div>
-      </div>
-
-      <div class="card-actions">
-        <button class="btn" data-action="open" data-id="${s.anon_id}">Details öffnen</button>
-        <button class="btn secondary" data-action="addpipeline" data-id="${s.anon_id}" ${pipelineBtnDisabled}>${pipelineBtnText}</button>
-        <button class="btn secondary" data-action="compare" data-id="${s.anon_id}">Add to Compare</button>
-      </div>
-    `;
+  <div class="card-actions">
+    <button class="btn-primary-card" data-action="open" data-id="${escapeHTML(s.anon_id)}">Details öffnen</button>
+    <div class="card-actions-row">
+      <button class="btn-secondary-card" data-action="addpipeline" data-id="${escapeHTML(s.anon_id)}" ${pipelineBtnDisabled}>${escapeHTML(pipelineBtnText)}</button>
+      <button class="btn-secondary-card" data-action="compare" data-id="${escapeHTML(s.anon_id)}">⇄ Compare</button>
+    </div>
+  </div>
+`;
 
     const open = ()=> openModalByIndex(idx, list);
 
