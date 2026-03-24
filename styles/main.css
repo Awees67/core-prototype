@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
 
     :root{
       --bg:#f8f9fa;
@@ -2411,3 +2411,269 @@ button:disabled,
 .kpi-negative { color: #ff6b6b !important; }
 [data-theme='dark'] .startup-card .metric strong.kpi-positive { color: #00dfc1; }
 [data-theme='dark'] .startup-card .metric strong.kpi-negative { color: #ff6b6b; }
+
+/* =========================
+   CARD REDESIGN v2 — approved 2026-03-24
+   Overrides all previous card styles.
+========================= */
+
+/* ── Card shell ── */
+.startup-card {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  background: #141e30 !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 12px !important;
+  padding: 18px !important;
+  gap: 12px !important;
+  box-shadow: none !important;
+  transition: transform 0.22s ease, border-color 0.22s ease !important;
+  animation: card-enter-v2 0.2s ease both;
+}
+.startup-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(173,199,255,0.18) !important;
+  box-shadow: none !important;
+}
+@keyframes card-enter-v2 {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Card head layout ── */
+.startup-card .card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 0;
+}
+.startup-card .card-head > div:first-child {
+  flex: 1;
+}
+
+/* ── Startup name + ID ── */
+.startup-card h3 {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  margin: 0 0 4px 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Tags row ── */
+.startup-card .tagrow {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin-top: 6px !important;
+  margin-bottom: 0 !important;
+}
+.startup-card .tag {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(58,74,95,0.55) !important;
+  color: #b7c8e1 !important;
+  border: none !important;
+  white-space: nowrap !important;
+}
+/* Stage tag gets accent tint */
+.startup-card .tag.tag--stage {
+  background: rgba(74,142,255,0.14) !important;
+  color: #adc7ff !important;
+}
+/* ID tag is more muted */
+.startup-card .tag.tag--id {
+  background: rgba(255,255,255,0.05) !important;
+  color: #8b91a0 !important;
+  letter-spacing: -0.01em !important;
+  font-weight: 600 !important;
+}
+
+/* ── Description ── */
+.startup-card .card-desc {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-style: italic !important;
+  color: #8b91a0 !important;
+  line-height: 1.4 !important;
+  margin: 8px 0 0 0 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap !important;
+  -webkit-line-clamp: unset !important;
+}
+
+/* ── Score ring (top-right) ── */
+.score-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.score-ring {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.score-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.score-ring__num {
+  position: relative;
+  z-index: 1;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.score-ring__info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+.score-ring__label {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b91a0;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.score-ring .infoicon {
+  font-size: 11px !important;
+  width: 16px !important;
+  height: 16px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: #8b91a0 !important;
+  background: transparent !important;
+}
+
+/* ── KPI metrics grid ── */
+.startup-card .metrics {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  margin-top: 0 !important;
+}
+.startup-card .metric {
+  background: #1c2740 !important;
+  border-radius: 8px !important;
+  padding: 12px 14px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.startup-card .metric small {
+  display: block !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #8b91a0 !important;
+  margin-top: 3px !important;
+  line-height: 1 !important;
+}
+.startup-card .metric strong {
+  display: block !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #dae2fd !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+.startup-card .metric strong.kpi-positive { color: #00dfc1 !important; }
+.startup-card .metric strong.kpi-negative { color: #ff6b6b !important; }
+
+/* ── Actions ── */
+.startup-card .card-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+  flex-wrap: nowrap !important;
+}
+/* Primary: 'Details öffnen' — full width */
+.startup-card .btn-primary-card {
+  width: 100%;
+  background: #4a8eff;
+  color: #001a41;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+  text-align: center;
+  line-height: 1;
+}
+.startup-card .btn-primary-card:hover { filter: brightness(1.1); }
+.startup-card .btn-primary-card:active { transform: scale(0.98); }
+/* Secondary row: Pipeline + Compare */
+.startup-card .card-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.startup-card .btn-secondary-card {
+  background: #1e2d45;
+  color: #dae2fd;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: center;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.startup-card .btn-secondary-card:hover { background: rgba(65,71,84,0.7); }
+.startup-card .btn-secondary-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startup-card { animation: none !important; transition: none !important; }
+}
