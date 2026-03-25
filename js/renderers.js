@@ -628,8 +628,10 @@ function renderSubmissions(){
               <td class="subs2-sector">${escapeHTML(sectorStr)}</td>
               <td class="subs2-stage">${escapeHTML(sub.stage||"—")}</td>
               <td class="subs2-score">
-                <span class="subs2-score-val ${scoreClass}">${score}</span>
-                <button class="subs2-infoicon" data-action="scoreinfo" data-id="${escapeHTML(sub.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button>
+                <div class="subs2-score-inner">
+                  <span class="subs2-score-val ${scoreClass}">${score}</span>
+                  <button class="subs2-infoicon" data-action="scoreinfo" data-id="${escapeHTML(sub.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button>
+                </div>
               </td>
               <td>${plausiBadge(sub)}</td>
               <td class="subs2-date">${dt}</td>

@@ -2271,6 +2271,8 @@ tbody td,
 }
 
 /* ========================= NEW SUBMISSIONS TABLE v2 ========================= */
+
+/* Wrapper */
 .subs2-wrap {
   background: #131b2e;
   border-radius: 16px;
@@ -2282,6 +2284,8 @@ tbody td,
   width: 100%;
   border-collapse: collapse;
 }
+
+/* Header */
 .subs2-wrap thead tr {
   background: rgba(34,42,61,0.5);
   border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -2293,13 +2297,19 @@ tbody td,
   text-transform: uppercase !important;
   letter-spacing: 0.15em !important;
   color: #8b91a0 !important;
-  text-align: left !important;
   background: transparent !important;
+  border: none !important;
+  text-align: left;
 }
+
+/* Rows */
 .subs2-wrap tbody tr {
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  transition: background 120ms ease;
   background: transparent;
+  transition: background 120ms ease;
+}
+.subs2-wrap tbody tr:last-child {
+  border-bottom: none;
 }
 .subs2-wrap tbody tr:hover {
   background: rgba(255,255,255,0.02) !important;
@@ -2307,11 +2317,14 @@ tbody td,
 .subs2-wrap tbody td {
   padding: 20px 24px !important;
   vertical-align: middle !important;
-  border-bottom: none !important;
+  border: none !important;
   color: #dae2fd;
 }
+
+/* Startup Name cell */
 .subs2-name {
-  color: #dae2fd !important;
+  display: block;
+  color: #dae2fd;
   font-weight: 700;
   font-size: 15px;
   background: none;
@@ -2320,6 +2333,7 @@ tbody td,
   cursor: pointer;
   text-align: left;
   font-family: inherit;
+  line-height: 1.3;
 }
 .subs2-name:hover { text-decoration: underline; }
 .subs2-id {
@@ -2327,27 +2341,48 @@ tbody td,
   font-size: 11px;
   margin-top: 3px;
 }
+
+/* Sector */
 .subs2-sector {
   color: #dae2fd;
   font-weight: 500;
   font-size: 14px;
 }
+
+/* Stage */
 .subs2-stage {
   color: #dae2fd;
   font-weight: 500;
   font-size: 14px;
   text-align: center;
 }
-.subs2-score { text-align: center; }
+
+/* Score */
+.subs2-score {
+  text-align: center;
+}
+.subs2-score-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
 .subs2-score-val {
   font-weight: 900;
   font-size: 18px;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 .subs2-score-val.high { color: #00dfc1; }
 .subs2-score-val.mid  { color: #dae2fd; }
 .subs2-score-val.low  { color: #ffb4ab; }
-.subs2-plaus { display: flex; flex-direction: column; gap: 3px; }
+
+/* Plausibility */
+.subs2-plaus {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 .subs2-plaus-label {
   display: flex;
   align-items: center;
@@ -2356,6 +2391,7 @@ tbody td,
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  line-height: 1;
 }
 .subs2-plaus-label.passed { color: #00dfc1; }
 .subs2-plaus-label.flagged { color: #f59e0b; }
@@ -2365,18 +2401,26 @@ tbody td,
   font-size: 11px;
   font-weight: 500;
 }
+
+/* Submitted date */
 .subs2-date {
   color: #8b91a0;
   font-size: 14px;
   font-weight: 500;
 }
-.subs2-actions { text-align: right; }
+
+/* Actions cell */
+.subs2-actions {
+  text-align: right;
+}
 .subs2-actions-inner {
   display: inline-flex;
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
 }
+
+/* Annehmen button */
 .subs2-btn-accept {
   background: #0A84FF;
   color: #ffffff;
@@ -2387,11 +2431,15 @@ tbody td,
   border: none;
   cursor: pointer;
   font-family: inherit;
+  white-space: nowrap;
   transition: box-shadow 150ms ease;
 }
 .subs2-btn-accept:hover {
-  box-shadow: 0 10px 15px -3px rgba(10,132,255,0.2);
+  box-shadow: 0 10px 15px -3px rgba(10,132,255,0.25);
 }
+.subs2-btn-accept:active { opacity: 0.88; }
+
+/* Ablehnen button */
 .subs2-btn-decline {
   background: transparent;
   color: #ffffff;
@@ -2402,11 +2450,14 @@ tbody td,
   border: 1px solid rgba(255,255,255,0.10);
   cursor: pointer;
   font-family: inherit;
+  white-space: nowrap;
   transition: background 150ms ease;
 }
 .subs2-btn-decline:hover {
   background: rgba(255,255,255,0.05);
 }
+
+/* Info icon (ⓘ) inside table */
 .subs2-infoicon {
   background: none;
   border: none;
@@ -2415,19 +2466,26 @@ tbody td,
   font-size: 13px;
   padding: 0 2px;
   vertical-align: middle;
+  line-height: 1;
+  transition: color 120ms ease;
 }
 .subs2-infoicon:hover { color: #dae2fd; }
-/* Light mode override — table bleibt dark auch im light mode */
+
+/* Force dark table in light mode too */
 :root:not([data-theme="dark"]) .subs2-wrap {
   background: #131b2e !important;
+  border-color: rgba(255,255,255,0.05) !important;
 }
-:root:not([data-theme="dark"]) .subs2-wrap tbody td {
-  color: #dae2fd !important;
-}
-:root:not([data-theme="dark"]) .subs2-name {
+:root:not([data-theme="dark"]) .subs2-wrap tbody td,
+:root:not([data-theme="dark"]) .subs2-name,
+:root:not([data-theme="dark"]) .subs2-sector,
+:root:not([data-theme="dark"]) .subs2-stage {
   color: #dae2fd !important;
 }
 :root:not([data-theme="dark"]) .subs2-wrap tbody tr:hover {
   background: rgba(255,255,255,0.02) !important;
+}
+:root:not([data-theme="dark"]) .subs2-btn-decline {
+  color: #ffffff !important;
 }
 
