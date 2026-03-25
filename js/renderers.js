@@ -601,7 +601,7 @@ function renderSubmissions(){
       <table>
         <thead>
           <tr>
-            <th style="width:40px;"></th>
+            <th style="width:40px;"><input type="checkbox" id="submBulkAll" title="Alle auswählen" ${allChecked ? "checked" : ""}></th>
             <th>STARTUP NAME</th>
             <th>SEKTOR</th>
             <th style="text-align:center;">STAGE</th>
