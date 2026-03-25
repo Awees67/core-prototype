@@ -509,9 +509,9 @@ function renderSubmissions(){
     const status = sub.plausibility_status || "passed";
     const summary = sub.plausibility_summary || {};
     const map = {
-      passed: { cls:"badge plaus-passed", icon:"✓", label:"Passed" },
-      flagged: { cls:"badge plaus-flagged", icon:"⚠", label:"Flagged" },
-      failed:  { cls:"badge plaus-failed",  icon:"✗", label:"Failed"  }
+      passed:  { icon:"✓", label:"PASSED" },
+      flagged: { icon:"⚠", label:"FLAGGED" },
+      failed:  { icon:"✕", label:"FAILED"  }
     };
     const m = map[status] || map.failed;
     const t = summary.total || 0;
@@ -523,9 +523,9 @@ function renderSubmissions(){
     if(fh > 0) summaryParts.push(`${fh} kritisch`);
     if(fs > 0) summaryParts.push(`${fs} Hinweis${fs > 1 ? "e" : ""}`);
     const summaryHtml = summaryParts.length
-      ? `<div class="plaus-summary">${escapeHTML(summaryParts.join(" · "))}</div>`
+      ? `<div class="subs2-plaus-summary">${escapeHTML(summaryParts.join(" · "))}</div>`
       : "";
-    return `<span class="${m.cls}">${m.icon} ${m.label}</span> <button class="infoicon" data-plaus="${escapeHTML(sub.anon_id)}" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button>${summaryHtml}`;
+    return `<div class="subs2-plaus"><div class="subs2-plaus-label ${escapeHTML(status)}"><span>${m.icon}</span><span>${m.label}</span><button class="subs2-infoicon" data-plaus="${escapeHTML(sub.anon_id)}" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button></div>${summaryHtml}</div>`;
   };
 
   viewSub.innerHTML = `
@@ -589,18 +589,18 @@ function renderSubmissions(){
 
   mount.innerHTML = `
     ${bulkToolbarHtml}
-    <div class="compareTableWrap">
-      <table class="compareTable">
+    <div class="subs2-wrap">
+      <table>
         <thead>
           <tr>
             <th style="width:40px;"><input type="checkbox" id="submBulkAll" title="Alle auswählen" ${allChecked ? "checked" : ""}></th>
             <th>Startup</th>
             <th>Sektor</th>
             <th>Stage</th>
-            <th>Score</th>
+            <th style="text-align:center;">Score</th>
             <th>Plausibility</th>
             <th>Eingereicht am</th>
-            <th style="min-width:200px;">Aktionen</th>
+            <th style="text-align:right; min-width:200px;">Aktionen</th>
           </tr>
         </thead>
         <tbody>
@@ -609,18 +609,28 @@ function renderSubmissions(){
             const sectorStr = sub.sector + (sub.sub_sector ? ` › ${sub.sub_sector}` : "");
             const ss = startups.find(x=>x.anon_id===sub.anon_id);
             const isSelected = bulkIsSelected(sub.anon_id);
+            const score = Math.round(sub.signal_index||0);
+            const scoreClass = score >= 70 ? "high" : score >= 40 ? "mid" : "low";
             return `<tr class="${isSelected ? "bulk-selected" : ""}">
               <td><input type="checkbox" class="bulk-check" data-bulk="${escapeHTML(sub.anon_id)}" ${isSelected ? "checked" : ""}></td>
-              <td><button class="btn secondary small" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(ss?.company_name || sub.anon_id)}</button><br><small style="opacity:0.6;">ID: ${escapeHTML(sub.anon_id)}</small></td>
-              <td>${escapeHTML(sectorStr)}</td>
-              <td>${escapeHTML(sub.stage||"—")}</td>
-              <td class="mono" style="white-space:nowrap;">${Math.round(sub.signal_index||0)} <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(sub.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button></td>
+              <td>
+                <button class="subs2-name" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(ss?.company_name || sub.anon_id)}</button>
+                <div class="subs2-id">ID: ${escapeHTML(sub.anon_id)}</div>
+              </td>
+              <td class="subs2-sector">${escapeHTML(sectorStr)}</td>
+              <td class="subs2-stage">${escapeHTML(sub.stage||"—")}</td>
+              <td class="subs2-score">
+                <span class="subs2-score-val ${scoreClass}">${score}</span>
+                <button class="subs2-infoicon" data-action="scoreinfo" data-id="${escapeHTML(sub.anon_id)}" type="button" aria-label="Score Breakdown">ⓘ</button>
+              </td>
               <td>${plausiBadge(sub)}</td>
-              <td class="mono" style="font-size:0.88rem;">${dt}</td>
-              <td style="white-space:nowrap;"><div class="cell-actions">
-                <button class="btn small" data-accept="${escapeHTML(sub.anon_id)}">Annehmen</button>
-                <button class="btn secondary small" data-decline="${escapeHTML(sub.anon_id)}">Ablehnen</button>
-              </div></td>
+              <td class="subs2-date">${dt}</td>
+              <td class="subs2-actions">
+                <div class="subs2-actions-inner">
+                  <button class="subs2-btn-accept" data-accept="${escapeHTML(sub.anon_id)}">Annehmen</button>
+                  <button class="subs2-btn-decline" data-decline="${escapeHTML(sub.anon_id)}">Ablehnen</button>
+                </div>
+              </td>
             </tr>`;
           }).join("")}
         </tbody>

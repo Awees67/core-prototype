@@ -2270,3 +2270,154 @@ tbody td,
   color: #ff6b6b !important;
 }
 
+/* ========================= NEW SUBMISSIONS TABLE v2 ========================= */
+.subs2-wrap {
+  background: #131b2e;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+}
+.subs2-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.subs2-wrap thead tr {
+  background: rgba(34,42,61,0.5);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.subs2-wrap thead th {
+  padding: 20px 24px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #8b91a0;
+  text-align: left;
+}
+.subs2-wrap tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 120ms ease;
+}
+.subs2-wrap tbody tr:hover {
+  background: rgba(255,255,255,0.02);
+}
+.subs2-wrap tbody td {
+  padding: 24px;
+  vertical-align: middle;
+}
+.subs2-name {
+  color: #dae2fd;
+  font-weight: 700;
+  font-size: 15px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.subs2-name:hover {
+  text-decoration: underline;
+}
+.subs2-id {
+  color: #8b91a0;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.subs2-sector {
+  color: #dae2fd;
+  font-weight: 500;
+  font-size: 14px;
+}
+.subs2-stage {
+  color: #dae2fd;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: center;
+}
+.subs2-score {
+  text-align: center;
+}
+.subs2-score-val {
+  font-weight: 900;
+  font-size: 18px;
+}
+.subs2-score-val.high  { color: #00dfc1; }
+.subs2-score-val.mid   { color: #dae2fd; }
+.subs2-score-val.low   { color: #ffb4ab; }
+.subs2-plaus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.subs2-plaus-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.subs2-plaus-label.passed { color: #00dfc1; }
+.subs2-plaus-label.flagged { color: #f59e0b; }
+.subs2-plaus-label.failed  { color: #ffb4ab; }
+.subs2-plaus-summary {
+  color: #8b91a0;
+  font-size: 11px;
+  font-weight: 500;
+}
+.subs2-date {
+  color: #8b91a0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.subs2-actions {
+  text-align: right;
+}
+.subs2-actions-inner {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.subs2-btn-accept {
+  background: #0A84FF;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: box-shadow 150ms ease;
+}
+.subs2-btn-accept:hover {
+  box-shadow: 0 10px 15px -3px rgba(10,132,255,0.2);
+}
+.subs2-btn-decline {
+  background: transparent;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.10);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+.subs2-btn-decline:hover {
+  background: rgba(255,255,255,0.05);
+}
+.subs2-infoicon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8b91a0;
+  font-size: 13px;
+  padding: 0 2px;
+  vertical-align: middle;
+}
+.subs2-infoicon:hover {
+  color: #dae2fd;
+}
+
