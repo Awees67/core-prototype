@@ -2058,9 +2058,10 @@ tbody td,
   font-style: italic;
   margin-top: 8px;
   line-height: 1.4;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .score-wrap {
@@ -2269,15 +2270,3 @@ tbody td,
   color: #ff6b6b !important;
 }
 
-/* =========================
-   CARD v3 — Desc Fix: vollständiger Text
-========================= */
-.startup-card .desc {
-  white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: unset !important;
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-}
