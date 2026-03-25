@@ -2273,7 +2273,7 @@ tbody td,
 /* ========================= NEW SUBMISSIONS TABLE v2 ========================= */
 .subs2-wrap {
   background: #131b2e;
-  border-radius: 1rem;
+  border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.05);
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
@@ -2287,27 +2287,31 @@ tbody td,
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .subs2-wrap thead th {
-  padding: 20px 24px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: #8b91a0;
-  text-align: left;
+  padding: 20px 24px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+  color: #8b91a0 !important;
+  text-align: left !important;
+  background: transparent !important;
 }
 .subs2-wrap tbody tr {
   border-bottom: 1px solid rgba(255,255,255,0.05);
   transition: background 120ms ease;
+  background: transparent;
 }
 .subs2-wrap tbody tr:hover {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.02) !important;
 }
 .subs2-wrap tbody td {
-  padding: 24px;
-  vertical-align: middle;
+  padding: 20px 24px !important;
+  vertical-align: middle !important;
+  border-bottom: none !important;
+  color: #dae2fd;
 }
 .subs2-name {
-  color: #dae2fd;
+  color: #dae2fd !important;
   font-weight: 700;
   font-size: 15px;
   background: none;
@@ -2315,10 +2319,9 @@ tbody td,
   padding: 0;
   cursor: pointer;
   text-align: left;
+  font-family: inherit;
 }
-.subs2-name:hover {
-  text-decoration: underline;
-}
+.subs2-name:hover { text-decoration: underline; }
 .subs2-id {
   color: #8b91a0;
   font-size: 11px;
@@ -2335,21 +2338,16 @@ tbody td,
   font-size: 14px;
   text-align: center;
 }
-.subs2-score {
-  text-align: center;
-}
+.subs2-score { text-align: center; }
 .subs2-score-val {
   font-weight: 900;
   font-size: 18px;
+  font-variant-numeric: tabular-nums;
 }
-.subs2-score-val.high  { color: #00dfc1; }
-.subs2-score-val.mid   { color: #dae2fd; }
-.subs2-score-val.low   { color: #ffb4ab; }
-.subs2-plaus {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.subs2-score-val.high { color: #00dfc1; }
+.subs2-score-val.mid  { color: #dae2fd; }
+.subs2-score-val.low  { color: #ffb4ab; }
+.subs2-plaus { display: flex; flex-direction: column; gap: 3px; }
 .subs2-plaus-label {
   display: flex;
   align-items: center;
@@ -2372,13 +2370,12 @@ tbody td,
   font-size: 14px;
   font-weight: 500;
 }
-.subs2-actions {
-  text-align: right;
-}
+.subs2-actions { text-align: right; }
 .subs2-actions-inner {
   display: inline-flex;
   gap: 8px;
   align-items: center;
+  justify-content: flex-end;
 }
 .subs2-btn-accept {
   background: #0A84FF;
@@ -2389,6 +2386,7 @@ tbody td,
   border-radius: 8px;
   border: none;
   cursor: pointer;
+  font-family: inherit;
   transition: box-shadow 150ms ease;
 }
 .subs2-btn-accept:hover {
@@ -2403,6 +2401,7 @@ tbody td,
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.10);
   cursor: pointer;
+  font-family: inherit;
   transition: background 150ms ease;
 }
 .subs2-btn-decline:hover {
@@ -2417,7 +2416,18 @@ tbody td,
   padding: 0 2px;
   vertical-align: middle;
 }
-.subs2-infoicon:hover {
-  color: #dae2fd;
+.subs2-infoicon:hover { color: #dae2fd; }
+/* Light mode override — table bleibt dark auch im light mode */
+:root:not([data-theme="dark"]) .subs2-wrap {
+  background: #131b2e !important;
+}
+:root:not([data-theme="dark"]) .subs2-wrap tbody td {
+  color: #dae2fd !important;
+}
+:root:not([data-theme="dark"]) .subs2-name {
+  color: #dae2fd !important;
+}
+:root:not([data-theme="dark"]) .subs2-wrap tbody tr:hover {
+  background: rgba(255,255,255,0.02) !important;
 }
 

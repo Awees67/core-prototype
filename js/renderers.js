@@ -525,7 +525,15 @@ function renderSubmissions(){
     const summaryHtml = summaryParts.length
       ? `<div class="subs2-plaus-summary">${escapeHTML(summaryParts.join(" · "))}</div>`
       : "";
-    return `<div class="subs2-plaus"><div class="subs2-plaus-label ${escapeHTML(status)}"><span>${m.icon}</span><span>${m.label}</span><button class="subs2-infoicon" data-plaus="${escapeHTML(sub.anon_id)}" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button></div>${summaryHtml}</div>`;
+    return `<div class="subs2-plaus">
+      <div class="subs2-plaus-label ${escapeHTML(status)}">
+        <span>${m.icon}</span>
+        <span>${m.label}</span>
+        <button class="subs2-infoicon" data-plaus="${escapeHTML(sub.anon_id)}"
+          type="button" aria-label="Plausibility Breakdown">ⓘ</button>
+      </div>
+      ${summaryHtml}
+    </div>`;
   };
 
   viewSub.innerHTML = `
@@ -593,14 +601,14 @@ function renderSubmissions(){
       <table>
         <thead>
           <tr>
-            <th style="width:40px;"><input type="checkbox" id="submBulkAll" title="Alle auswählen" ${allChecked ? "checked" : ""}></th>
-            <th>Startup</th>
-            <th>Sektor</th>
-            <th>Stage</th>
-            <th style="text-align:center;">Score</th>
-            <th>Plausibility</th>
-            <th>Eingereicht am</th>
-            <th style="text-align:right; min-width:200px;">Aktionen</th>
+            <th style="width:40px;"></th>
+            <th>STARTUP NAME</th>
+            <th>SEKTOR</th>
+            <th style="text-align:center;">STAGE</th>
+            <th style="text-align:center;">SCORE</th>
+            <th>PLAUSIBILITY</th>
+            <th>EINGEREICHT AM</th>
+            <th style="text-align:right; min-width:180px;">AKTIONEN</th>
           </tr>
         </thead>
         <tbody>
