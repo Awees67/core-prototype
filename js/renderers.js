@@ -127,19 +127,20 @@ function _buildScoreRing(score, rulesetName, anonId) {
 
 function _scoreRing(scoreRaw, rulesetName, anonId) {
   const n = Number(scoreRaw ?? 0);
-  const R = 26;
+  const R = 28;
   const circ = +(2 * Math.PI * R).toFixed(2);
   const off  = +(circ * (1 - n / 100)).toFixed(2);
   let ring, track, txt;
-  if (n >= 70)      { ring = '#00dfc1'; track = 'rgba(0,223,193,0.14)';  txt = '#00dfc1'; }
-  else if (n >= 40) { ring = '#f97316'; track = 'rgba(249,115,22,0.14)'; txt = '#f97316'; }
-  else              { ring = '#ef4444'; track = 'rgba(239,68,68,0.14)';  txt = '#ef4444'; }
+  if (n >= 86)      { ring = '#34D399'; track = 'rgba(52,211,153,0.14)';  txt = '#34D399'; }
+  else if (n >= 66) { ring = '#FBBF24'; track = 'rgba(251,191,36,0.14)';  txt = '#FBBF24'; }
+  else if (n >= 41) { ring = '#FB923C'; track = 'rgba(251,146,60,0.14)';  txt = '#FB923C'; }
+  else              { ring = '#F87171'; track = 'rgba(248,113,113,0.14)'; txt = '#F87171'; }
   const disp = (scoreRaw !== null && scoreRaw !== undefined) ? String(n) : '—';
   return `<div class="score-wrap">
     <div class="score-ring">
-      <svg viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${track}" stroke-width="5"/>
-        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${ring}" stroke-width="5"
+      <svg viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="${R}" fill="none" stroke="${track}" stroke-width="7"/>
+        <circle cx="36" cy="36" r="${R}" fill="none" stroke="${ring}" stroke-width="7"
           stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"/>
       </svg>
       <span class="score-num" style="color:${txt}">${escapeHTML(disp)}</span>
@@ -236,11 +237,11 @@ function _renderCardsContent(grid){
         <span class="cid">${escapeHTML(s.anon_id)}</span>
       </div>
       <div class="tags">
-        <span class="tag">🌍 ${escapeHTML(s.origin_country)}</span>
-        <span class="tag">${escapeHTML(marketLabel)}</span>
-        <span class="tag stage">${escapeHTML(s.stage)}</span>
-        <span class="tag">${escapeHTML(s.sector)}</span>
-        ${s.sub_sector ? `<span class="tag">${escapeHTML(s.sub_sector)}</span>` : ''}
+        <span class="tag tag-geo">🌍 ${escapeHTML(s.origin_country)}</span>
+        <span class="tag tag-geo">${escapeHTML(marketLabel)}</span>
+        <span class="tag tag-stage stage">${escapeHTML(s.stage)}</span>
+        <span class="tag tag-domain">${escapeHTML(s.sector)}</span>
+        ${s.sub_sector ? `<span class="tag tag-domain">${escapeHTML(s.sub_sector)}</span>` : ''}
       </div>
       ${s.description ? `<p class="desc">${escapeHTML(s.description)}</p>` : ''}
       ${nc > 0 ? `<span class="card-notes-indicator" style="margin-top:4px;display:inline-flex;">📝 ${nc}</span>` : ''}
