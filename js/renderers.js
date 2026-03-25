@@ -508,12 +508,12 @@ function renderSubmissions(){
   const plausiBadge = (sub)=>{
     const status = sub.plausibility_status || "passed";
     const summary = sub.plausibility_summary || {};
-    const map = {
-      passed:  { icon:"✓", label:"PASSED" },
-      flagged: { icon:"⚠", label:"FLAGGED" },
-      failed:  { icon:"✕", label:"FAILED"  }
+    const iconMap = {
+      passed:  { char:"✓", label:"PASSED"  },
+      flagged: { char:"⚠", label:"FLAGGED" },
+      failed:  { char:"✕", label:"FAILED"  }
     };
-    const m = map[status] || map.failed;
+    const m = iconMap[status] || iconMap.failed;
     const t = summary.total || 0;
     const p = summary.passed || 0;
     const fh = summary.failed_hard || 0;
@@ -525,7 +525,8 @@ function renderSubmissions(){
     const summaryHtml = summaryParts.length
       ? `<div class="subs2-plaus-summary">${escapeHTML(summaryParts.join(" · "))}</div>`
       : "";
-    return `<div class="subs2-plaus"><div class="subs2-plaus-label ${escapeHTML(status)}"><span>${m.icon}</span><span>${m.label}</span><button class="subs2-infoicon" data-plaus="${escapeHTML(sub.anon_id)}" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button></div>${summaryHtml}</div>`;
+    const safeStatus = escapeHTML(status);
+    return `<div class="subs2-plaus"><div class="subs2-plaus-label ${safeStatus}"><span class="subs2-picon ${safeStatus}">${m.char}</span><span>${m.label}</span><button class="subs2-infoicon" data-plaus="${escapeHTML(sub.anon_id)}" type="button" title="Plausibility Breakdown" aria-label="Plausibility Breakdown">ⓘ</button></div>${summaryHtml}</div>`;
   };
 
   viewSub.innerHTML = `
@@ -593,29 +594,28 @@ function renderSubmissions(){
       <table>
         <thead>
           <tr>
-            <th style="width:40px;"><input type="checkbox" id="submBulkAll" title="Alle auswählen" ${allChecked ? "checked" : ""}></th>
-            <th>Startup</th>
-            <th>Sektor</th>
+            <th class="subs2-cb-th"><input type="checkbox" id="submBulkAll" title="Alle auswählen" ${allChecked ? "checked" : ""}></th>
+            <th>Startup Name</th>
+            <th>Sector</th>
             <th>Stage</th>
             <th style="text-align:center;">Score</th>
             <th>Plausibility</th>
-            <th>Eingereicht am</th>
-            <th style="text-align:right; min-width:200px;">Aktionen</th>
+            <th>Submitted</th>
+            <th style="text-align:right; min-width:220px;">Actions</th>
           </tr>
         </thead>
         <tbody>
           ${list.map(sub=>{
-            const dt = sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString("de-DE") : "—";
+            const dt = sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" }) : "—";
             const sectorStr = sub.sector + (sub.sub_sector ? ` › ${sub.sub_sector}` : "");
             const ss = startups.find(x=>x.anon_id===sub.anon_id);
             const isSelected = bulkIsSelected(sub.anon_id);
             const score = Math.round(sub.signal_index||0);
             const scoreClass = score >= 70 ? "high" : score >= 40 ? "mid" : "low";
             return `<tr class="${isSelected ? "bulk-selected" : ""}">
-              <td><input type="checkbox" class="bulk-check" data-bulk="${escapeHTML(sub.anon_id)}" ${isSelected ? "checked" : ""}></td>
+              <td class="subs2-cb-cell"><input type="checkbox" class="bulk-check" data-bulk="${escapeHTML(sub.anon_id)}" ${isSelected ? "checked" : ""}></td>
               <td>
                 <button class="subs2-name" data-open="${escapeHTML(sub.anon_id)}">${escapeHTML(ss?.company_name || sub.anon_id)}</button>
-                <div class="subs2-id">ID: ${escapeHTML(sub.anon_id)}</div>
               </td>
               <td class="subs2-sector">${escapeHTML(sectorStr)}</td>
               <td class="subs2-stage">${escapeHTML(sub.stage||"—")}</td>

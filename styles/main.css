@@ -2299,6 +2299,9 @@ tbody td,
   border-bottom: 1px solid rgba(255,255,255,0.05);
   transition: background 120ms ease;
 }
+.subs2-wrap tbody tr:last-child {
+  border-bottom: none;
+}
 .subs2-wrap tbody tr:hover {
   background: rgba(255,255,255,0.02);
 }
@@ -2306,6 +2309,22 @@ tbody td,
   padding: 24px;
   vertical-align: middle;
 }
+/* Checkbox column — hidden by default, revealed on hover or when selected */
+.subs2-cb-th {
+  width: 40px;
+  padding-right: 0 !important;
+}
+.subs2-cb-cell {
+  width: 40px;
+  padding-right: 0 !important;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+.subs2-wrap tbody tr:hover .subs2-cb-cell,
+.subs2-wrap tbody tr.bulk-selected .subs2-cb-cell {
+  opacity: 1;
+}
+/* Name */
 .subs2-name {
   color: #dae2fd;
   font-weight: 700;
@@ -2315,18 +2334,13 @@ tbody td,
   padding: 0;
   cursor: pointer;
   text-align: left;
+  line-height: 1.3;
 }
-.subs2-name:hover {
-  text-decoration: underline;
-}
-.subs2-id {
-  color: #8b91a0;
-  font-size: 11px;
-  margin-top: 3px;
-}
+.subs2-name:hover { text-decoration: underline; }
+/* Sector / Stage */
 .subs2-sector {
-  color: #dae2fd;
-  font-weight: 500;
+  color: rgba(218,226,253,0.75);
+  font-weight: 400;
   font-size: 14px;
 }
 .subs2-stage {
@@ -2335,25 +2349,42 @@ tbody td,
   font-size: 14px;
   text-align: center;
 }
+/* Score */
 .subs2-score {
   text-align: center;
+  white-space: nowrap;
 }
 .subs2-score-val {
   font-weight: 900;
   font-size: 18px;
 }
-.subs2-score-val.high  { color: #00dfc1; }
-.subs2-score-val.mid   { color: #dae2fd; }
-.subs2-score-val.low   { color: #ffb4ab; }
+.subs2-score-val.high { color: #00dfc1; }
+.subs2-score-val.mid  { color: #dae2fd; }
+.subs2-score-val.low  { color: #ffb4ab; }
+/* ⓘ info icon — visible only on row hover */
+.subs2-infoicon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #8b91a0;
+  font-size: 12px;
+  padding: 0 2px;
+  vertical-align: middle;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+.subs2-wrap tbody tr:hover .subs2-infoicon { opacity: 1; }
+.subs2-infoicon:hover { color: #dae2fd; }
+/* Plausibility */
 .subs2-plaus {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 .subs2-plaus-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -2362,19 +2393,49 @@ tbody td,
 .subs2-plaus-label.passed { color: #00dfc1; }
 .subs2-plaus-label.flagged { color: #f59e0b; }
 .subs2-plaus-label.failed  { color: #ffb4ab; }
+/* Small circle icon for passed / failed; triangle for flagged */
+.subs2-picon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 900;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.subs2-picon.passed {
+  border: 1.5px solid #00dfc1;
+  color: #00dfc1;
+}
+.subs2-picon.failed {
+  border: 1.5px solid #ffb4ab;
+  color: #ffb4ab;
+}
+.subs2-picon.flagged {
+  border: none;
+  color: #f59e0b;
+  font-size: 14px;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+}
 .subs2-plaus-summary {
   color: #8b91a0;
   font-size: 11px;
   font-weight: 500;
+  padding-left: 1px;
 }
+/* Date */
 .subs2-date {
   color: #8b91a0;
   font-size: 14px;
   font-weight: 500;
 }
-.subs2-actions {
-  text-align: right;
-}
+/* Actions */
+.subs2-actions { text-align: right; }
 .subs2-actions-inner {
   display: inline-flex;
   gap: 8px;
@@ -2390,6 +2451,7 @@ tbody td,
   border: none;
   cursor: pointer;
   transition: box-shadow 150ms ease;
+  white-space: nowrap;
 }
 .subs2-btn-accept:hover {
   box-shadow: 0 10px 15px -3px rgba(10,132,255,0.2);
@@ -2404,20 +2466,9 @@ tbody td,
   border: 1px solid rgba(255,255,255,0.10);
   cursor: pointer;
   transition: background 150ms ease;
+  white-space: nowrap;
 }
 .subs2-btn-decline:hover {
   background: rgba(255,255,255,0.05);
-}
-.subs2-infoicon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #8b91a0;
-  font-size: 13px;
-  padding: 0 2px;
-  vertical-align: middle;
-}
-.subs2-infoicon:hover {
-  color: #dae2fd;
 }
 
