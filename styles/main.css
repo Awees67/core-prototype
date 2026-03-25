@@ -2365,11 +2365,13 @@ tbody td,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 .subs2-score-val {
-  font-weight: 900;
-  font-size: 18px;
+  font-weight: 700;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }

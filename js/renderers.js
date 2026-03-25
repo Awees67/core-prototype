@@ -607,8 +607,8 @@ function renderSubmissions(){
             <th style="text-align:center;">STAGE</th>
             <th style="text-align:center;">SCORE</th>
             <th>PLAUSIBILITY</th>
-            <th>EINGEREICHT AM</th>
-            <th style="text-align:right; min-width:180px;">AKTIONEN</th>
+            <th style="white-space:nowrap; min-width:120px;">EINGEREICHT AM</th>
+            <th style="text-align:center; min-width:180px;">AKTIONEN</th>
           </tr>
         </thead>
         <tbody>
