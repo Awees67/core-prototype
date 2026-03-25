@@ -2268,3 +2268,16 @@ tbody td,
 .kpi-val.neg, :root:not([data-theme="dark"]) .kpi-val.neg {
   color: #ff6b6b !important;
 }
+
+/* =========================
+   CARD v3 — Desc Fix: vollständiger Text
+========================= */
+.startup-card .desc {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
