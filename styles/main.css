@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
 
     :root{
       --bg:#f8f9fa;
@@ -57,6 +58,19 @@
       --warnBg:#fff7ee;
       --warnBorder:#ffd9b0;
       --warnText:#8a4b00;
+
+      /* === Card redesign tokens === */
+      --tag-geo-bg: rgba(59, 130, 246, 0.15);
+      --tag-geo-text: #93C5FD;
+      --tag-stage-bg: rgba(245, 158, 11, 0.15);
+      --tag-stage-text: #FCD34D;
+      --tag-domain-bg: rgba(139, 92, 246, 0.15);
+      --tag-domain-text: #C4B5FD;
+      --metric-positive: #34D399;
+      --metric-warning: #FB923C;
+      --metric-negative: #F87171;
+      --btn-primary-from: #3B82F6;
+      --btn-primary-to: #6366F1;
     }
 
     [data-theme="dark"]{
@@ -1967,24 +1981,26 @@ tbody td,
 
 
 /* =========================
-   CARD DESIGN v3 — 2026-03-24 (final)
+   CARD DESIGN v4 — 2026-03-25 (visual redesign)
 ========================= */
 
 .startup-card {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif !important;
   background: #141e30 !important;
   border: 1px solid rgba(255,255,255,0.06) !important;
+  border-left: 3px solid #3B82F6 !important;
   border-radius: 12px !important;
-  padding: 18px !important;
-  gap: 12px !important;
+  padding: 22px !important;
+  gap: 14px !important;
   box-shadow: none !important;
   animation: card-enter-v3 0.2s ease both;
-  transition: transform 0.22s ease, border-color 0.22s ease !important;
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-color 200ms ease-out !important;
 }
 .startup-card:hover {
-  transform: translateY(-4px) !important;
+  transform: translateY(-2px) !important;
   border-color: rgba(173,199,255,0.18) !important;
-  box-shadow: none !important;
+  border-left-color: #3B82F6 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
 }
 @keyframes card-enter-v3 {
   from { opacity: 0; transform: translateY(6px); }
@@ -2006,24 +2022,25 @@ tbody td,
 }
 
 .card-name {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #F0F0F2;
   line-height: 1.2;
-  margin-bottom: 7px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .cid {
-  font-size: 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
   background: rgba(255,255,255,0.05);
-  color: #8b91a0;
-  padding: 2px 6px;
+  color: var(--text-secondary, #8b91a0);
+  padding: 2px 7px;
   border-radius: 4px;
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: 0.02em;
   flex-shrink: 0;
 }
@@ -2031,35 +2048,51 @@ tbody td,
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 6px;
 }
 .startup-card .tags .tag {
-  font-family: 'DM Sans', system-ui, sans-serif !important;
-  font-size: 9px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
   text-transform: uppercase !important;
-  padding: 3px 8px !important;
-  border-radius: 999px !important;
+  padding: 5px 11px !important;
+  border-radius: 100px !important;
   background: rgba(58,74,95,0.55) !important;
   color: #b7c8e1 !important;
-  border: none !important;
+  border: 1px solid rgba(183, 200, 225, 0.3) !important;
   white-space: nowrap !important;
 }
+/* Geography tags */
+.startup-card .tags .tag.tag-geo {
+  background: var(--tag-geo-bg, rgba(59,130,246,0.15)) !important;
+  color: var(--tag-geo-text, #93C5FD) !important;
+  border-color: rgba(147, 197, 253, 0.3) !important;
+}
+/* Stage tags */
+.startup-card .tags .tag.tag-stage,
 .startup-card .tags .tag.stage {
-  background: rgba(74,142,255,0.14) !important;
-  color: #adc7ff !important;
+  background: var(--tag-stage-bg, rgba(245,158,11,0.15)) !important;
+  color: var(--tag-stage-text, #FCD34D) !important;
+  border-color: rgba(252, 211, 77, 0.3) !important;
+}
+/* Domain/sector tags */
+.startup-card .tags .tag.tag-domain {
+  background: var(--tag-domain-bg, rgba(139,92,246,0.15)) !important;
+  color: var(--tag-domain-text, #C4B5FD) !important;
+  border-color: rgba(196, 181, 253, 0.3) !important;
 }
 
 .startup-card .desc {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  color: #8b91a0;
-  font-style: italic;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #E2E8F0;
+  font-style: normal;
   margin-top: 8px;
-  line-height: 1.4;
+  line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -2068,13 +2101,13 @@ tbody td,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   flex-shrink: 0;
 }
 .startup-card .score-ring {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2089,22 +2122,22 @@ tbody td,
 .score-num {
   position: relative;
   z-index: 1;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 18px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .score-lbl {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 8px;
-  font-weight: 700;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #8b91a0;
+  color: var(--text-secondary, #8b91a0);
   text-align: center;
   line-height: 1.2;
-  max-width: 64px;
+  max-width: 72px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2117,7 +2150,7 @@ tbody td,
   padding: 0 !important;
   margin: 1px 0 !important;
   border-color: rgba(255,255,255,0.15) !important;
-  color: #8b91a0 !important;
+  color: var(--text-secondary, #8b91a0) !important;
   background: transparent !important;
 }
 .score-wrap .infoicon:hover {
@@ -2138,22 +2171,22 @@ tbody td,
 }
 .kpi-val {
   display: block;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24px;
   font-weight: 700;
   color: #dae2fd;
   line-height: 1.2;
 }
-.kpi-val.pos { color: #00dfc1; }
-.kpi-val.neg { color: #ff6b6b; }
+.kpi-val.pos { color: var(--metric-positive, #34D399); }
+.kpi-val.neg { color: var(--metric-negative, #F87171); }
 .kpi-lbl {
   display: block;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8b91a0;
+  color: var(--text-secondary, #8b91a0);
   margin-top: 4px;
 }
 
@@ -2166,24 +2199,29 @@ tbody td,
 }
 .startup-card .btn-primary {
   width: 100%;
-  background: #4a8eff;
-  color: #001a41;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 14px;
+  background: linear-gradient(135deg, var(--btn-primary-from, #3B82F6), var(--btn-primary-to, #6366F1));
+  color: #ffffff;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
+  font-size: 15px;
   font-weight: 700;
-  padding: 11px 14px;
+  height: 48px;
+  padding: 0 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   line-height: 1;
   text-align: center;
-  transition: filter 0.15s ease;
+  transition: all 180ms ease-out;
 }
-.startup-card .btn-primary:hover { filter: brightness(1.1); }
+.startup-card .btn-primary:hover {
+  filter: brightness(1.1);
+  transform: scale(1.01);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
 .startup-card .btn-primary:active { transform: scale(0.98); }
 .startup-card .btn-primary:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(74,142,255,0.35);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.35);
 }
 
 .startup-card .btn-row {
@@ -2192,23 +2230,24 @@ tbody td,
   gap: 8px;
 }
 .startup-card .btn-secondary {
-  background: #1e2d45;
+  background: transparent;
   color: #dae2fd;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 9px 10px;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
+  font-family: 'IBM Plex Sans', 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  height: 42px;
+  padding: 0 12px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
   line-height: 1;
-  transition: background 0.15s ease;
+  transition: all 150ms ease-out;
 }
-.startup-card .btn-secondary:hover { background: rgba(65,71,84,0.7); }
+.startup-card .btn-secondary:hover { background: rgba(255,255,255,0.06); }
 .startup-card .btn-secondary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -2216,19 +2255,20 @@ tbody td,
 }
 .startup-card .btn-secondary:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(74,142,255,0.2);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
 }
 
 /* =========================
-   CARD v3 — Light Mode Override
-   Fix: hardcoded dark hex farben überschreiben
+   CARD v4 — Light Mode Override
 ========================= */
 :root:not([data-theme="dark"]) .startup-card {
   background: #ffffff !important;
   border-color: rgba(0,0,0,0.08) !important;
+  border-left-color: #3B82F6 !important;
 }
 :root:not([data-theme="dark"]) .startup-card:hover {
-  border-color: rgba(25,118,210,0.25) !important;
+  border-color: rgba(0,0,0,0.12) !important;
+  border-left-color: #3B82F6 !important;
 }
 :root:not([data-theme="dark"]) .card-name {
   color: #1a1f2e !important;
@@ -2236,13 +2276,26 @@ tbody td,
 :root:not([data-theme="dark"]) .startup-card .tags .tag {
   background: rgba(0,0,0,0.05) !important;
   color: #4a5568 !important;
+  border-color: rgba(0,0,0,0.12) !important;
 }
+:root:not([data-theme="dark"]) .startup-card .tags .tag.tag-geo {
+  background: rgba(59,130,246,0.10) !important;
+  color: #1d4ed8 !important;
+  border-color: rgba(59,130,246,0.2) !important;
+}
+:root:not([data-theme="dark"]) .startup-card .tags .tag.tag-stage,
 :root:not([data-theme="dark"]) .startup-card .tags .tag.stage {
-  background: rgba(25,118,210,0.10) !important;
-  color: #1565c0 !important;
+  background: rgba(245,158,11,0.12) !important;
+  color: #92400e !important;
+  border-color: rgba(245,158,11,0.25) !important;
+}
+:root:not([data-theme="dark"]) .startup-card .tags .tag.tag-domain {
+  background: rgba(139,92,246,0.10) !important;
+  color: #5b21b6 !important;
+  border-color: rgba(139,92,246,0.2) !important;
 }
 :root:not([data-theme="dark"]) .startup-card .desc {
-  color: #6b7280 !important;
+  color: #374151 !important;
 }
 :root:not([data-theme="dark"]) .kpi-tile {
   background: #f0f4ff !important;
@@ -2251,23 +2304,22 @@ tbody td,
   color: #1a1f2e !important;
 }
 :root:not([data-theme="dark"]) .startup-card .btn-secondary {
-  background: #f0f4ff !important;
+  background: transparent !important;
   color: #1a1f2e !important;
-  border-color: rgba(0,0,0,0.08) !important;
+  border-color: rgba(0,0,0,0.15) !important;
 }
 :root:not([data-theme="dark"]) .startup-card .btn-secondary:hover {
-  background: #e2e8f0 !important;
+  background: rgba(0,0,0,0.05) !important;
 }
 
 /* =========================
-   CARD v3 — KPI Semantic Colors Fix
-   pos/neg müssen !important base override gewinnen
+   CARD v4 — KPI Semantic Colors
 ========================= */
 .kpi-val.pos, :root:not([data-theme="dark"]) .kpi-val.pos {
-  color: #00dfc1 !important;
+  color: var(--metric-positive, #34D399) !important;
 }
 .kpi-val.neg, :root:not([data-theme="dark"]) .kpi-val.neg {
-  color: #ff6b6b !important;
+  color: var(--metric-negative, #F87171) !important;
 }
 
 /* ========================= NEW SUBMISSIONS TABLE v2 ========================= */
