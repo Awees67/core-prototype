@@ -2197,7 +2197,14 @@ function handleAddToPipeline(anon_id){
   }
   pipelineAdd(anon_id, "In Review");
   toast("Pipeline", "Deal zur Pipeline hinzugefügt");
-  if(currentView === "home") renderCards();
+  if(currentView === "home") {
+    // Patch button in-place — do NOT call renderCards() to avoid scroll reset
+    const btn = document.querySelector(`[data-action="addpipeline"][data-id="${CSS.escape(anon_id)}"]`);
+    if(btn) {
+      btn.textContent = "✓ In Pipeline";
+      btn.disabled = true;
+    }
+  }
   if(currentView === "pipeline") renderPipeline();
 }
 
