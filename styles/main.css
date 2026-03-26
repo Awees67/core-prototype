@@ -2459,21 +2459,4 @@ tbody td,
 }
 .subs2-infoicon:hover { color: #dae2fd; }
 
-/* Force dark table in light mode too */
-:root:not([data-theme="dark"]) .subs2-wrap {
-  background: #131b2e !important;
-  border-color: rgba(255,255,255,0.05) !important;
-}
-:root:not([data-theme="dark"]) .subs2-wrap tbody td,
-:root:not([data-theme="dark"]) .subs2-name,
-:root:not([data-theme="dark"]) .subs2-sector,
-:root:not([data-theme="dark"]) .subs2-stage {
-  color: #dae2fd !important;
-}
-:root:not([data-theme="dark"]) .subs2-wrap tbody tr:hover {
-  background: rgba(255,255,255,0.02) !important;
-}
-:root:not([data-theme="dark"]) .subs2-btn-decline {
-  color: #ffffff !important;
-}
 
