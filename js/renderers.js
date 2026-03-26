@@ -127,19 +127,19 @@ function _buildScoreRing(score, rulesetName, anonId) {
 
 function _scoreRing(scoreRaw, rulesetName, anonId) {
   const n = Number(scoreRaw ?? 0);
-  const R = 26;
+  const R = 24;
   const circ = +(2 * Math.PI * R).toFixed(2);
   const off  = +(circ * (1 - n / 100)).toFixed(2);
   let ring, track, txt;
-  if (n >= 70)      { ring = '#00dfc1'; track = 'rgba(0,223,193,0.14)';  txt = '#00dfc1'; }
-  else if (n >= 40) { ring = '#f97316'; track = 'rgba(249,115,22,0.14)'; txt = '#f97316'; }
-  else              { ring = '#ef4444'; track = 'rgba(239,68,68,0.14)';  txt = '#ef4444'; }
+  if (n >= 70)      { ring = '#10b981'; track = 'rgba(16,185,129,0.12)';  txt = '#10b981'; }
+  else if (n >= 40) { ring = '#f59e0b'; track = 'rgba(245,158,11,0.12)';  txt = '#f59e0b'; }
+  else              { ring = '#f87171'; track = 'rgba(248,113,113,0.12)';  txt = '#f87171'; }
   const disp = (scoreRaw !== null && scoreRaw !== undefined) ? String(n) : '—';
   return `<div class="score-wrap">
     <div class="score-ring">
-      <svg viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${track}" stroke-width="5"/>
-        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${ring}" stroke-width="5"
+      <svg viewBox="0 0 58 58">
+        <circle cx="29" cy="29" r="${R}" fill="none" stroke="${track}" stroke-width="4"/>
+        <circle cx="29" cy="29" r="${R}" fill="none" stroke="${ring}" stroke-width="4"
           stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"/>
       </svg>
       <span class="score-num" style="color:${txt}">${escapeHTML(disp)}</span>
@@ -236,14 +236,14 @@ function _renderCardsContent(grid){
         <span class="cid">${escapeHTML(s.anon_id)}</span>
       </div>
       <div class="tags">
-        <span class="tag">🌍 ${escapeHTML(s.origin_country)}</span>
-        <span class="tag">${escapeHTML(marketLabel)}</span>
+        <span class="tag">${escapeHTML(s.origin_country)}</span>
+        ${s.market_served && s.market_served.length ? `<span class="tag">${escapeHTML(s.market_served.includes('DACH') ? 'DACH' : s.market_served[0])}</span>` : ''}
         <span class="tag stage">${escapeHTML(s.stage)}</span>
         <span class="tag">${escapeHTML(s.sector)}</span>
         ${s.sub_sector ? `<span class="tag">${escapeHTML(s.sub_sector)}</span>` : ''}
       </div>
       ${s.description ? `<p class="desc">${escapeHTML(s.description)}</p>` : ''}
-      ${nc > 0 ? `<span class="card-notes-indicator" style="margin-top:4px;display:inline-flex;">📝 ${nc}</span>` : ''}
+      ${nc > 0 ? `<span class="card-notes-indicator" style="margin-top:6px;display:inline-flex;">📝 ${nc}</span>` : ''}
     </div>
     ${_scoreRing(_scoreRaw, activeRulesetName, s.anon_id)}
   </div>
