@@ -2494,7 +2494,7 @@ tbody td,
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: var(--muted);
-  background: var(--soft);
+  background: var(--surface-overlay);
   border: none;
   white-space: nowrap;
   position: sticky;
@@ -2649,7 +2649,7 @@ tbody td,
   border-color: var(--border);
 }
 [data-theme="dark"] .pipe2-table th {
-  background: transparent;
+  background: var(--surface-overlay);
   color: #8b91a0;
 }
 [data-theme="dark"] .pipe2-table thead tr {
