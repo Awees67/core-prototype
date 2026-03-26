@@ -381,108 +381,135 @@ function bindInboxHeaderButtons(){
 
 function renderInbox(){
   hideAllViews();
-  const viewInbox = document.getElementById("viewInbox");
+  const viewInbox = document.getElementById(“viewInbox”);
   if(!viewInbox) return;
-  viewInbox.style.display = "";
+  viewInbox.style.display = “”;
 
   const leads = getLeads().slice().sort((a,b)=>b.ts-a.ts);
-  viewInbox.innerHTML = "";
+  viewInbox.innerHTML = “”;
 
-  const resultCount = document.getElementById("resultCount");
-  const activeFilterCount = document.getElementById("activeFilterCount");
-  if(resultCount) resultCount.textContent = leads.length + " Anfragen";
-  if(activeFilterCount) activeFilterCount.textContent = "0 Filter aktiv";
+  const resultCount = document.getElementById(“resultCount”);
+  const activeFilterCount = document.getElementById(“activeFilterCount”);
+  if(resultCount) resultCount.textContent = leads.length + “ Anfragen”;
+  if(activeFilterCount) activeFilterCount.textContent = “0 Filter aktiv”;
 
-  const header = document.createElement("div");
-  header.className = "empty";
-  header.style.textAlign = "left";
+  // ── Header ──
+  const header = document.createElement(“div”);
+  header.className = “inbox2-header”;
   header.innerHTML = `
-    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
-      <div>
-        <div style="font-weight:950; font-size:1.05rem;">Anfragen (lokal gespeichert)</div>
-        <div class="hint">Offline Demo: Daten bleiben in deinem Browser.</div>
+    <div class=”inbox2-header-left”>
+      <h2 class=”inbox2-header-title”>Anfragen <span class=”inbox2-header-count”>(lokal gespeichert)</span></h2>
+      <p class=”inbox2-header-sub”>Verwalten Sie eingehende Interessensbekundungen und Startup-Anfragen direkt in Ihrer lokalen Instanz.</p>
+    </div>
+    <div class=”inbox2-header-right”>
+      <div class=”inbox2-header-badge”>
+        <span class=”inbox2-badge-dot”></span>
+        <span class=”inbox2-badge-text”>${leads.length} Active Request${leads.length !== 1 ? “s” : “”}</span>
       </div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn secondary" id="exportJsonBtn">Export JSON</button>
-        <button class="btn" id="clearLeadsBtn">Alle löschen</button>
+      <div class=”inbox2-header-actions”>
+        <button class=”btn secondary” id=”exportJsonBtn”>Export JSON</button>
+        <button class=”btn secondary” id=”clearLeadsBtn”>Alle löschen</button>
       </div>
     </div>
   `;
   viewInbox.appendChild(header);
 
+  // ── Empty state ──
   if(leads.length === 0){
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.innerHTML = `Noch keine Anfragen.<div class="hint">In „Details“ eine Anfrage speichern.</div>`;
+    const empty = document.createElement(“div”);
+    empty.className = “inbox2-empty-state”;
+    empty.innerHTML = `
+      <div class=”inbox2-empty-icon”>📭</div>
+      <h3 class=”inbox2-empty-title”>Keine Anfragen gefunden</h3>
+      <p class=”inbox2-empty-sub”>Neue Anfragen werden hier automatisch erscheinen, sobald Investoren Interesse an Startups bekunden.</p>
+    `;
     viewInbox.appendChild(empty);
     bindInboxHeaderButtons();
     updateCounts();
     return;
   }
 
-  const wrap = document.createElement("div");
-  wrap.className = "card-grid";
+  // ── Card grid ──
+  const grid = document.createElement(“div”);
+  grid.className = “inbox2-grid”;
 
   leads.forEach((l)=>{
-    const card = document.createElement("div");
-    card.className = "startup-card";
+    const card = document.createElement(“div”);
+    card.className = “inbox2-card”;
 
     const dt = new Date(l.ts);
-    const dateStr = Number.isFinite(dt.getTime()) ? dt.toLocaleString("de-DE") : "—";
+    const dateStr = Number.isFinite(dt.getTime())
+      ? dt.toLocaleDateString(“de-DE”, { day: “numeric”, month: “long”, year: “numeric” })
+        + “ \u2022 “
+        + dt.toLocaleTimeString(“de-DE”, { hour: “2-digit”, minute: “2-digit” })
+      : “\u2014”;
+
+    const displayName = l.display_label || startupLabel({ anon_id: l.anon_id });
+    const msgTruncated = (l.msg || “\u2014”).slice(0, 280) + ((l.msg || “”).length > 280 ? “\u2026” : “”);
 
     card.innerHTML = `
-      <div class="card-head">
-        <div>
-          <h3>Anfrage zu ${escapeHTML(l.display_label || startupLabel({ anon_id: l.anon_id }))}</h3>
-          <div class="tagrow">
-            <span class="tag">${escapeHTML(dateStr)}</span>
-            <span class="tag">${escapeHTML((l.name || "—").slice(0,24))}</span>
+      <div class=”inbox2-card-head”>
+        <h3 class=”inbox2-card-title”>Anfrage zu ${escapeHTML(displayName)}</h3>
+        <span class=”inbox2-card-time”>${escapeHTML(dateStr)}</span>
+      </div>
+
+      <div class=”inbox2-sections”>
+        <div class=”inbox2-section”>
+          <div class=”inbox2-section-label”>
+            <span class=”inbox2-section-icon”>&#x1F464;</span>
+            <span class=”inbox2-section-label-text”>Requester</span>
           </div>
+          <p class=”inbox2-section-value”>${escapeHTML(l.name || “\u2014”)}</p>
+          ${l.email ? `<p class=”inbox2-section-sub”>${escapeHTML(l.email)}</p>` : “”}
         </div>
-        <div class="badge hot">Lead</div>
+
+        <div class=”inbox2-section”>
+          <div class=”inbox2-section-label”>
+            <span class=”inbox2-section-icon”>&#x1F3E2;</span>
+            <span class=”inbox2-section-label-text”>Company / Fund</span>
+          </div>
+          <p class=”inbox2-section-value”>${escapeHTML(l.firm || “\u2014”)}</p>
+        </div>
+
+        <div class=”inbox2-message”>
+          <div class=”inbox2-section-label”>
+            <span class=”inbox2-section-icon inbox2-message-icon”>&#x1F4AC;</span>
+            <span class=”inbox2-section-label-text inbox2-message-label-text”>Message</span>
+          </div>
+          <p class=”inbox2-message-text”>&ldquo;${escapeHTML(msgTruncated)}&rdquo;</p>
+        </div>
       </div>
 
-      <div class="metrics">
-        <div class="metric"><strong>${escapeHTML(l.name || "—")}</strong><small>Name</small></div>
-        <div class="metric"><strong class="mono">${escapeHTML(l.email || "—")}</strong><small>E-Mail</small></div>
-      </div>
-
-      <div class="metric" style="margin-top:0;">
-        <strong>${escapeHTML(l.firm || "—")}</strong>
-        <small>Firma / Fonds</small>
-      </div>
-
-      <div class="metric" style="margin-top:0;">
-        <strong style="font-size:1rem; color:inherit; font-weight:900;">${escapeHTML(((l.msg || "—").slice(0,220) + (((l.msg || "").length > 220) ? "…" : "")))}</strong>
-        <small>Nachricht</small>
-      </div>
-
-      <div class="card-actions">
-        <button class="btn secondary" data-action="open" data-id="${escapeHTML(l.anon_id)}">Startup öffnen</button>
-        <button class="btn" data-action="delete" data-ts="${String(l.ts)}">Löschen</button>
+      <div class=”inbox2-actions”>
+        <button class=”inbox2-btn-open” data-action=”open” data-id=”${escapeHTML(l.anon_id)}”>
+          &#x1F441; Startup &ouml;ffnen
+        </button>
+        <button class=”inbox2-btn-delete” data-action=”delete” data-ts=”${String(l.ts)}” title=”Anfrage l&ouml;schen” aria-label=”Anfrage l&ouml;schen”>
+          &#x1F5D1;
+        </button>
       </div>
     `;
 
-    card.addEventListener("click", (e)=>{
-      const btn = e.target.closest("button");
+    card.addEventListener(“click”, (e)=>{
+      const btn = e.target.closest(“button”);
       if(!btn) return;
       const action = btn.dataset.action;
-      if(action === "open"){
-        openModalById(btn.dataset.id || "");
+      if(action === “open”){
+        openModalById(btn.dataset.id || “”);
         return;
       }
-      if(action === "delete"){
+      if(action === “delete”){
         const ts = Number(btn.dataset.ts);
         setLeads(getLeads().filter(x=>Number(x.ts)!==ts));
-        toast("Gelöscht", "Anfrage entfernt");
+        toast(“Gel\u00f6scht”, “Anfrage entfernt”);
         renderInbox();
       }
     });
 
-    wrap.appendChild(card);
+    grid.appendChild(card);
   });
 
-  viewInbox.appendChild(wrap);
+  viewInbox.appendChild(grid);
   bindInboxHeaderButtons();
   updateCounts();
 }
