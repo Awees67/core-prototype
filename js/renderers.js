@@ -404,7 +404,7 @@ function renderInbox(){
     <div class="inbox2-header-right">
       <div class="inbox2-header-badge">
         <span class="inbox2-badge-dot"></span>
-        <span class="inbox2-badge-text">${leads.length} Active Request${leads.length !== 1 ? "s" : ""}</span>
+        <span class="inbox2-badge-text">${leads.length} gesendete Anfrage${leads.length !== 1 ? "n" : ""}</span>
       </div>
       <div class="inbox2-header-actions">
         <button class="btn secondary" id="exportJsonBtn">Export JSON</button>
@@ -485,7 +485,7 @@ function renderInbox(){
           &#x1F441; Startup &ouml;ffnen
         </button>
         <button class="inbox2-btn-delete" data-action="delete" data-ts="${String(l.ts)}" title="Anfrage l&ouml;schen" aria-label="Anfrage l&ouml;schen">
-          &#x1F5D1;
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h10M6 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M5 4l.5 9M11 4l-.5 9M8 4v9"/></svg>
         </button>
       </div>
     `;

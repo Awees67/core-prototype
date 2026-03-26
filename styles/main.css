@@ -2973,3 +2973,31 @@ tbody td,
   .inbox2-header-right{ width: 100%; }
   .inbox2-grid        { grid-template-columns: 1fr; }
 }
+
+/* ========================= ANFRAGEN TAB FIX ========================= */
+.inbox2-card-title         { font-size: 16px !important; font-weight: 700 !important; }
+.inbox2-card-time          { font-size: 12px !important; }
+.inbox2-section-label-text { font-size: 11px !important; font-weight: 700 !important; }
+.inbox2-section-value      { font-size: 14px !important; font-weight: 600 !important; }
+.inbox2-section-sub        { font-size: 12px !important; }
+.inbox2-message-text       { font-size: 14px !important; line-height: 1.5 !important; }
+.inbox2-btn-open           { font-size: 14px !important; font-weight: 600 !important; padding: 11px 14px !important; }
+.inbox2-btn-delete {
+  width: 42px !important; height: 42px !important; padding: 0 !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  background: rgba(239,68,68,0.08) !important;
+  border: 1px solid rgba(239,68,68,0.20) !important;
+  border-radius: 8px !important;
+  color: #ef4444 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+.inbox2-btn-delete:hover {
+  background: rgba(239,68,68,0.15) !important;
+  border-color: rgba(239,68,68,0.35) !important;
+}
+[data-theme="dark"] .inbox2-btn-delete {
+  background: rgba(239,68,68,0.10) !important;
+  border-color: rgba(239,68,68,0.25) !important;
+  color: #fca5a5 !important;
+}
