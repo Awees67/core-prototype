@@ -2260,9 +2260,9 @@ tbody td,
 
 /* Wrapper */
 .subs2-wrap {
-  background: #131b2e;
+  background: var(--surface-raised);
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid var(--border-default);
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 }
@@ -2273,8 +2273,8 @@ tbody td,
 
 /* Header */
 .subs2-wrap thead tr {
-  background: rgba(34,42,61,0.5);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: var(--surface-overlay);
+  border-bottom: 1px solid var(--border-subtle);
 }
 .subs2-wrap thead th {
   padding: 20px 24px !important;
@@ -2282,7 +2282,7 @@ tbody td,
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.15em !important;
-  color: #8b91a0 !important;
+  color: var(--text-secondary) !important;
   background: transparent !important;
   border: none !important;
   text-align: left;
@@ -2290,7 +2290,7 @@ tbody td,
 
 /* Rows */
 .subs2-wrap tbody tr {
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
   transition: background 120ms ease;
 }
@@ -2298,19 +2298,19 @@ tbody td,
   border-bottom: none;
 }
 .subs2-wrap tbody tr:hover {
-  background: rgba(255,255,255,0.02) !important;
+  background: var(--border-subtle) !important;
 }
 .subs2-wrap tbody td {
   padding: 20px 24px !important;
   vertical-align: middle !important;
   border: none !important;
-  color: #dae2fd;
+  color: var(--text-primary);
 }
 
 /* Startup Name cell */
 .subs2-name {
   display: block;
-  color: #dae2fd;
+  color: var(--text-primary);
   font-weight: 700;
   font-size: 15px;
   background: none;
@@ -2323,21 +2323,21 @@ tbody td,
 }
 .subs2-name:hover { text-decoration: underline; }
 .subs2-id {
-  color: #8b91a0;
+  color: var(--text-secondary);
   font-size: 11px;
   margin-top: 3px;
 }
 
 /* Sector */
 .subs2-sector {
-  color: #dae2fd;
+  color: var(--text-primary);
   font-weight: 500;
   font-size: 14px;
 }
 
 /* Stage */
 .subs2-stage {
-  color: #dae2fd;
+  color: var(--text-primary);
   font-weight: 500;
   font-size: 14px;
   text-align: center;
@@ -2362,7 +2362,7 @@ tbody td,
   line-height: 1;
 }
 .subs2-score-val.high { color: #00dfc1; }
-.subs2-score-val.mid  { color: #dae2fd; }
+.subs2-score-val.mid  { color: var(--text-primary); }
 .subs2-score-val.low  { color: #ffb4ab; }
 
 /* Plausibility */
@@ -2385,14 +2385,14 @@ tbody td,
 .subs2-plaus-label.flagged { color: #f59e0b; }
 .subs2-plaus-label.failed  { color: #ffb4ab; }
 .subs2-plaus-summary {
-  color: #8b91a0;
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 500;
 }
 
 /* Submitted date */
 .subs2-date {
-  color: #8b91a0;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
 }
@@ -2430,19 +2430,19 @@ tbody td,
 /* Ablehnen button */
 .subs2-btn-decline {
   background: transparent;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 700;
   padding: 6px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.10);
+  border: 1px solid var(--border-default);
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
   transition: background 150ms ease;
 }
 .subs2-btn-decline:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--border-subtle);
 }
 
 /* Info icon (ⓘ) inside table */
@@ -2450,13 +2450,13 @@ tbody td,
   background: none;
   border: none;
   cursor: pointer;
-  color: #8b91a0;
+  color: var(--text-secondary);
   font-size: 13px;
   padding: 0 2px;
   vertical-align: middle;
   line-height: 1;
   transition: color 120ms ease;
 }
-.subs2-infoicon:hover { color: #dae2fd; }
+.subs2-infoicon:hover { color: var(--text-primary); }
 
 
