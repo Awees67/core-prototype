@@ -381,34 +381,34 @@ function bindInboxHeaderButtons(){
 
 function renderInbox(){
   hideAllViews();
-  const viewInbox = document.getElementById(“viewInbox”);
+  const viewInbox = document.getElementById("viewInbox");
   if(!viewInbox) return;
-  viewInbox.style.display = “”;
+  viewInbox.style.display = "";
 
   const leads = getLeads().slice().sort((a,b)=>b.ts-a.ts);
-  viewInbox.innerHTML = “”;
+  viewInbox.innerHTML = "";
 
-  const resultCount = document.getElementById(“resultCount”);
-  const activeFilterCount = document.getElementById(“activeFilterCount”);
-  if(resultCount) resultCount.textContent = leads.length + “ Anfragen”;
-  if(activeFilterCount) activeFilterCount.textContent = “0 Filter aktiv”;
+  const resultCount = document.getElementById("resultCount");
+  const activeFilterCount = document.getElementById("activeFilterCount");
+  if(resultCount) resultCount.textContent = leads.length + " Anfragen";
+  if(activeFilterCount) activeFilterCount.textContent = "0 Filter aktiv";
 
   // ── Header ──
-  const header = document.createElement(“div”);
-  header.className = “inbox2-header”;
+  const header = document.createElement("div");
+  header.className = "inbox2-header";
   header.innerHTML = `
-    <div class=”inbox2-header-left”>
-      <h2 class=”inbox2-header-title”>Anfragen <span class=”inbox2-header-count”>(lokal gespeichert)</span></h2>
-      <p class=”inbox2-header-sub”>Verwalten Sie eingehende Interessensbekundungen und Startup-Anfragen direkt in Ihrer lokalen Instanz.</p>
+    <div class="inbox2-header-left">
+      <h2 class="inbox2-header-title">Anfragen <span class="inbox2-header-count">(lokal gespeichert)</span></h2>
+      <p class="inbox2-header-sub">Verwalten Sie eingehende Interessensbekundungen und Startup-Anfragen direkt in Ihrer lokalen Instanz.</p>
     </div>
-    <div class=”inbox2-header-right”>
-      <div class=”inbox2-header-badge”>
-        <span class=”inbox2-badge-dot”></span>
-        <span class=”inbox2-badge-text”>${leads.length} Active Request${leads.length !== 1 ? “s” : “”}</span>
+    <div class="inbox2-header-right">
+      <div class="inbox2-header-badge">
+        <span class="inbox2-badge-dot"></span>
+        <span class="inbox2-badge-text">${leads.length} Active Request${leads.length !== 1 ? "s" : ""}</span>
       </div>
-      <div class=”inbox2-header-actions”>
-        <button class=”btn secondary” id=”exportJsonBtn”>Export JSON</button>
-        <button class=”btn secondary” id=”clearLeadsBtn”>Alle löschen</button>
+      <div class="inbox2-header-actions">
+        <button class="btn secondary" id="exportJsonBtn">Export JSON</button>
+        <button class="btn secondary" id="clearLeadsBtn">Alle löschen</button>
       </div>
     </div>
   `;
@@ -416,12 +416,12 @@ function renderInbox(){
 
   // ── Empty state ──
   if(leads.length === 0){
-    const empty = document.createElement(“div”);
-    empty.className = “inbox2-empty-state”;
+    const empty = document.createElement("div");
+    empty.className = "inbox2-empty-state";
     empty.innerHTML = `
-      <div class=”inbox2-empty-icon”>📭</div>
-      <h3 class=”inbox2-empty-title”>Keine Anfragen gefunden</h3>
-      <p class=”inbox2-empty-sub”>Neue Anfragen werden hier automatisch erscheinen, sobald Investoren Interesse an Startups bekunden.</p>
+      <div class="inbox2-empty-icon">📭</div>
+      <h3 class="inbox2-empty-title">Keine Anfragen gefunden</h3>
+      <p class="inbox2-empty-sub">Neue Anfragen werden hier automatisch erscheinen, sobald Investoren Interesse an Startups bekunden.</p>
     `;
     viewInbox.appendChild(empty);
     bindInboxHeaderButtons();
@@ -430,78 +430,78 @@ function renderInbox(){
   }
 
   // ── Card grid ──
-  const grid = document.createElement(“div”);
-  grid.className = “inbox2-grid”;
+  const grid = document.createElement("div");
+  grid.className = "inbox2-grid";
 
   leads.forEach((l)=>{
-    const card = document.createElement(“div”);
-    card.className = “inbox2-card”;
+    const card = document.createElement("div");
+    card.className = "inbox2-card";
 
     const dt = new Date(l.ts);
     const dateStr = Number.isFinite(dt.getTime())
-      ? dt.toLocaleDateString(“de-DE”, { day: “numeric”, month: “long”, year: “numeric” })
-        + “ \u2022 “
-        + dt.toLocaleTimeString(“de-DE”, { hour: “2-digit”, minute: “2-digit” })
-      : “\u2014”;
+      ? dt.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })
+        + " \u2022 "
+        + dt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
+      : "\u2014";
 
     const displayName = l.display_label || startupLabel({ anon_id: l.anon_id });
-    const msgTruncated = (l.msg || “\u2014”).slice(0, 280) + ((l.msg || “”).length > 280 ? “\u2026” : “”);
+    const msgTruncated = (l.msg || "\u2014").slice(0, 280) + ((l.msg || "").length > 280 ? "\u2026" : "");
 
     card.innerHTML = `
-      <div class=”inbox2-card-head”>
-        <h3 class=”inbox2-card-title”>Anfrage zu ${escapeHTML(displayName)}</h3>
-        <span class=”inbox2-card-time”>${escapeHTML(dateStr)}</span>
+      <div class="inbox2-card-head">
+        <h3 class="inbox2-card-title">Anfrage zu ${escapeHTML(displayName)}</h3>
+        <span class="inbox2-card-time">${escapeHTML(dateStr)}</span>
       </div>
 
-      <div class=”inbox2-sections”>
-        <div class=”inbox2-section”>
-          <div class=”inbox2-section-label”>
-            <span class=”inbox2-section-icon”>&#x1F464;</span>
-            <span class=”inbox2-section-label-text”>Requester</span>
+      <div class="inbox2-sections">
+        <div class="inbox2-section">
+          <div class="inbox2-section-label">
+            <span class="inbox2-section-icon">&#x1F464;</span>
+            <span class="inbox2-section-label-text">Requester</span>
           </div>
-          <p class=”inbox2-section-value”>${escapeHTML(l.name || “\u2014”)}</p>
-          ${l.email ? `<p class=”inbox2-section-sub”>${escapeHTML(l.email)}</p>` : “”}
+          <p class="inbox2-section-value">${escapeHTML(l.name || "\u2014")}</p>
+          ${l.email ? `<p class="inbox2-section-sub">${escapeHTML(l.email)}</p>` : ""}
         </div>
 
-        <div class=”inbox2-section”>
-          <div class=”inbox2-section-label”>
-            <span class=”inbox2-section-icon”>&#x1F3E2;</span>
-            <span class=”inbox2-section-label-text”>Company / Fund</span>
+        <div class="inbox2-section">
+          <div class="inbox2-section-label">
+            <span class="inbox2-section-icon">&#x1F3E2;</span>
+            <span class="inbox2-section-label-text">Company / Fund</span>
           </div>
-          <p class=”inbox2-section-value”>${escapeHTML(l.firm || “\u2014”)}</p>
+          <p class="inbox2-section-value">${escapeHTML(l.firm || "\u2014")}</p>
         </div>
 
-        <div class=”inbox2-message”>
-          <div class=”inbox2-section-label”>
-            <span class=”inbox2-section-icon inbox2-message-icon”>&#x1F4AC;</span>
-            <span class=”inbox2-section-label-text inbox2-message-label-text”>Message</span>
+        <div class="inbox2-message">
+          <div class="inbox2-section-label">
+            <span class="inbox2-section-icon inbox2-message-icon">&#x1F4AC;</span>
+            <span class="inbox2-section-label-text inbox2-message-label-text">Message</span>
           </div>
-          <p class=”inbox2-message-text”>&ldquo;${escapeHTML(msgTruncated)}&rdquo;</p>
+          <p class="inbox2-message-text">&ldquo;${escapeHTML(msgTruncated)}&rdquo;</p>
         </div>
       </div>
 
-      <div class=”inbox2-actions”>
-        <button class=”inbox2-btn-open” data-action=”open” data-id=”${escapeHTML(l.anon_id)}”>
+      <div class="inbox2-actions">
+        <button class="inbox2-btn-open" data-action="open" data-id="${escapeHTML(l.anon_id)}">
           &#x1F441; Startup &ouml;ffnen
         </button>
-        <button class=”inbox2-btn-delete” data-action=”delete” data-ts=”${String(l.ts)}” title=”Anfrage l&ouml;schen” aria-label=”Anfrage l&ouml;schen”>
+        <button class="inbox2-btn-delete" data-action="delete" data-ts="${String(l.ts)}" title="Anfrage l&ouml;schen" aria-label="Anfrage l&ouml;schen">
           &#x1F5D1;
         </button>
       </div>
     `;
 
-    card.addEventListener(“click”, (e)=>{
-      const btn = e.target.closest(“button”);
+    card.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button");
       if(!btn) return;
       const action = btn.dataset.action;
-      if(action === “open”){
-        openModalById(btn.dataset.id || “”);
+      if(action === "open"){
+        openModalById(btn.dataset.id || "");
         return;
       }
-      if(action === “delete”){
+      if(action === "delete"){
         const ts = Number(btn.dataset.ts);
         setLeads(getLeads().filter(x=>Number(x.ts)!==ts));
-        toast(“Gel\u00f6scht”, “Anfrage entfernt”);
+        toast("Gel\u00f6scht", "Anfrage entfernt");
         renderInbox();
       }
     });
@@ -1647,7 +1647,7 @@ function renderDashboard(){
       </div>
       <div class="dash-panel">
         <div class="dash-panel-title">Häufigste Absage-Gründe</div>
-        <div class="dash-panel-sub">Nur Deals mit Status „Declined“.</div>
+        <div class="dash-panel-sub">Nur Deals mit Status „Declined".</div>
         ${declineHtml}
       </div>
     </div>
@@ -1841,7 +1841,7 @@ function renderCompare(){
   v.style.display = "";
 
   const ids = getCompare().slice(0, 10);
-  const deals = ids.map(id => DATA.find(s => s.id === id)).filter(Boolean);
+  const deals = ids.map(id => startups.find(s => s.anon_id === id)).filter(Boolean);
 
   v.innerHTML = `
     <div class="panelhead">
@@ -1867,7 +1867,7 @@ function renderCompare(){
 
   if(!deals.length){
     body.innerHTML = `<tr><td colspan="5" style="padding:14px 12px; color:var(--muted); font-weight:900;">
-      Keine Deals im Compare. Füge Deals über „Add to Compare“ hinzu.
+      Keine Deals im Compare. Füge Deals über „Add to Compare" hinzu.
     </td></tr>`;
     return;
   }
@@ -1912,13 +1912,13 @@ function renderCompare(){
     return `
       <tr>
         <td style="font-weight:950;">
-          ${escapeHTML(s.id)}
+          ${escapeHTML(s.anon_id)}
           <div class="tiny" style="margin:4px 0 0 0;">${escapeHTML(s.hq||"")} • ${escapeHTML(s.stage||"")}</div>
         </td>
-        <td>${cell(mrr, maxMRR, s.id===topMRR.id, fmtEUR)}</td>
-        <td>${cell(gr, maxGrowth, s.id===topGrowth.id, fmtPct)}</td>
-        <td>${cell(rw, maxRunway, s.id===topRunway.id, fmtM)}</td>
-        <td>${cell(lv, maxLTV, s.id===topLTV.id, fmtRatio)}</td>
+        <td>${cell(mrr, maxMRR, s.anon_id===topMRR.anon_id, fmtEUR)}</td>
+        <td>${cell(gr, maxGrowth, s.anon_id===topGrowth.anon_id, fmtPct)}</td>
+        <td>${cell(rw, maxRunway, s.anon_id===topRunway.anon_id, fmtM)}</td>
+        <td>${cell(lv, maxLTV, s.anon_id===topLTV.anon_id, fmtRatio)}</td>
       </tr>
     `;
   }).join("");
