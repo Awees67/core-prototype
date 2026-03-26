@@ -2460,3 +2460,219 @@ tbody td,
 .subs2-infoicon:hover { color: var(--text-primary); }
 
 
+
+/* =========================
+   PIPELINE DESIGN v2
+   Append this entire block to the end of styles/main.css.
+   Uses CSS variables throughout — no forced dark/light overrides.
+========================= */
+/* ── Scroll wrapper ── */
+.pipe2-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* ── Table card ── */
+.pipe2-wrap {
+  background: var(--card);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+/* ── Table base ── */
+.pipe2-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+.pipe2-table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+.pipe2-table th {
+  padding: 14px 20px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-align: left;
+  background: var(--soft);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.pipe2-table th.tc { text-align: center; }
+.pipe2-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 120ms;
+}
+.pipe2-table tbody tr:last-child { border-bottom: none; }
+.pipe2-table tbody tr:hover { background: rgba(25,118,210,0.05); }
+.pipe2-table td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  border: none;
+  color: var(--text);
+  font-size: 14px;
+}
+.pipe2-table td.tc { text-align: center; }
+/* ── Startup name cell ── */
+.pipe2-sname {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  line-height: 1.3;
+  transition: color 120ms;
+}
+.pipe2-sname:hover { color: var(--brand2); }
+.pipe2-sid {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+/* ── Score number ── */
+.pipe2-score {
+  font-size: 20px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  display: inline-block;
+}
+.pipe2-score.s-high { color: var(--goodText); }
+.pipe2-score.s-mid  { color: var(--text); }
+.pipe2-score.s-low  { color: var(--dangerText); }
+/* ── Owner input ── */
+.pipe2-owner {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 2px 4px;
+  width: 110px;
+  font-family: inherit;
+}
+.pipe2-owner:focus { outline: none; border-bottom-color: var(--brand2); }
+/* ── Notes badge ── */
+.pipe2-nbadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--soft);
+  cursor: pointer;
+  color: var(--muted);
+  transition: background 120ms;
+}
+.pipe2-nbadge.has-n {
+  background: var(--chip);
+  border-color: var(--chipBorder);
+  color: var(--brand2);
+}
+.pipe2-nbadge.no-n { cursor: default; }
+.pipe2-nbadge:hover.has-n { filter: brightness(0.95); }
+/* ── Date cell ── */
+.pipe2-date {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-weight: 500;
+  white-space: nowrap;
+}
+/* ── Synced label ── */
+.pipe2-synced {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--goodText);
+  white-space: nowrap;
+}
+/* ── Decline reason ── */
+.pipe2-dreason {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+/* ── CRM push button ── */
+.pipe2-crm {
+  background: var(--ok);
+  color: #fff;
+  padding: 7px 13px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: filter 120ms;
+}
+.pipe2-crm:hover { filter: brightness(1.12); }
+.pipe2-crm:disabled { opacity: 0.4; cursor: not-allowed; }
+/* ── Remove button ── */
+.pipe2-remove {
+  background: var(--soft);
+  color: var(--text);
+  padding: 7px 13px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 120ms;
+}
+.pipe2-remove:hover { background: var(--soft2); }
+/* =========================
+   Dark mode refinements for pipe2
+   These are visual tuning ONLY — not forcing dark on light.
+========================= */
+[data-theme="dark"] .pipe2-wrap {
+  background: #0b1326;
+  border-color: rgba(255,255,255,0.06);
+}
+[data-theme="dark"] .pipe2-table th {
+  background: transparent;
+  color: #8b91a0;
+}
+[data-theme="dark"] .pipe2-table thead tr {
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+[data-theme="dark"] .pipe2-table tbody tr {
+  border-bottom-color: rgba(255,255,255,0.05);
+}
+[data-theme="dark"] .pipe2-table tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+[data-theme="dark"] .pipe2-sname         { color: #dae2fd; }
+[data-theme="dark"] .pipe2-sname:hover   { color: #adc7ff; }
+[data-theme="dark"] .pipe2-sid           { color: #8b91a0; }
+[data-theme="dark"] .pipe2-score.s-high  { color: #00dfc1; }
+[data-theme="dark"] .pipe2-score.s-mid   { color: #dae2fd; }
+[data-theme="dark"] .pipe2-score.s-low   { color: #ff5252; }
+[data-theme="dark"] .pipe2-date          { color: #8b91a0; }
+[data-theme="dark"] .pipe2-synced        { color: #00dfc1; }
+[data-theme="dark"] .pipe2-nbadge        { background: #1e2a3d; border-color: rgba(255,255,255,0.07); color: #8b91a0; }
+[data-theme="dark"] .pipe2-nbadge.has-n  { background: #0f2b52; border-color: #21446f; color: #93c5fd; }
+[data-theme="dark"] .pipe2-crm           { background: #2e7d32; }
+[data-theme="dark"] .pipe2-crm:hover     { filter: none; background: #1b5e20; }
+[data-theme="dark"] .pipe2-remove        { background: #1e2a3d; border-color: rgba(255,255,255,0.08); color: #dae2fd; }
+[data-theme="dark"] .pipe2-remove:hover  { background: #253348; }
