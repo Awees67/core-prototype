@@ -844,7 +844,7 @@ function renderPipeline(){
         <table class="pipe2-table">
           <thead>
             <tr>
-              <th style="width:40px;"></th>
+              <th style="width:40px;"><input type="checkbox" id="pipeBulkAll" ${allChecked ? "checked" : ""}></th>
               <th>Startup</th>
               <th>Status</th>
               <th class="tc">Score</th>
