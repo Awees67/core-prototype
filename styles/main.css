@@ -1960,8 +1960,8 @@ tbody td,
   font-family: 'IBM Plex Sans', sans-serif !important;
   background: #111827 !important;
   border: 1px solid rgba(255,255,255,0.08) !important;
-  border-radius: 8px !important;
-  padding: 22px 20px !important;
+  border-radius: 9px !important;
+  padding: 24px 22px !important;
   gap: 0 !important;
   box-shadow: none !important;
   transition: transform 0.18s ease, border-color 0.18s ease !important;
@@ -1994,11 +1994,11 @@ tbody td,
 
 .card-name {
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   color: #f1f5f9;
   letter-spacing: -0.01em;
-  margin-bottom: 8px;
+  margin-bottom: 9px;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -2046,11 +2046,11 @@ tbody td,
 
 .startup-card .desc {
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   color: #64748b;
   line-height: 1.5;
-  margin-top: 8px;
+  margin-top: 9px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -2137,15 +2137,15 @@ tbody td,
 
 .kpi-tile {
   background: #1a2133 !important;
-  border-radius: 6px !important;
-  padding: 14px 14px !important;
+  border-radius: 7px !important;
+  padding: 16px 15px !important;
   border: 1px solid rgba(255,255,255,0.06) !important;
-  min-height: 64px;
+  min-height: 70px;
 }
 
 .kpi-val {
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: #e2e8f0;
   display: block;
@@ -2159,12 +2159,12 @@ tbody td,
 
 .kpi-lbl {
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #64748b;
-  margin-top: 6px;
+  margin-top: 7px;
   display: block;
   line-height: 1.3;
 }
@@ -2182,9 +2182,9 @@ tbody td,
   background: #3b82f6;
   color: #ffffff;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 10px 14px;
+  padding: 11px 14px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -2206,9 +2206,9 @@ tbody td,
   background: rgba(255,255,255,0.04);
   color: #94a3b8;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  padding: 9px 10px;
+  padding: 10px 10px;
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 6px;
   cursor: pointer;
