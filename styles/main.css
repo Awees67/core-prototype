@@ -2645,18 +2645,18 @@ tbody td,
    These are visual tuning ONLY — not forcing dark on light.
 ========================= */
 [data-theme="dark"] .pipe2-wrap {
-  background: #0b1326;
-  border-color: rgba(255,255,255,0.06);
+  background: var(--card);
+  border-color: var(--border);
 }
 [data-theme="dark"] .pipe2-table th {
   background: transparent;
   color: #8b91a0;
 }
 [data-theme="dark"] .pipe2-table thead tr {
-  border-bottom-color: rgba(255,255,255,0.06);
+  border-bottom-color: var(--border);
 }
 [data-theme="dark"] .pipe2-table tbody tr {
-  border-bottom-color: rgba(255,255,255,0.05);
+  border-bottom-color: var(--border);
 }
 [data-theme="dark"] .pipe2-table tbody tr:hover {
   background: rgba(255,255,255,0.03);
