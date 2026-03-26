@@ -2488,14 +2488,14 @@ tbody td,
   border-bottom: 1px solid var(--border);
 }
 .pipe2-table th {
-  padding: 14px 20px;
+  padding: 20px 24px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.15em;
   color: var(--muted);
-  text-align: left;
   background: var(--soft);
+  border: none;
   white-space: nowrap;
   position: sticky;
   top: 0;
@@ -2509,7 +2509,7 @@ tbody td,
 .pipe2-table tbody tr:last-child { border-bottom: none; }
 .pipe2-table tbody tr:hover { background: rgba(25,118,210,0.05); }
 .pipe2-table td {
-  padding: 16px 20px;
+  padding: 20px 24px;
   vertical-align: middle;
   border: none;
   color: var(--text);
@@ -2518,7 +2518,6 @@ tbody td,
 .pipe2-table td.tc { text-align: center; }
 /* ── Startup name cell ── */
 .pipe2-sname {
-  display: block;
   font-size: 15px;
   font-weight: 700;
   color: var(--text);
@@ -2529,27 +2528,27 @@ tbody td,
   font-family: inherit;
   text-align: left;
   line-height: 1.3;
-  transition: color 120ms;
+  display: block;
 }
 .pipe2-sname:hover { color: var(--brand2); }
+
 .pipe2-sid {
   font-size: 11px;
   color: var(--muted);
-  margin-top: 2px;
-  letter-spacing: 0.04em;
+  margin-top: 3px;
   font-weight: 500;
 }
 /* ── Score number ── */
 .pipe2-score {
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 14px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   display: inline-block;
 }
-.pipe2-score.s-high { color: var(--goodText); }
+.pipe2-score.s-high { color: #00dfc1; }
 .pipe2-score.s-mid  { color: var(--text); }
-.pipe2-score.s-low  { color: var(--dangerText); }
+.pipe2-score.s-low  { color: #ffb4ab; }
 /* ── Owner input ── */
 .pipe2-owner {
   background: transparent;
@@ -2614,10 +2613,10 @@ tbody td,
 .pipe2-crm {
   background: var(--ok);
   color: #fff;
-  padding: 7px 13px;
-  border-radius: 6px;
-  font-weight: 700;
   font-size: 12px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   white-space: nowrap;
@@ -2628,19 +2627,19 @@ tbody td,
 .pipe2-crm:disabled { opacity: 0.4; cursor: not-allowed; }
 /* ── Remove button ── */
 .pipe2-remove {
-  background: var(--soft);
+  background: transparent;
   color: var(--text);
-  padding: 7px 13px;
-  border-radius: 6px;
-  font-weight: 700;
   font-size: 12px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
   transition: background 120ms;
 }
-.pipe2-remove:hover { background: var(--soft2); }
+.pipe2-remove:hover { background: var(--soft); }
 /* =========================
    Dark mode refinements for pipe2
    These are visual tuning ONLY — not forcing dark on light.
@@ -2662,12 +2661,12 @@ tbody td,
 [data-theme="dark"] .pipe2-table tbody tr:hover {
   background: rgba(255,255,255,0.03);
 }
-[data-theme="dark"] .pipe2-sname         { color: #dae2fd; }
-[data-theme="dark"] .pipe2-sname:hover   { color: #adc7ff; }
-[data-theme="dark"] .pipe2-sid           { color: #8b91a0; }
-[data-theme="dark"] .pipe2-score.s-high  { color: #00dfc1; }
-[data-theme="dark"] .pipe2-score.s-mid   { color: #dae2fd; }
-[data-theme="dark"] .pipe2-score.s-low   { color: #ff5252; }
+[data-theme="dark"] .pipe2-score.s-high { color: #00dfc1; }
+[data-theme="dark"] .pipe2-score.s-mid  { color: #dae2fd; }
+[data-theme="dark"] .pipe2-score.s-low  { color: #ffb4ab; }
+[data-theme="dark"] .pipe2-sname        { color: #dae2fd; }
+[data-theme="dark"] .pipe2-sname:hover  { color: #93c5fd; }
+[data-theme="dark"] .pipe2-sid          { color: #8b91a0; }
 [data-theme="dark"] .pipe2-date          { color: #8b91a0; }
 [data-theme="dark"] .pipe2-synced        { color: #00dfc1; }
 [data-theme="dark"] .pipe2-nbadge        { background: #1e2a3d; border-color: rgba(255,255,255,0.07); color: #8b91a0; }
