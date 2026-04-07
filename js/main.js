@@ -150,6 +150,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 });
 
+// KEEP: This IIFE replaces the base renderCompare (from renderers-compare.js) with the V4.1
+// improved version that includes a Score column and per-KPI top-value highlighting.
+// It is itself overridden by the V5 block below — both are kept for version traceability.
 (function(){
   if(typeof renderCompare !== "function" || renderCompare._v41) return;
 
@@ -295,6 +298,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
 /* =========================
    V5 scope logic (no redesign)
 ========================= */
+// KEEP: This IIFE contains the V5 renderCompare which is the ACTUAL implementation used at runtime.
+// It unconditionally assigns window.renderCompare, overriding both renderers-compare.js (V4.1 base)
+// and the V4.1 patch above. Removing this would revert to the inferior V4.1 compare table.
 (function(){
   if(window.__CORE_DEMO_V5__) return;
   window.__CORE_DEMO_V5__ = true;
