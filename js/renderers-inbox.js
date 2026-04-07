@@ -39,7 +39,7 @@ function bindInboxHeaderButtons(){
   const clearBtn = document.getElementById("clearLeadsBtn");
 
   if(exportBtn){
-    exportBtn.onclick = ()=>{
+    exportBtn.onclick = async ()=>{
       const leads = getLeads().slice().sort((a,b)=>b.ts-a.ts);
       const payload = {
         exported_at: new Date().toISOString(),
@@ -48,7 +48,7 @@ function bindInboxHeaderButtons(){
       };
       const text = JSON.stringify(payload, null, 2);
       const downloaded = downloadTextFile("core_anfragen_export.json", text);
-      if(!downloaded) copyText(text);
+      if(!downloaded) await copyToClipboard(text);
       toast(downloaded ? "Export bereit" : "Export kopiert", downloaded ? "JSON-Download gestartet" : "JSON liegt in der Zwischenablage");
     };
   }

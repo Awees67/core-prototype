@@ -978,12 +978,12 @@ function getPipelineStartupListV6(){
       addGroupBtn._bound = true;
     }
     if(exportBtn && !exportBtn._bound){
-      exportBtn.onclick = ()=>{
+      exportBtn.onclick = async ()=>{
         const r = getCustomRulesV6();
         const text = JSON.stringify(r, null, 2);
         const ta = document.getElementById("ciJsonIO");
         if(ta) ta.value = text;
-        try{ if(typeof copyText==="function") copyText(text); }catch(_){}
+        try{ if(typeof copyToClipboard==="function") await copyToClipboard(text); }catch(_){}
         try{ if(typeof toast==="function") toast("Export","Ruleset JSON kopiert"); }catch(_){}
       };
       exportBtn._bound = true;

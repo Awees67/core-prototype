@@ -62,17 +62,20 @@ function downloadJSON(filename, data){
   }catch(e){}
 }
 
-function copyText(text){
-  if(!text) return;
-  const ta = document.createElement("textarea");
-  ta.value = text;
-  ta.setAttribute("readonly", "");
-  ta.style.position = "fixed";
-  ta.style.left = "-9999px";
-  document.body.appendChild(ta);
-  ta.select();
-  try{ document.execCommand("copy"); }catch(e){}
-  document.body.removeChild(ta);
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Kopiert');
+  } catch {
+    // Fallback für ältere Browser
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast('Kopiert');
+  }
 }
 
 function fmtEUR(n){ return (n || 0).toLocaleString("de-DE") + " €"; }
@@ -101,11 +104,13 @@ function computeBadge(s){
 
 function toast(title, sub){
   const t = document.getElementById("toast");
-  document.getElementById("toastTitle").textContent = title || "OK";
-  document.getElementById("toastSub").textContent = sub || "";
-  t.style.display = "block";
+  t.innerHTML = `
+    <div><strong>${escapeHTML(title || "OK")}</strong>${sub ? `<small>${escapeHTML(sub)}</small>` : ""}</div>
+    <button class="toast-close" onclick="this.closest('.toast').style.display='none'" aria-label="Schließen">×</button>
+  `;
+  t.style.display = "flex";
   clearTimeout(toast._t);
-  toast._t = setTimeout(()=>{ t.style.display = "none"; }, 2200);
+  toast._t = setTimeout(()=>{ t.style.display = "none"; }, 4000);
 }
 
 /* =========================
