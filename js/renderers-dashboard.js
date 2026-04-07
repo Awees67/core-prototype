@@ -235,7 +235,7 @@ function renderDashboard(){
         ${recentEvents.map(ev=>{
           const label = DASHBOARD_EVENT_LABELS[ev.event] || escapeHTML(ev.event || "Event");
           const ts = ev.ts ? timeAgo(ev.ts) : "—";
-          const id = ev.anon_id ? escapeHTML(ev.anon_id) : "";
+          const id = ev.anon_id ? escapeHTML((window.startups||[]).find(x=>x?.anon_id===ev.anon_id)?.company_name || ev.anon_id) : "";
           return `
             <li>
               <span class="activity-mini-time">${escapeHTML(ts)}</span>
