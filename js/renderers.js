@@ -161,12 +161,9 @@ function randomizeDataset(){
 ========================= */
 function captureCurrentFilterState(){ return serializeFilters(); }
 
-function saveCurrentFilters(){
-  const name = (prompt("Name für Filterset:") || "").trim();
-  if(!name){
-    toast("Saved Filters","Abgebrochen");
-    return;
-  }
+async function saveCurrentFilters(){
+  const name = await showInputModal('Filterset-Name eingeben');
+  if (!name) return;
   const list = getSavedFilters();
   const entry = { id: uid(), name, filters: captureCurrentFilterState(), created_at: Date.now(), last_used_at: null };
   list.unshift(entry);

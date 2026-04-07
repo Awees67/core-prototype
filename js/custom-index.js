@@ -348,8 +348,8 @@ function getPipelineStartupListV6(){
       }
 
       if(rsNew && !rsNew._bound){
-        rsNew.onclick = ()=>{
-          const name = (prompt("Name für neues Ruleset:", "New Fund Ruleset") || "").trim();
+        rsNew.onclick = async ()=>{
+          const name = await showInputModal("Name für neues Ruleset:", "New Fund Ruleset");
           if(!name) return;
           const id = "rs_" + Math.random().toString(16).slice(2,8) + "_" + Date.now().toString(16).slice(-6);
           const c = getRulesetsV6();
@@ -367,9 +367,9 @@ function getPipelineStartupListV6(){
       }
 
       if(rsDup && !rsDup._bound){
-        rsDup.onclick = ()=>{
+        rsDup.onclick = async ()=>{
           const base = getCustomRulesV6();
-          const name = (prompt("Name für Duplikat:", (base.name||"Ruleset") + " (Copy)") || "").trim();
+          const name = await showInputModal("Name für Duplikat:", (base.name||"Ruleset") + " (Copy)");
           if(!name) return;
           const id = "rs_" + Math.random().toString(16).slice(2,8) + "_" + Date.now().toString(16).slice(-6);
           const c = getRulesetsV6();
