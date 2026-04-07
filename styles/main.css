@@ -179,7 +179,7 @@
       width:100%; padding:10px 12px; border:1px solid var(--border);
       border-radius:10px; font-size:1rem; background:var(--surface-raised); color:inherit;
     }
-    .search-box input:focus{ outline:none; box-shadow:var(--focus); border-color:#2a7de1; }
+    .search-box input:focus{ outline:none; box-shadow:var(--focus); border-color:var(--accent); }
 
     .filters-inline{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
@@ -217,7 +217,7 @@
       padding:9px 10px; border-radius:10px; border:1px solid var(--border);
       background:var(--surface-raised); font-weight:800; cursor:pointer; color:inherit;
     }
-    select:focus{ outline:none; box-shadow:var(--focus); border-color:#2a7de1; }
+    select:focus{ outline:none; box-shadow:var(--focus); border-color:var(--accent); }
 
     .card-grid{
       display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));
@@ -393,7 +393,7 @@
       background:var(--surface-raised); color:inherit;
     }
     textarea{ min-height:90px; resize:vertical; }
-    input:focus, textarea:focus{ outline:none; box-shadow:var(--focus); border-color:#2a7de1; }
+    input:focus, textarea:focus{ outline:none; box-shadow:var(--focus); border-color:var(--accent); }
     .helper{
       margin:8px 0 0; color:var(--text-secondary); font-weight:800; font-size:0.9rem;
     }
@@ -527,7 +527,7 @@
       color:inherit;
       user-select:none;
     }
-    .dd-btn:focus{ outline:none; box-shadow:var(--focus); border-color:#2a7de1; }
+    .dd-btn:focus{ outline:none; box-shadow:var(--focus); border-color:var(--accent); }
     .dd-btn .left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     .dd-pill{
       padding:4px 8px;
@@ -565,7 +565,7 @@
       font-weight:800;
       margin-bottom:10px;
     }
-    .dd-search:focus{ outline:none; box-shadow:var(--focus); border-color:#2a7de1; }
+    .dd-search:focus{ outline:none; box-shadow:var(--focus); border-color:var(--accent); }
     .dd-list{ display:flex; flex-direction:column; gap:8px; }
     .dd-item{
       display:flex;
@@ -749,7 +749,7 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
   padding:8px 10px; border:1px solid var(--border); border-radius:10px;
   background:var(--surface-raised); color:inherit; font-weight:800;
 }
-.select:focus{ outline:none; box-shadow:var(--focus); border-color:#2a7de1; }
+.select:focus{ outline:none; box-shadow:var(--focus); border-color:var(--accent); }
 .compare-tray{
   position:fixed; left:0; right:0; bottom:58px;
   display:none; z-index:25;
