@@ -192,3 +192,23 @@ const DASHBOARD_EVENT_LABELS = {
   "NOTE_ADDED": "📝 Notiz",
   "NOTE_DELETED": "📝 Notiz gelöscht"
 };
+
+function showInputModal(title, defaultValue = '') {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('input-modal-overlay');
+    const field = document.getElementById('input-modal-field');
+    const titleEl = document.getElementById('input-modal-title');
+    titleEl.textContent = title;
+    field.value = defaultValue;
+    overlay.setAttribute('aria-hidden', 'false');
+    field.focus();
+    document.getElementById('input-modal-confirm').onclick = () => {
+      overlay.setAttribute('aria-hidden', 'true');
+      resolve(field.value.trim() || null);
+    };
+    document.getElementById('input-modal-cancel').onclick = () => {
+      overlay.setAttribute('aria-hidden', 'true');
+      resolve(null);
+    };
+  });
+}
