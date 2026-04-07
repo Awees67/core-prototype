@@ -51,6 +51,11 @@
       --warnBg:#fff7ee;
       --warnBorder:#ffd9b0;
       --warnText:#8a4b00;
+
+      --score-ring-high: #00dfc1;
+      --score-ring-medium: #f59e0b;
+      --score-ring-low: #ef4444;
+      --score-ring-bg: #e5e7eb;
     }
 
     [data-theme="dark"]{
@@ -87,6 +92,11 @@
       --score-yellow-bg: #2a2400;
       --score-yellow-text: #f0d050;
       --score-yellow-border: #5a4d00;
+
+      --score-ring-high: #00dfc1;
+      --score-ring-medium: #f59e0b;
+      --score-ring-low: #ef4444;
+      --score-ring-bg: #374151;
     }
 
     *{ box-sizing:border-box; }

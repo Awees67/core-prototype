@@ -100,53 +100,25 @@ function _buildScoreRing(score, rulesetName, anonId) {
   const n = Number(score ?? 0);
   const R = 24;
   const circ = (2 * Math.PI * R).toFixed(2);
-  let ringColor, trackColor, textColor;
-  if (n >= 70) {
-    ringColor = '#00dfc1'; trackColor = 'rgba(0,223,193,0.12)'; textColor = '#00dfc1';
-  } else if (n >= 40) {
-    ringColor = '#f97316'; trackColor = 'rgba(249,115,22,0.12)'; textColor = '#f97316';
-  } else {
-    ringColor = '#ef4444'; trackColor = 'rgba(239,68,68,0.12)'; textColor = '#ef4444';
-  }
+  let ringVar;
+  if (n >= 70)      { ringVar = 'var(--score-ring-high)'; }
+  else if (n >= 40) { ringVar = 'var(--score-ring-medium)'; }
+  else              { ringVar = 'var(--score-ring-low)'; }
   const offset = (circ * (1 - n / 100)).toFixed(2);
   const displayScore = (score !== null && score !== undefined) ? escapeHTML(String(n)) : '—';
   return `
     <div class="score-wrap">
       <div class="score-ring">
         <svg viewBox="0 0 56 56">
-          <circle cx="28" cy="28" r="${R}" fill="none" stroke="${trackColor}" stroke-width="4"/>
-          <circle cx="28" cy="28" r="${R}" fill="none" stroke="${ringColor}" stroke-width="4"
+          <circle cx="28" cy="28" r="${R}" fill="none" stroke="var(--score-ring-bg)" stroke-width="4"/>
+          <circle cx="28" cy="28" r="${R}" fill="none" stroke="${ringVar}" stroke-width="4"
             stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
         </svg>
-        <span class="score-num" style="color:${textColor}">${displayScore}</span>
+        <span class="score-num" style="color:${ringVar}">${displayScore}</span>
       </div>
       <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(String(anonId))}" type="button" aria-label="Score Breakdown">ⓘ</button>
       <span class="score-lbl">${escapeHTML(rulesetName)}</span>
     </div>`;
-}
-
-function _scoreRing(scoreRaw, rulesetName, anonId) {
-  const n = Number(scoreRaw ?? 0);
-  const R = 24;
-  const circ = +(2 * Math.PI * R).toFixed(2);
-  const off  = +(circ * (1 - n / 100)).toFixed(2);
-  let ring, track, txt;
-  if (n >= 70)      { ring = '#10b981'; track = 'rgba(16,185,129,0.12)';  txt = '#10b981'; }
-  else if (n >= 40) { ring = '#f59e0b'; track = 'rgba(245,158,11,0.12)';  txt = '#f59e0b'; }
-  else              { ring = '#f87171'; track = 'rgba(248,113,113,0.12)';  txt = '#f87171'; }
-  const disp = (scoreRaw !== null && scoreRaw !== undefined) ? String(n) : '—';
-  return `<div class="score-wrap">
-    <div class="score-ring">
-      <svg viewBox="0 0 58 58">
-        <circle cx="29" cy="29" r="${R}" fill="none" stroke="${track}" stroke-width="4"/>
-        <circle cx="29" cy="29" r="${R}" fill="none" stroke="${ring}" stroke-width="4"
-          stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"/>
-      </svg>
-      <span class="score-num" style="color:${txt}">${escapeHTML(disp)}</span>
-    </div>
-    <button class="infoicon" data-action="scoreinfo" data-id="${escapeHTML(anonId)}" type="button" aria-label="Score Breakdown">ⓘ</button>
-    <span class="score-lbl">${escapeHTML(rulesetName)}</span>
-  </div>`;
 }
 
 function renderCards(){
@@ -245,7 +217,7 @@ function _renderCardsContent(grid){
       ${s.description ? `<p class="desc">${escapeHTML(s.description)}</p>` : ''}
       ${nc > 0 ? `<span class="card-notes-indicator" style="margin-top:6px;display:inline-flex;">📝 ${nc}</span>` : ''}
     </div>
-    ${_scoreRing(_scoreRaw, activeRulesetName, s.anon_id)}
+    ${_buildScoreRing(_scoreRaw, activeRulesetName, s.anon_id)}
   </div>
 
   <div class="kpi-grid">
