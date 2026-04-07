@@ -1,7 +1,7 @@
 /* =========================
    RENDERERS — SHARED HELPERS
    Used across multiple view renderers.
-   NOTE: escapeHTML, downloadJSON, copyText, startupLabel are in utils.js
+   NOTE: escapeHTML, downloadJSON, copyToClipboard, startupLabel are in utils.js
 ========================= */
 
 function hideAllViews(){
