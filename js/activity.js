@@ -9,7 +9,7 @@
       if(!id || !Array.isArray(window.startups)) return id;
       const s = window.startups.find(x=>String(x?.anon_id||"")===id);
       if(!s) return id;
-      return String(s.anon_id || id);
+      return String(s.company_name || s.anon_id || id);
     }catch(_){ return String(anon_id || ""); }
   }
 

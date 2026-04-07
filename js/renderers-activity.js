@@ -135,7 +135,7 @@ function renderActivity(){
           <h3>${evLabel}</h3>
           <div class="tagrow">
             <span class="tag">${new Date(ev.ts||Date.now()).toLocaleString("de-DE")}</span>
-            <span class="tag">${ev.anon_id ? escapeHTML(ev.anon_id) : "—"}</span>
+            <span class="tag">${ev.anon_id ? escapeHTML((window.startups||[]).find(x=>x?.anon_id===ev.anon_id)?.company_name || ev.anon_id) : "—"}</span>
           </div>
         </div>
         <div class="card-actions">
