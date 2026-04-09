@@ -9,8 +9,18 @@
 <body>
 
   <header>
-    <h1>Core – Own the Future</h1>
-    <p>Anonyme, KPI-basierte Startup-Suche</p>
+    <div class="header-inner">
+      <div class="header-brand">
+        <h1>Core – Own the Future</h1>
+        <p>Anonyme, KPI-basierte Startup-Suche</p>
+      </div>
+      <div class="header-utils">
+        <button class="header-util-btn" id="navScore" title="Score konfigurieren">Score</button>
+        <button class="header-util-btn" id="openFilterBtn" title="Filter öffnen">Filter</button>
+        <button class="header-util-btn" id="toggleThemeBtn" title="Theme wechseln">Dark Mode</button>
+        <button class="header-util-btn header-util-btn--reset" id="navReset" title="Demo zurücksetzen">Reset</button>
+      </div>
+    </div>
   </header>
 
   <div class="viewnav-bar">
@@ -27,26 +37,6 @@
 
   <div class="container">
 
-    <div class="topbar">
-      <div class="menu-wrap" id="topMenuWrap">
-        <button class="menu-toggle" id="menuToggleBtn" aria-label="Navigation öffnen" aria-expanded="false" aria-controls="topMenuDropdown">☰</button>
-        <div class="menu-dropdown" id="topMenuDropdown">
-          <div class="nav">
-            <button class="navbtn" id="navDashboard">Dashboard</button>
-            <button class="navbtn" id="navHome">Übersicht</button>
-            <button class="navbtn" id="navSubmissions">New Submissions</button>
-            <button class="navbtn" id="navPipeline">Pipeline</button>
-            <button class="navbtn" id="navCompare">Compare</button>
-            <button class="navbtn" id="navActivity">Activity</button>
-            <button class="navbtn" id="navInbox">Anfragen</button>
-            <button class="navbtn" id="navScore">Score</button>
-            <button class="navbtn" id="openFilterBtn">Filter</button>
-            <button class="navbtn" id="toggleThemeBtn">Dark Mode</button>
-            <button class="navbtn primary" id="navReset">Demo reset</button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div class="controls">
       <div class="search-box">

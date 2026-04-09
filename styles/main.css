@@ -105,10 +105,52 @@
       margin:0; background:var(--surface-base); color:var(--text-primary); line-height:1.5;
     }
     header{
-      background:var(--accent); color:#fff; padding:18px 0; text-align:center;
+      background:var(--accent); color:#fff; padding:10px 0;
     }
-    header h1{ margin:0; font-size:2.05rem; letter-spacing:0.2px; }
-    header p{ margin:8px 0 0; opacity:0.92; font-size:1.02rem; }
+    .header-inner{
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .header-brand h1{ margin:0; font-size:1.1rem; font-weight:800; letter-spacing:0.03em; text-transform:uppercase; }
+    .header-brand p{ margin:2px 0 0; font-size:0.8rem; opacity:0.78; font-weight:600; }
+    .header-utils{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+    .header-util-btn{
+      background:rgba(255,255,255,0.15);
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.25);
+      border-radius:7px;
+      padding:7px 12px;
+      font-family:var(--font-ui);
+      font-size:0.82rem;
+      font-weight:700;
+      cursor:pointer;
+      white-space:nowrap;
+      transition:background var(--duration-fast) ease;
+    }
+    .header-util-btn:hover{
+      background:rgba(255,255,255,0.25);
+    }
+    .header-util-btn:focus{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(255,255,255,0.35);
+    }
+    .header-util-btn--reset{
+      background:rgba(220,38,38,0.55);
+      border-color:rgba(220,38,38,0.7);
+    }
+    .header-util-btn--reset:hover{
+      background:rgba(220,38,38,0.75);
+    }
     .container{ max-width:1200px; margin:0 auto; padding:18px 16px 28px; }
 
     .topbar{
@@ -1556,29 +1598,8 @@ body{
 }
 
 header{
-  padding:10px 0 9px;
-  text-align:left;
   border-bottom:1px solid color-mix(in srgb, #fff 18%, transparent);
   box-shadow:inset 0 -1px 0 rgba(255,255,255,0.08);
-}
-header h1,
-header p{
-  max-width:1200px;
-  margin-left:auto;
-  margin-right:auto;
-  padding:0 16px;
-}
-header h1{
-  font-size:1.1rem;
-  font-weight:800;
-  letter-spacing:0.03em;
-  text-transform:uppercase;
-}
-header p{
-  margin-top:2px;
-  font-size:0.8rem;
-  opacity:0.78;
-  font-weight:600;
 }
 
 .container{
@@ -1820,11 +1841,11 @@ tbody td,
 }
 
 @media (max-width:680px){
-  header h1{
-    font-size:0.98rem;
+  .header-brand h1{
+    font-size:0.95rem;
   }
-  header p{
-    font-size:0.75rem;
+  .header-brand p{
+    font-size:0.72rem;
   }
   .card-grid{
     grid-template-columns:1fr;
@@ -3089,6 +3110,7 @@ tbody td,
   display: flex;
   gap: 0;
   align-items: flex-end;
+  justify-content: center;
 }
 
 .viewnav-tab {
