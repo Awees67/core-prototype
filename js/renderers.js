@@ -16,27 +16,7 @@
    ROUTING
 ========================= */
 function setActiveNav(){
-  // --- Hamburger-Nav (unveraendert) ---
-  const ids = [
-    "navDashboard","navHome","navSubmissions","navPipeline","navCompare","navActivity","navInbox"
-  ];
-  const btns = ids.map(id=>document.getElementById(id)).filter(Boolean);
-  btns.forEach(b=>b.classList.remove("primary"));
-
-  const map = {
-    dashboard:  "navDashboard",
-    home:       "navHome",
-    submissions:"navSubmissions",
-    pipeline:   "navPipeline",
-    compare:    "navCompare",
-    activity:   "navActivity",
-    inbox:      "navInbox"
-  };
-  const activeId = map[currentView] || "navDashboard";
-  const b = document.getElementById(activeId);
-  if(b) b.classList.add("primary");
-
-  // --- Horizontale Tab-Bar ---
+  // Horizontale Tab-Bar
   const tabMap = {
     dashboard:  "topTabDashboard",
     home:       "topTabHome",
