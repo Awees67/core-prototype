@@ -3070,3 +3070,53 @@ tbody td,
   border-color: transparent !important;
 }
 .btn-primary:hover { filter: brightness(1.1); }
+
+/* =========================
+   HORIZONTAL TAB-NAV
+========================= */
+.viewnav-bar {
+  background: var(--surface-base);
+  border-bottom: 1px solid var(--border-default);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.viewnav-tabs {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  gap: 0;
+  align-items: flex-end;
+}
+
+.viewnav-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 14px 18px;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+  line-height: 1;
+}
+
+.viewnav-tab:hover {
+  color: var(--text-primary);
+}
+
+.viewnav-tab:focus {
+  outline: none;
+  color: var(--text-primary);
+}
+
+.viewnav-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+}
