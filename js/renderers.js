@@ -16,6 +16,7 @@
    ROUTING
 ========================= */
 function setActiveNav(){
+  // --- Hamburger-Nav (unveraendert) ---
   const ids = [
     "navDashboard","navHome","navSubmissions","navPipeline","navCompare","navActivity","navInbox"
   ];
@@ -23,17 +24,32 @@ function setActiveNav(){
   btns.forEach(b=>b.classList.remove("primary"));
 
   const map = {
-    dashboard:"navDashboard",
-    home:"navHome",
+    dashboard:  "navDashboard",
+    home:       "navHome",
     submissions:"navSubmissions",
-    pipeline:"navPipeline",
-    compare:"navCompare",
-    activity:"navActivity",
-    inbox:"navInbox"
+    pipeline:   "navPipeline",
+    compare:    "navCompare",
+    activity:   "navActivity",
+    inbox:      "navInbox"
   };
   const activeId = map[currentView] || "navDashboard";
   const b = document.getElementById(activeId);
   if(b) b.classList.add("primary");
+
+  // --- Horizontale Tab-Bar ---
+  const tabMap = {
+    dashboard:  "topTabDashboard",
+    home:       "topTabHome",
+    submissions:"topTabSubmissions",
+    pipeline:   "topTabPipeline",
+    compare:    "topTabCompare",
+    activity:   "topTabActivity",
+    inbox:      "topTabInbox"
+  };
+  document.querySelectorAll(".viewnav-tab").forEach(t => t.classList.remove("active"));
+  const activeTabId = tabMap[currentView] || "topTabDashboard";
+  const activeTab = document.getElementById(activeTabId);
+  if(activeTab) activeTab.classList.add("active");
 }
 
 function renderCurrent(){

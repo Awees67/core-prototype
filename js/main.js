@@ -78,6 +78,14 @@ document.addEventListener("DOMContentLoaded", ()=>{
   on("navActivity","click", ()=>{ currentView = "activity"; renderCurrent(); });
   on("navInbox","click", ()=>{ currentView = "inbox"; renderCurrent(); });
 
+  on("topTabDashboard",  "click", ()=>{ currentView = "dashboard";   renderCurrent(); });
+  on("topTabHome",       "click", ()=>{ currentView = "home";        renderCurrent(); });
+  on("topTabSubmissions","click", ()=>{ currentView = "submissions"; renderCurrent(); });
+  on("topTabPipeline",   "click", ()=>{ currentView = "pipeline";    renderCurrent(); });
+  on("topTabCompare",    "click", ()=>{ currentView = "compare";     renderCurrent(); });
+  on("topTabActivity",   "click", ()=>{ currentView = "activity";    renderCurrent(); });
+  on("topTabInbox",      "click", ()=>{ currentView = "inbox";       renderCurrent(); });
+
   on("navScore","click", ()=>{ if(typeof openCustomIndex === "function") openCustomIndex(); });
   on("navReset","click", resetDemo);
   on("toggleThemeBtn","click", toggleTheme);
