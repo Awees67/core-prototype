@@ -129,157 +129,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 });
 
-// KEEP: This IIFE replaces the base renderCompare (from renderers-compare.js) with the V4.1
-// improved version that includes a Score column and per-KPI top-value highlighting.
-// It is itself overridden by the V5 block below — both are kept for version traceability.
-(function(){
-  if(typeof renderCompare !== "function" || renderCompare._v41) return;
-
-  const _old = renderCompare;
-  renderCompare = function(){
-    hideAllViews();
-    const v = document.getElementById("viewCompare");
-    v.style.display = "";
-
-    const ids = getCompare().slice(0, 10); // allow more rows
-    v.innerHTML = `
-      <div class="panelhead">
-        <h2>Compare</h2>
-      </div>
-      <div class="controls" style="margin-top:0;">
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-          <div class="hint">Wähle 2–10 Deals. Vergleich zeigt Top‑Werte je KPI.</div>
-        </div>
-        <div class="cell-actions" style="display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
-          <button class="btn secondary small" id="clearCompareBtn">Clear</button>
-        </div>
-      </div>
-
-      <div id="compareTableMount"></div>
-
-      <div class="helper" style="margin-top:14px;">
-        Hinweis: Anonymisierte Demo. KPI/Signale sind indikativ und können unvollständig/ungeprüft sein.
-      </div>
-    `;
-
-    document.getElementById("clearCompareBtn").onclick = ()=>{
-      setCompare([]);
-      toast("Compare","Liste geleert");
-      renderCompare();
-    };
-
-    const mount = document.getElementById("compareTableMount");
-
-    if(ids.length < 2){
-      const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent = "Wähle mindestens 2 Deals (Explore oder Pipeline → Add to Compare).";
-      mount.appendChild(empty);
-      return;
-    }
-
-    const rows = ids.map(id=> startups.find(s=>s.anon_id===id)).filter(Boolean);
-
-    const kpis = [
-      { key:"signal", label:"Score", val:(s)=>computeSignalIndex(s.anon_id), best:"max", fmt:(n)=>String(Math.round(n)) },
-      { key:"mrr", label:"MRR", val:(s)=>Number(s.mrr_eur||0), best:"max", fmt:(n)=>fmtEUR(n) },
-      { key:"growth", label:"Growth", val:(s)=>Number(s.growth?.value_pct ?? 0), best:"max", fmt:(n)=>fmtPct(n) },
-      { key:"runway", label:"Runway", val:(s)=>Number(s.runway_months||0), best:"max", fmt:(n)=> (n? (n+" M") : "—") },
-      { key:"burn", label:"Burn", val:(s)=>Number(s.burn_eur||0), best:"min", fmt:(n)=>fmtEUR(n) },
-      { key:"nrr", label:"NRR", val:(s)=>Number(s.nrr_pct||0), best:"max", fmt:(n)=> (n? (n.toFixed(0)+"%") : "—") },
-      { key:"ltv", label:"LTV/CAC", val:(s)=>Number(s.ltv_cac_ratio||0), best:"max", fmt:(n)=> (n? n.toFixed(1) : "—") },
-    ];
-
-    const extrema = {};
-    kpis.forEach(k=>{
-      const vals = rows.map(r=>k.val(r)).filter(v=>Number.isFinite(v));
-      if(!vals.length){ extrema[k.key]=null; return; }
-      extrema[k.key] = { min: Math.min(...vals), max: Math.max(...vals) };
-    });
-
-    const wrap = document.createElement("div");
-    wrap.className = "compareTableWrap";
-    const table = document.createElement("table");
-    table.className = "compareTable";
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th style="min-width:140px;">Startup</th>
-          ${kpis.map(k=>`<th>${escapeHTML(k.label)}</th>`).join("")}
-          <th style="min-width:120px;">Aktionen</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(r=>{
-          const cells = kpis.map(k=>{
-            const v = k.val(r);
-            const ex = extrema[k.key];
-            let isTop = false;
-            if(ex){
-              if(k.best==="max") isTop = (v===ex.max);
-              if(k.best==="min") isTop = (v===ex.min);
-            }
-            const topMark = isTop ? `<span class="tag compareTop">Top</span>` : ``;
-            if(k.key==="signal"){
-              const cls = sigClassFromScore(v);
-              const tone = sigToneFromClass(cls);
-              return `<td>
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                  <span class="badge ${tone==="high"?"good":(tone==="mid"?"hot":"watch")}">${cls}</span>
-                  <span class="mono">${Math.round(v)}</span>
-                  ${topMark}
-                  <button class="btn secondary small" data-si="${escapeHTML(r.anon_id)}">(i)</button>
-                </div>
-              </td>`;
-            }
-            return `<td><span class="mono">${escapeHTML(k.fmt(v))}</span>${topMark}</td>`;
-          }).join("");
-
-          return `<tr class="compareRowCard">
-            <td style="font-weight:950;"><button class="btn secondary small" data-open="${escapeHTML(r.anon_id)}">${escapeHTML(r.anon_id)}</button></td>
-            ${cells}
-            <td style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn secondary small" data-remove="${escapeHTML(r.anon_id)}">Remove</button>
-            </td>
-          </tr>`;
-        }).join("")}
-      </tbody>
-    `;
-    wrap.appendChild(table);
-    mount.appendChild(wrap);
-
-    // actions
-    mount.querySelectorAll("[data-open]").forEach(b=>{
-      b.onclick = (e)=>{ e.stopPropagation(); openModalByAnonId(b.getAttribute("data-open"), startups); };
-    });
-    mount.querySelectorAll("[data-remove]").forEach(b=>{
-      b.onclick = (e)=>{
-        e.stopPropagation();
-        const id = b.getAttribute("data-remove");
-        const next = getCompare().filter(x=>x!==id);
-        setCompare(next);
-        toast("Compare","Entfernt: "+id);
-        renderCompare();
-      };
-    });
-    mount.querySelectorAll("[data-si]").forEach(b=>{
-      b.onclick = (e)=>{
-        e.stopPropagation();
-        const id = b.getAttribute("data-si");
-        openScoreBreakdown(id, b);
-      };
-    });
-  };
-
-  renderCompare._v41 = true;
-})();
 
 /* =========================
-   V5 scope logic (no redesign)
+   RUNTIME OVERRIDES & ENHANCEMENTS
 ========================= */
-// KEEP: This IIFE contains the V5 renderCompare which is the ACTUAL implementation used at runtime.
-// It unconditionally assigns window.renderCompare, overriding both renderers-compare.js (V4.1 base)
-// and the V4.1 patch above. Removing this would revert to the inferior V4.1 compare table.
 (function(){
   if(window.__CORE_DEMO_V5__) return;
   window.__CORE_DEMO_V5__ = true;
@@ -344,37 +197,57 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   window.renderCompare = function(){
   hideAllViews();
-  const v = document.getElementById("viewCompare");
-  v.style.display = "";
+  const v = document.getElementById(“viewCompare”);
+  v.style.display = “”;
 
   const ids = getCompare();
   const deals = ids.map(id=>startups.find(s=>s.anon_id===id)).filter(Boolean);
 
   v.innerHTML = `
-    <div class="panelhead"><h2>Compare</h2></div>
-    <div class="helper" style="margin-top:0;">
-      Matrix: KPIs als Spalten, Startups als Zeilen. Pro KPI ist der Top-Wert markiert.
+    <div class=”compare-header-bar”>
+      <div class=”compare-header-left”>
+        <h2>Compare</h2>
+        <p>Matrix: KPIs als Spalten, Startups als Zeilen. Pro KPI ist der Top-Wert markiert.</p>
+      </div>
+      <div class=”compare-header-actions”>
+        <button class=”btn secondary small” id=”compareExportBtn”>
+          <svg width=”14” height=”14” viewBox=”0 0 16 16” fill=”none” stroke=”currentColor” stroke-width=”1.6” stroke-linecap=”round” stroke-linejoin=”round” style=”vertical-align:middle; margin-right:5px;”><path d=”M8 1v9M4 7l4 4 4-4M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2”/></svg>
+          Export
+        </button>
+      </div>
     </div>
-    <div class="compareTableWrap">
-      <table class="compareTable" aria-label="Compare KPI Matrix">
+    <div class=”compareTableWrap”>
+      <table class=”compareTable” aria-label=”Compare KPI Matrix”>
         <thead>
           <tr>
-            <th style="min-width:180px;"></th>
+            <th style=”min-width:200px;”></th>
             <th>MRR</th>
             <th>Growth</th>
             <th>Runway</th>
             <th>LTV/CAC</th>
           </tr>
         </thead>
-        <tbody id="compareBody"></tbody>
+        <tbody id=”compareBody”></tbody>
       </table>
     </div>
   `;
 
-  const body = v.querySelector("#compareBody");
+  document.getElementById(“compareExportBtn”).onclick = ()=>{
+    downloadJSON(“core_compare_export.json”, deals.map(s=>({
+      anon_id: s.anon_id,
+      company_name: s.company_name || s.anon_id,
+      stage: s.stage,
+      mrr_eur: s.mrr_eur,
+      growth_pct: s.growth?.value_pct,
+      runway_months: s.runway_months,
+      ltv_cac_ratio: s.ltv_cac_ratio
+    })));
+  };
+
+  const body = v.querySelector(“#compareBody”);
   if(!deals.length){
-    body.innerHTML = `<tr><td colspan="5" style="padding:14px 12px; color:var(--muted); font-weight:900;">
-      Keine Deals im Compare. Füge Deals über „Compare“ hinzu.
+    body.innerHTML = `<tr><td colspan=”5” style=”padding:24px; color:var(--text-secondary); font-weight:700;”>
+      Keine Deals im Compare. Füge Deals über „Add to Compare” hinzu.
     </td></tr>`;
     return;
   }
@@ -383,9 +256,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const getGrowth = (s)=> Number(s?.growth?.value_pct ?? s?.growth_pct ?? (s?.growth && (s.growth.pct ?? s.growth.value)) ?? 0);
   const getRunway = (s)=> Number(s?.runway_months ?? (s?.runway && (s.runway.months ?? s.runway.value)) ?? 0);
   const getLTV = (s)=> {
-    let v = (s?.ltv_cac_ratio ?? s?.ltv_cac ?? s?.ltvcac ?? s?.ltvCac ?? s?.unit?.ltv_cac_ratio ?? s?.unit?.ltv_cac ?? s?.unit?.ltvCac);
-    if(typeof v === "string") v = v.replace(",", ".");
-    const n = Number(v);
+    let lv = (s?.ltv_cac_ratio ?? s?.ltv_cac ?? s?.ltvcac ?? s?.ltvCac ?? s?.unit?.ltv_cac_ratio ?? s?.unit?.ltv_cac ?? s?.unit?.ltvCac);
+    if(typeof lv === “string”) lv = lv.replace(“,”, “.”);
+    const n = Number(lv);
     return Number.isFinite(n) ? n : 0;
   };
 
@@ -399,29 +272,33 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const topRunway = deals.reduce((a,b)=> getRunway(b)>getRunway(a)?b:a, deals[0]);
   const topLTV = deals.reduce((a,b)=> getLTV(b)>getLTV(a)?b:a, deals[0]);
 
+  const fmtRatio = (n)=> (Math.round(n*10)/10).toLocaleString(“de-AT”);
+
   const cell = (value, max, isTop, fmt)=>{
     const pct = Math.max(0, Math.min(100, Math.round((value/max)*100)));
-    const vhtml = (value===0 && max===1 && fmt===fmtRatio) ? "—" : fmt(value);
+    const vhtml = (value===0 && max===1 && fmt===fmtRatio) ? “—“ : fmt(value);
     return `
-      <div class="cmpCell ${isTop?'top':''}">
-        <div class="cmpBar"><div class="cmpFill" style="width:${pct}%;"></div></div>
-        <div class="cmpVal mono">${escapeHTML(String(vhtml))}${isTop?'<span class="compareTop">Top</span>':''}</div>
+      <div class=”cmpCell”>
+        <div class=”cmpBar”><div class=”cmpFill” style=”width:${pct}%;”></div></div>
+        <span class=”cmpVal”>${escapeHTML(String(vhtml))}</span>
+        ${isTop ? '<span class=”compare-top-pill”>TOP</span>' : ''}
       </div>
     `;
   };
 
-  const _fmtEUR = (n)=> "€" + Math.round(n).toLocaleString("de-AT");
-  const _fmtPct = (n)=> (Math.round(n*10)/10).toLocaleString("de-AT") + "%";
-  const _fmtM = (n)=> Math.round(n).toLocaleString("de-AT") + "m";
-  const fmtRatio = (n)=> (Math.round(n*10)/10).toLocaleString("de-AT");
+  const _fmtEUR = (n)=> “€” + Math.round(n).toLocaleString(“de-AT”);
+  const _fmtPct = (n)=> (Math.round(n*10)/10).toLocaleString(“de-AT”) + “%”;
+  const _fmtM = (n)=> Math.round(n).toLocaleString(“de-AT”) + “m”;
 
   body.innerHTML = deals.map(s=>{
     const mrr = getMRR(s), gr = getGrowth(s), rw = getRunway(s), lv = getLTV(s);
+    const displayName = escapeHTML(s.company_name || s.anon_id);
+    const stageTxt = escapeHTML(s.stage || “”);
     return `
       <tr>
-        <td style="font-weight:950;">
-          ${escapeHTML(s.anon_id)}
-          <div class="tiny" style="margin:4px 0 0 0;">${escapeHTML(s.hq||"")} • ${escapeHTML(s.stage||"")}</div>
+        <td>
+          <button class=”cmp-startup-name” data-open=”${escapeHTML(s.anon_id)}”>${displayName}</button>
+          ${stageTxt ? `<div class=”cmp-startup-stage”>• ${stageTxt}</div>` : “”}
         </td>
         <td>${cell(mrr, maxMRR, s.anon_id===topMRR.anon_id, _fmtEUR)}</td>
         <td>${cell(gr, maxGrowth, s.anon_id===topGrowth.anon_id, _fmtPct)}</td>
@@ -429,7 +306,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
         <td>${cell(lv, maxLTV, s.anon_id===topLTV.anon_id, fmtRatio)}</td>
       </tr>
     `;
-  }).join("");
+  }).join(“”);
+
+  body.querySelectorAll(“[data-open]”).forEach(b=>{
+    b.onclick = ()=> openModalByAnonId(b.getAttribute(“data-open”), startups);
+  });
 };
 window.renderCompare._v5 = true;
 
