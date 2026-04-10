@@ -34,28 +34,185 @@ function bindLeadFormForStartup(s){
   };
 }
 
+/* Outreach-Tracker State (view-level) */
+let _otSelected = null;
+let _otTab = 'alle';
+
 function bindInboxHeaderButtons(){
-  const exportBtn = document.getElementById('exportJsonBtn');
-  const clearBtn  = document.getElementById('clearLeadsBtn');
+  /* Leer — Header-Buttons werden direkt in renderInbox gebunden */
+}
 
-  if(exportBtn){
-    exportBtn.onclick = async ()=>{
-      const leads   = getLeads().slice().sort((a,b)=>b.ts-a.ts);
-      const payload = { exported_at: new Date().toISOString(), leads_count: leads.length, leads };
-      const text    = JSON.stringify(payload, null, 2);
-      const ok      = downloadTextFile('core_anfragen_export.json', text);
-      if(!ok) await copyToClipboard(text);
-      toast(ok ? 'Export bereit' : 'Export kopiert', ok ? 'JSON-Download gestartet' : 'JSON in Zwischenablage');
-    };
+function _otStatusBadge(status){
+  const map = {
+    anfrage_gesendet: '<span class="ot-badge ot-b-sent">Anfrage gesendet</span>',
+    keine_antwort:    '<span class="ot-badge ot-b-none">Keine Antwort</span>',
+    geantwortet:      '<span class="ot-badge ot-b-replied">Geantwortet</span>',
+    call_geplant:     '<span class="ot-badge ot-b-call">Call geplant</span>'
+  };
+  return map[status] || '';
+}
+
+function _otTimeLabel(item){
+  const diff = Date.now() - item.sent_at;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if(item.status === 'geantwortet'){
+    const rdiff = Date.now() - item.last_activity_at;
+    const rdays = Math.floor(rdiff / (1000 * 60 * 60 * 24));
+    if(rdays === 0) return 'heute geantwortet';
+    if(rdays === 1) return 'vor 1 Tag geantwortet';
+    return 'vor ' + rdays + ' Tagen geantwortet';
+  }
+  if(days === 0) return 'heute gesendet';
+  if(days === 1) return 'seit 1 Tag';
+  return 'seit ' + days + ' Tagen';
+}
+
+function _otRenderDetail(item){
+  const detail = document.getElementById('otDetail');
+  if(!detail) return;
+  const followupRec = computeFollowupRecommended(item);
+  const msgs = item.messages || [];
+  const daysSince = Math.floor((Date.now() - item.sent_at) / (1000 * 60 * 60 * 24));
+
+  detail.innerHTML = `
+    <div class="ot-detail-head">
+      <div class="ot-detail-name">${escapeHTML(item.display_label)}</div>
+      <div class="ot-detail-meta">${escapeHTML(item.contact_name)} &middot; ${escapeHTML(item.contact_email)} &middot; ${escapeHTML(item.sector||'&mdash;')} &middot; ${escapeHTML(item.stage||'&mdash;')}</div>
+      <div class="ot-detail-status-row">
+        ${_otStatusBadge(item.status)}
+        <span class="ot-detail-ts">Anfrage gesendet am ${new Date(item.sent_at).toLocaleDateString('de-DE')}</span>
+      </div>
+    </div>
+    <div class="ot-detail-body">
+      <div class="ot-msgs-label">Gesendete Anfrage</div>
+      ${msgs.map(msg=>`
+        <div class="ot-bubble ${msg.direction==='outbound'?'outbound':'inbound'}">
+          <div class="ot-bubble-sender">${escapeHTML(msg.sender||'')}</div>
+          <div class="ot-bubble-text">${escapeHTML(msg.text||'').replace(/\n/g,'<br>')}</div>
+          <div class="ot-bubble-ts">${new Date(msg.ts).toLocaleDateString('de-DE')} &middot; ${new Date(msg.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+      `).join('')}
+      ${followupRec ? `
+        <div class="ot-fw-warning">
+          <div class="ot-fw-title">Keine Antwort seit ${daysSince} Tagen</div>
+          <div class="ot-fw-text">Ein Follow-up erhöht die Antwortrate deutlich. Empfohlen: kurzer Reminder oder direkte Anfrage für ein Gespräch.</div>
+        </div>
+      ` : ''}
+    </div>
+    <div class="ot-detail-actions">
+      <button class="btn secondary" id="otFollowupBtn">Follow-up senden</button>
+      <button class="btn" id="otCallBtn">Call planen</button>
+      <button class="btn secondary" id="otOpenBtn">Startup öffnen</button>
+    </div>
+  `;
+
+  document.getElementById('otFollowupBtn').onclick = ()=>_otOpenFollowupModal(item);
+  document.getElementById('otCallBtn').onclick = ()=>{
+    updateOutreachItem(item.id, { status:'call_geplant' });
+    activityLogAppend('OUTREACH_CALL_PLANNED', item.anon_id, { display_label: item.display_label });
+    toast('Call geplant', item.display_label + ' wurde aus der Liste entfernt');
+    _otSelected = null;
+    renderInbox();
+  };
+  document.getElementById('otOpenBtn').onclick = ()=>openModalByAnonId(item.anon_id, startups);
+}
+
+function _otRenderList(items){
+  const list = document.getElementById('otList');
+  if(!list) return;
+
+  if(items.length === 0){
+    list.innerHTML = '<div class="ot-empty"><p class="ot-empty-title">Keine Anfragen in diesem Tab</p><p class="ot-empty-sub">Wechsle den Filter oder sende neue Anfragen.</p></div>';
+    return;
   }
 
-  if(clearBtn){
-    clearBtn.onclick = ()=>{
-      setLeads([]);
-      toast('Gelöscht', 'Alle Anfragen entfernt');
-      renderInbox();
+  list.innerHTML = items.map(item=>{
+    const sel = _otSelected === item.id;
+    const rec = computeFollowupRecommended(item);
+    return `
+      <div class="ot-row${sel?' selected':''}" data-ot-id="${escapeHTML(item.id)}">
+        <div class="ot-row-top">
+          <span class="ot-s-name">${escapeHTML(item.display_label)}</span>
+          <span class="ot-time">${escapeHTML(_otTimeLabel(item))}</span>
+        </div>
+        <div class="ot-row-mid">${escapeHTML(item.contact_name)} &middot; ${escapeHTML(item.contact_email)}</div>
+        <div class="ot-row-bot">
+          <span class="ot-msg-prev${item.last_message_from==='inbound'?' new':''}">${escapeHTML((item.last_message_preview||'—').slice(0,55))}${(item.last_message_preview||'').length>55?'…':''}</span>
+          ${_otStatusBadge(item.status)}
+        </div>
+        ${rec?'<div class="ot-followup-hint"><span class="ot-f-dot"></span>Follow-up empfohlen</div>':''}
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.ot-row').forEach(row=>{
+    row.onclick = ()=>{
+      const id = row.getAttribute('data-ot-id');
+      _otSelected = id;
+      const item = getOutreach().find(x=>x.id===id);
+      if(!item) return;
+      list.querySelectorAll('.ot-row').forEach(r=>r.classList.remove('selected'));
+      row.classList.add('selected');
+      _otRenderDetail(item);
     };
+  });
+
+  /* Auto-select first if nothing selected */
+  if(!_otSelected && items.length > 0){
+    list.querySelector('.ot-row').click();
   }
+}
+
+function _otOpenFollowupModal(item){
+  const overlay = document.getElementById('followup-modal-overlay');
+  if(!overlay) return;
+
+  const tpls = {
+    reminder: 'Hallo ' + (item.contact_name.split(' ')[0]||item.contact_name) + ',\n\nich wollte kurz nachfragen, ob Sie meine Anfrage erhalten haben. Wir sind nach wie vor sehr an einem Austausch interessiert.\n\nHätten Sie in den nächsten Tagen kurz Zeit für ein 15-minütiges Gespräch?\n\nMit freundlichen Grüßen',
+    gespraech: 'Hallo ' + (item.contact_name.split(' ')[0]||item.contact_name) + ',\n\nwürden Sie nächste Woche kurz Zeit für ein Intro-Call haben? 15 Minuten würden reichen — ich würde gerne vorstellen, wie CORE euch dabei helfen kann.\n\nBitte schicken Sie mir einfach einen passenden Termin zurück.\n\nMit freundlichen Grüßen'
+  };
+  let currentTpl = 'reminder';
+
+  const titleEl  = document.getElementById('followup-modal-title');
+  const textEl   = document.getElementById('followup-modal-text');
+  const tplBtns  = overlay.querySelectorAll('.followup-tpl-btn');
+  const cancelBtn = document.getElementById('followup-modal-cancel');
+  const sendBtn   = document.getElementById('followup-modal-send');
+
+  if(titleEl) titleEl.textContent = 'Follow-up an ' + item.contact_name;
+  if(textEl)  textEl.value = tpls[currentTpl];
+
+  tplBtns.forEach(btn=>{
+    btn.classList.toggle('active', btn.getAttribute('data-tpl') === currentTpl);
+    btn.onclick = ()=>{
+      currentTpl = btn.getAttribute('data-tpl');
+      tplBtns.forEach(b=>b.classList.toggle('active', b.getAttribute('data-tpl')===currentTpl));
+      if(textEl) textEl.value = tpls[currentTpl] || '';
+    };
+  });
+
+  overlay.setAttribute('aria-hidden','false');
+
+  if(cancelBtn) cancelBtn.onclick = ()=>overlay.setAttribute('aria-hidden','true');
+  if(sendBtn) sendBtn.onclick = ()=>{
+    const text = textEl ? textEl.value.trim() : '';
+    if(!text) return;
+    const arr = getOutreach();
+    const idx = arr.findIndex(x=>x.id===item.id);
+    if(idx>=0){
+      const msg = { id: uid(), direction:'outbound', sender:'Du · aweesfond', text, ts: Date.now() };
+      arr[idx].messages = arr[idx].messages || [];
+      arr[idx].messages.push(msg);
+      arr[idx].last_message_preview = text.slice(0,70);
+      arr[idx].last_message_from = 'outbound';
+      arr[idx].last_activity_at = Date.now();
+      setOutreach(arr);
+    }
+    overlay.setAttribute('aria-hidden','true');
+    activityLogAppend('OUTREACH_FOLLOWUP_SENT', item.anon_id, { display_label: item.display_label });
+    toast('Follow-up gesendet (Demo)', 'Nachricht wurde im Thread gespeichert');
+    renderInbox();
+  };
 }
 
 function renderInbox(){
@@ -64,185 +221,54 @@ function renderInbox(){
   if(!viewInbox) return;
   viewInbox.style.display = '';
 
-  const leads = getLeads().slice().sort((a,b)=>b.ts-a.ts);
-  viewInbox.innerHTML = '';
+  const all    = getOutreach().filter(x=>x.status!=='call_geplant');
+  const none   = all.filter(x=>x.status==='keine_antwort'||x.status==='anfrage_gesendet');
+  const replied = all.filter(x=>x.status==='geantwortet');
 
-  const resultCount      = document.getElementById('resultCount');
+  const filtered = _otTab==='keine_antwort' ? none
+                 : _otTab==='geantwortet'   ? replied
+                 : all;
+
+  const resultCount       = document.getElementById('resultCount');
   const activeFilterCount = document.getElementById('activeFilterCount');
-  if(resultCount)       resultCount.textContent       = leads.length + ' Anfragen';
+  if(resultCount)       resultCount.textContent       = all.length + ' Anfragen';
   if(activeFilterCount) activeFilterCount.textContent = '0 Filter aktiv';
 
-  /* ---- Header ---- */
-  const header = document.createElement('div');
-  header.className = 'anf-header';
-  header.innerHTML = `
-    <div class="anf-header-left">
-      <h2 class="anf-title">Anfragen</h2>
-      <p class="anf-subtitle">Eingehende Interessensbekundungen und Startup-Anfragen. Lokal gespeichert, keine Uebertragung an Dritte.</p>
-    </div>
-    <div class="anf-header-right">
-      <div class="anf-count-pill">
-        <span class="anf-dot"></span>
-        <span>${leads.length} Anfrage${leads.length !== 1 ? 'n' : ''}</span>
+  viewInbox.innerHTML = `
+    <div class="ot-topbar">
+      <div>
+        <h2 class="ot-title">Anfragen</h2>
+        <p class="ot-subtitle">Outreach-Tracker. Zeigt den Stand aller gesendeten Anfragen und wann ein Follow-up nötig ist.</p>
       </div>
-      <button class="btn secondary" id="exportJsonBtn">Export JSON</button>
-      <button class="btn secondary" id="clearLeadsBtn">Alle loeschen</button>
+      <div class="ot-topbar-right">
+        <button class="btn" id="otSendNewBtn">Anfrage senden</button>
+      </div>
+    </div>
+
+    <div class="ot-tab-bar">
+      <button class="ot-tab${_otTab==='alle'?' active':''}" data-tab="alle">Alle <span class="ot-tab-n neutral">${all.length}</span></button>
+      <button class="ot-tab${_otTab==='keine_antwort'?' active':''}" data-tab="keine_antwort">Keine Antwort <span class="ot-tab-n amber">${none.length}</span></button>
+      <button class="ot-tab${_otTab==='geantwortet'?' active':''}" data-tab="geantwortet">Geantwortet <span class="ot-tab-n green">${replied.length}</span></button>
+    </div>
+
+    <div class="ot-master-detail">
+      <div class="ot-list" id="otList"></div>
+      <div class="ot-detail" id="otDetail">
+        <div class="ot-detail-empty">Zeile auswählen um Details zu sehen.</div>
+      </div>
     </div>
   `;
-  viewInbox.appendChild(header);
 
-  /* ---- Empty state ---- */
-  if(leads.length === 0){
-    const empty = document.createElement('div');
-    empty.className = 'anf-empty';
-    empty.innerHTML = `
-      <p class="anf-empty-title">Keine Anfragen vorhanden</p>
-      <p class="anf-empty-sub">Neue Anfragen erscheinen hier, sobald Investoren Interesse an Startups bekunden.</p>
-    `;
-    viewInbox.appendChild(empty);
-    bindInboxHeaderButtons();
-    updateCounts();
-    return;
-  }
+  viewInbox.querySelectorAll('.ot-tab').forEach(tab=>{
+    tab.onclick = ()=>{
+      _otTab = tab.getAttribute('data-tab');
+      _otSelected = null;
+      renderInbox();
+    };
+  });
 
-  /* ---- Table ---- */
-  const tableWrap = document.createElement('div');
-  tableWrap.className = 'anf-table-wrap';
+  const sendNewBtn = document.getElementById('otSendNewBtn');
+  if(sendNewBtn) sendNewBtn.onclick = ()=>toast('Bald verfügbar', 'E-Mail-Integration folgt in der nächsten Version');
 
-  const tableScroll = document.createElement('div');
-  tableScroll.className = 'anf-table-scroll';
-
-  const table = document.createElement('table');
-  table.className = 'anf-table';
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th class="anf-th-chev"></th>
-        <th>Startup</th>
-        <th>Anfragender</th>
-        <th>Firma / Fonds</th>
-        <th>Nachricht</th>
-        <th>Eingegangen</th>
-        <th style="text-align:right">Aktionen</th>
-      </tr>
-    </thead>
-    <tbody id="anfTableBody"></tbody>
-  `;
-
-  tableScroll.appendChild(table);
-  tableWrap.appendChild(tableScroll);
-  viewInbox.appendChild(tableWrap);
-
-  const tbody   = document.getElementById('anfTableBody');
-  const openSet = new Set();
-
-  function fmtDate(ts){
-    const dt = new Date(ts);
-    if(!Number.isFinite(dt.getTime())) return '\u2014';
-    return dt.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' })
-      + ' \u00B7 '
-      + dt.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
-  }
-
-  function renderRows(){
-    tbody.innerHTML = '';
-
-    leads.forEach((l, i)=>{
-      const isOpen      = openSet.has(i);
-      const dateStr     = fmtDate(l.ts);
-      const displayName = l.display_label || startupLabel({ anon_id: l.anon_id });
-      const msgPreview  = (l.msg || '\u2014').slice(0, 55) + ((l.msg||'').length > 55 ? '\u2026' : '');
-      const msgFull     = escapeHTML(l.msg || '\u2014');
-
-      /* -- Main row -- */
-      const mainRow = document.createElement('tr');
-      mainRow.className = 'anf-row-main' + (isOpen ? ' open' : '');
-      mainRow.innerHTML = `
-        <td class="anf-td-chev"><span class="anf-chev${isOpen ? ' open' : ''}">&#x203A;</span></td>
-        <td>
-          <span class="anf-startup-name">${escapeHTML(displayName)}</span>
-          <span class="anf-startup-id">${escapeHTML(l.anon_id)}</span>
-        </td>
-        <td>
-          <div class="anf-person-name">${escapeHTML(l.name || '\u2014')}</div>
-          <div class="anf-person-sub">${escapeHTML(l.email || '\u2014')}</div>
-        </td>
-        <td><span class="anf-fonds">${escapeHTML(l.firm || '\u2014')}</span></td>
-        <td><span class="anf-msg-preview">${escapeHTML(msgPreview)}</span></td>
-        <td class="anf-datum">${escapeHTML(dateStr)}</td>
-        <td>
-          <div class="anf-actions">
-            ${!isOpen ? `<button class="btn small" data-open-startup="${escapeHTML(l.anon_id)}">Startup oeffnen</button>` : ''}
-            <button class="btn secondary small" data-del-ts="${String(l.ts)}">Loeschen</button>
-          </div>
-        </td>
-      `;
-
-      mainRow.addEventListener('click', (e)=>{
-        if(e.target.closest('button')) return;
-        if(isOpen) openSet.delete(i);
-        else       openSet.add(i);
-        renderRows();
-      });
-
-      tbody.appendChild(mainRow);
-
-      /* -- Detail row (only when open) -- */
-      if(isOpen){
-        const detailRow = document.createElement('tr');
-        detailRow.className = 'anf-row-detail';
-        detailRow.innerHTML = `
-          <td colspan="7">
-            <div class="anf-detail-panel">
-              <div class="anf-detail-meta">
-                <div class="anf-meta-item">
-                  <div class="anf-meta-label">Anfragender</div>
-                  <div class="anf-meta-value">${escapeHTML(l.name || '\u2014')}</div>
-                </div>
-                <div class="anf-meta-item">
-                  <div class="anf-meta-label">E-Mail</div>
-                  <div class="anf-meta-value">${escapeHTML(l.email || '\u2014')}</div>
-                </div>
-                <div class="anf-meta-item">
-                  <div class="anf-meta-label">Firma / Fonds</div>
-                  <div class="anf-meta-value">${escapeHTML(l.firm || '\u2014')}</div>
-                </div>
-                <div class="anf-meta-item">
-                  <div class="anf-meta-label">Eingegangen</div>
-                  <div class="anf-meta-value anf-meta-muted">${escapeHTML(dateStr)}</div>
-                </div>
-              </div>
-              <div class="anf-msg-block">
-                <div class="anf-msg-block-label">Nachricht</div>
-                <div class="anf-msg-block-text">${msgFull}</div>
-              </div>
-              <div class="anf-detail-actions">
-                <button class="btn" data-open-startup="${escapeHTML(l.anon_id)}">Startup oeffnen</button>
-                <button class="btn secondary" data-del-ts="${String(l.ts)}">Anfrage loeschen</button>
-              </div>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(detailRow);
-      }
-    });
-
-    /* Bind buttons after render */
-    tbody.querySelectorAll('[data-open-startup]').forEach(btn=>{
-      btn.onclick = (e)=>{ e.stopPropagation(); openModalById(btn.getAttribute('data-open-startup')); };
-    });
-    tbody.querySelectorAll('[data-del-ts]').forEach(btn=>{
-      btn.onclick = (e)=>{
-        e.stopPropagation();
-        const ts = Number(btn.getAttribute('data-del-ts'));
-        setLeads(getLeads().filter(x=>Number(x.ts) !== ts));
-        toast('Geloescht', 'Anfrage entfernt');
-        renderInbox();
-      };
-    });
-  }
-
-  renderRows();
-  bindInboxHeaderButtons();
-  updateCounts();
+  _otRenderList(filtered);
 }

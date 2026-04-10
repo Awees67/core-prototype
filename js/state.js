@@ -448,3 +448,93 @@ function openModalByAnonId(anon_id, list){
   const idx = arr.findIndex(x=>x.anon_id===anon_id);
   if(idx>=0) openModalByIndex(idx, arr);
 }
+
+/* =========================
+   OUTREACH TRACKER STATE
+========================= */
+function getOutreach(){
+  const arr = safeGetJSON(LS_KEYS.outreach, []);
+  return Array.isArray(arr) ? arr : [];
+}
+function setOutreach(arr){
+  safeSetJSON(LS_KEYS.outreach, Array.isArray(arr) ? arr : []);
+}
+function updateOutreachItem(id, patch){
+  const arr = getOutreach();
+  const idx = arr.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  arr[idx] = { ...arr[idx], ...patch, last_activity_at: Date.now() };
+  setOutreach(arr);
+}
+function computeFollowupRecommended(item){
+  if(item.status !== 'keine_antwort' && item.status !== 'anfrage_gesendet') return false;
+  const days = (Date.now() - item.sent_at) / (1000 * 60 * 60 * 24);
+  return days >= 3;
+}
+function seedDemoOutreach(startups){
+  if(getOutreach().length > 0) return;
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  const contacts = [
+    { name:'Tim Berger',    email:'tim.berger@startup.io' },
+    { name:'Sarah Moll',    email:'s.moll@startup.io'     },
+    { name:'Klaus Winter',  email:'k.winter@startup.io'   },
+    { name:'Anna Kern',     email:'a.kern@startup.io'     },
+    { name:'Leon Huber',    email:'l.huber@startup.io'    }
+  ];
+  const statuses = ['keine_antwort','keine_antwort','keine_antwort','geantwortet','anfrage_gesendet'];
+  const sentDaysAgo = [5, 3, 7, 2, 0];
+  const previews = [
+    'Hallo Tim, wir haben euer Startup in unserem Dealflow entdeckt...',
+    'Hallo Sarah, wir verfolgen euch schon eine Weile mit Interesse...',
+    'Guten Tag Klaus, euer Ansatz im FinTech-Bereich klingt spannend...',
+    'Hallo Anna, vielen Dank für eure schnelle Rückmeldung!',
+    'Hallo Leon, wir sind auf euer Produkt aufmerksam geworden...'
+  ];
+  const replyPreviews = [
+    null, null, null,
+    'Hallo, danke für Ihre Nachricht! Wir würden uns sehr über ein Gespräch freuen...',
+    null
+  ];
+  const items = statuses.map((status, i)=>{
+    const s = startups[i] || startups[0];
+    const c = contacts[i];
+    const daysAgo = sentDaysAgo[i];
+    const sentAt = now - daysAgo * day;
+    const msgs = [{
+      id: uid(),
+      direction: 'outbound',
+      sender: 'Du · aweesfond',
+      text: previews[i],
+      ts: sentAt
+    }];
+    if(status === 'geantwortet' && replyPreviews[i]){
+      msgs.push({
+        id: uid(),
+        direction: 'inbound',
+        sender: c.name,
+        text: replyPreviews[i],
+        ts: sentAt + 6 * 60 * 60 * 1000
+      });
+    }
+    const lastMsg = msgs[msgs.length-1];
+    return {
+      id: uid(),
+      anon_id: s.anon_id,
+      display_label: s.company_name || s.anon_id,
+      contact_name: c.name,
+      contact_email: c.email,
+      sector: s.sector || '—',
+      stage: s.stage || '—',
+      status,
+      sent_at: sentAt,
+      last_activity_at: lastMsg.ts,
+      last_message_preview: lastMsg.text.slice(0, 70),
+      last_message_from: lastMsg.direction,
+      thread_id: null,
+      conversation_id: uid(),
+      messages: msgs
+    };
+  });
+  setOutreach(items);
+}

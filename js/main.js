@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
     setSubmissions(seededSubs);
   }
 
+  // Seed Outreach-Demo-Daten
+  seedDemoOutreach(startups);
+
   // Repair: recompute plausibility for submissions with empty checks
   (function repairPlausibility(){
     const subs = getSubmissions();
