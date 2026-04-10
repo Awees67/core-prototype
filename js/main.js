@@ -197,43 +197,43 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   window.renderCompare = function(){
   hideAllViews();
-  const v = document.getElementById(“viewCompare”);
-  v.style.display = “”;
+  const v = document.getElementById("viewCompare");
+  v.style.display = "";
 
   const ids = getCompare();
   const deals = ids.map(id=>startups.find(s=>s.anon_id===id)).filter(Boolean);
 
   v.innerHTML = `
-    <div class=”compare-header-bar”>
-      <div class=”compare-header-left”>
+    <div class="compare-header-bar">
+      <div class="compare-header-left">
         <h2>Compare</h2>
         <p>Matrix: KPIs als Spalten, Startups als Zeilen. Pro KPI ist der Top-Wert markiert.</p>
       </div>
-      <div class=”compare-header-actions”>
-        <button class=”btn secondary small” id=”compareExportBtn”>
-          <svg width=”14” height=”14” viewBox=”0 0 16 16” fill=”none” stroke=”currentColor” stroke-width=”1.6” stroke-linecap=”round” stroke-linejoin=”round” style=”vertical-align:middle; margin-right:5px;”><path d=”M8 1v9M4 7l4 4 4-4M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2”/></svg>
+      <div class="compare-header-actions">
+        <button class="btn secondary small" id="compareExportBtn">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:5px;"><path d="M8 1v9M4 7l4 4 4-4M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
           Export
         </button>
       </div>
     </div>
-    <div class=”compareTableWrap”>
-      <table class=”compareTable” aria-label=”Compare KPI Matrix”>
+    <div class="compareTableWrap">
+      <table class="compareTable" aria-label="Compare KPI Matrix">
         <thead>
           <tr>
-            <th style=”min-width:200px;”></th>
+            <th style="min-width:200px;"></th>
             <th>MRR</th>
             <th>Growth</th>
             <th>Runway</th>
             <th>LTV/CAC</th>
           </tr>
         </thead>
-        <tbody id=”compareBody”></tbody>
+        <tbody id="compareBody"></tbody>
       </table>
     </div>
   `;
 
-  document.getElementById(“compareExportBtn”).onclick = ()=>{
-    downloadJSON(“core_compare_export.json”, deals.map(s=>({
+  document.getElementById("compareExportBtn").onclick = ()=>{
+    downloadJSON("core_compare_export.json", deals.map(s=>({
       anon_id: s.anon_id,
       company_name: s.company_name || s.anon_id,
       stage: s.stage,
@@ -244,10 +244,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
     })));
   };
 
-  const body = v.querySelector(“#compareBody”);
+  const body = v.querySelector("#compareBody");
   if(!deals.length){
-    body.innerHTML = `<tr><td colspan=”5” style=”padding:24px; color:var(--text-secondary); font-weight:700;”>
-      Keine Deals im Compare. Füge Deals über „Add to Compare” hinzu.
+    body.innerHTML = `<tr><td colspan="5" style="padding:24px; color:var(--text-secondary); font-weight:700;">
+      Keine Deals im Compare. Füge Deals über „Add to Compare" hinzu.
     </td></tr>`;
     return;
   }
@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const getRunway = (s)=> Number(s?.runway_months ?? (s?.runway && (s.runway.months ?? s.runway.value)) ?? 0);
   const getLTV = (s)=> {
     let lv = (s?.ltv_cac_ratio ?? s?.ltv_cac ?? s?.ltvcac ?? s?.ltvCac ?? s?.unit?.ltv_cac_ratio ?? s?.unit?.ltv_cac ?? s?.unit?.ltvCac);
-    if(typeof lv === “string”) lv = lv.replace(“,”, “.”);
+    if(typeof lv === "string") lv = lv.replace(",", ".");
     const n = Number(lv);
     return Number.isFinite(n) ? n : 0;
   };
@@ -272,33 +272,33 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const topRunway = deals.reduce((a,b)=> getRunway(b)>getRunway(a)?b:a, deals[0]);
   const topLTV = deals.reduce((a,b)=> getLTV(b)>getLTV(a)?b:a, deals[0]);
 
-  const fmtRatio = (n)=> (Math.round(n*10)/10).toLocaleString(“de-AT”);
+  const fmtRatio = (n)=> (Math.round(n*10)/10).toLocaleString("de-AT");
 
   const cell = (value, max, isTop, fmt)=>{
     const pct = Math.max(0, Math.min(100, Math.round((value/max)*100)));
-    const vhtml = (value===0 && max===1 && fmt===fmtRatio) ? “—“ : fmt(value);
+    const vhtml = (value===0 && max===1 && fmt===fmtRatio) ? "—" : fmt(value);
     return `
-      <div class=”cmpCell”>
-        <div class=”cmpBar”><div class=”cmpFill” style=”width:${pct}%;”></div></div>
-        <span class=”cmpVal”>${escapeHTML(String(vhtml))}</span>
-        ${isTop ? '<span class=”compare-top-pill”>TOP</span>' : ''}
+      <div class="cmpCell">
+        <div class="cmpBar"><div class="cmpFill" style="width:${pct}%;"></div></div>
+        <span class="cmpVal">${escapeHTML(String(vhtml))}</span>
+        ${isTop ? '<span class="compare-top-pill">TOP</span>' : ''}
       </div>
     `;
   };
 
-  const _fmtEUR = (n)=> “€” + Math.round(n).toLocaleString(“de-AT”);
-  const _fmtPct = (n)=> (Math.round(n*10)/10).toLocaleString(“de-AT”) + “%”;
-  const _fmtM = (n)=> Math.round(n).toLocaleString(“de-AT”) + “m”;
+  const _fmtEUR = (n)=> "€" + Math.round(n).toLocaleString("de-AT");
+  const _fmtPct = (n)=> (Math.round(n*10)/10).toLocaleString("de-AT") + "%";
+  const _fmtM = (n)=> Math.round(n).toLocaleString("de-AT") + "m";
 
   body.innerHTML = deals.map(s=>{
     const mrr = getMRR(s), gr = getGrowth(s), rw = getRunway(s), lv = getLTV(s);
     const displayName = escapeHTML(s.company_name || s.anon_id);
-    const stageTxt = escapeHTML(s.stage || “”);
+    const stageTxt = escapeHTML(s.stage || "");
     return `
       <tr>
         <td>
-          <button class=”cmp-startup-name” data-open=”${escapeHTML(s.anon_id)}”>${displayName}</button>
-          ${stageTxt ? `<div class=”cmp-startup-stage”>• ${stageTxt}</div>` : “”}
+          <button class="cmp-startup-name" data-open="${escapeHTML(s.anon_id)}">${displayName}</button>
+          ${stageTxt ? `<div class="cmp-startup-stage">• ${stageTxt}</div>` : ""}
         </td>
         <td>${cell(mrr, maxMRR, s.anon_id===topMRR.anon_id, _fmtEUR)}</td>
         <td>${cell(gr, maxGrowth, s.anon_id===topGrowth.anon_id, _fmtPct)}</td>
@@ -306,10 +306,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
         <td>${cell(lv, maxLTV, s.anon_id===topLTV.anon_id, fmtRatio)}</td>
       </tr>
     `;
-  }).join(“”);
+  }).join("");
 
-  body.querySelectorAll(“[data-open]”).forEach(b=>{
-    b.onclick = ()=> openModalByAnonId(b.getAttribute(“data-open”), startups);
+  body.querySelectorAll("[data-open]").forEach(b=>{
+    b.onclick = ()=> openModalByAnonId(b.getAttribute("data-open"), startups);
   });
 };
 window.renderCompare._v5 = true;
