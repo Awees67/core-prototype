@@ -1,307 +1,277 @@
 /* =========================
    RENDERER — DASHBOARD VIEW
 ========================= */
+function buildDonutSVG(segments, size, strokeWidth) {
+  const R = size / 2 - strokeWidth / 2;
+  const circ = 2 * Math.PI * R;
+  const total = segments.reduce((a, s) => a + (Number(s.value) || 0), 0);
+  if (!total) {
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="transform:rotate(-90deg);display:block;"><circle cx="${size/2}" cy="${size/2}" r="${R}" fill="none" stroke="var(--score-ring-bg)" stroke-width="${strokeWidth}"/></svg>`;
+  }
+  let accumulated = 0;
+  const circles = segments.map(s => {
+    const val = Number(s.value) || 0;
+    const dash = (val / total) * circ;
+    const offset = -accumulated;
+    accumulated += dash;
+    return `<circle cx="${size/2}" cy="${size/2}" r="${R}" fill="none" stroke="${escapeHTML(s.color)}" stroke-width="${strokeWidth}" stroke-dasharray="${dash.toFixed(2)} ${circ.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}" stroke-linecap="butt"/>`;
+  });
+  const bg = `<circle cx="${size/2}" cy="${size/2}" r="${R}" fill="none" stroke="var(--score-ring-bg)" stroke-width="${strokeWidth}"/>`;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="transform:rotate(-90deg);display:block;">${bg}${circles.join('')}</svg>`;
+}
+
 function renderDashboard(){
   hideAllViews();
-  const view = document.getElementById("viewDashboard");
-  if(!view) return;
-  view.style.display = "";
+  const view = document.getElementById('viewDashboard');
+  if (!view) return;
+  view.style.display = '';
 
-  // Hide search/sort/chips — dashboard has its own KPIs
-  const ctrlBar = document.querySelector(".controls");
-  const summaryBar = document.querySelector(".summarybar");
-  const chipsBar = document.querySelector(".activechips");
-  if(ctrlBar) ctrlBar.style.display = "none";
-  if(summaryBar) summaryBar.style.display = "none";
-  if(chipsBar) chipsBar.style.display = "none";
+  const ctrlBar = document.querySelector('.controls');
+  const summaryBar = document.querySelector('.summarybar');
+  const chipsBar = document.querySelector('.activechips');
+  if (ctrlBar) ctrlBar.style.display = 'none';
+  if (summaryBar) summaryBar.style.display = 'none';
+  if (chipsBar) chipsBar.style.display = 'none';
 
-  // --- Collect data ---
+  // --- Data ---
   const subs = getSubmissions();
   const pipeline = getPipeline();
   const activity = getActivity();
 
-  // Compute scores for all startups
-  const scores = startups.map(s=>{
-    try{
-      const res = computeCustomIndexV6(s.anon_id);
-      return (res && res.score !== null && res.score !== undefined) ? Number(res.score) : null;
-    }catch(_){ return null; }
+  const scores = startups.map(s => {
+    try { const r = computeCustomIndexV6(s.anon_id); return (r && r.score !== null) ? Number(r.score) : null; } catch(_) { return null; }
   }).filter(n => n !== null && Number.isFinite(n));
 
-  const avgScore = scores.length > 0
-    ? Math.round(scores.reduce((a,b)=>a+b,0) / scores.length)
-    : 0;
+  const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
-  // Active ruleset name
-  let rulesetName = "Standard Screening";
-  try{
-    const rules = getCustomRulesV6();
-    rulesetName = rules.name || "Standard Screening";
-  }catch(_){}
+  let rulesetName = 'Standard Screening';
+  try { const rules = getCustomRulesV6(); rulesetName = rules.name || 'Standard Screening'; } catch(_) {}
 
-  const syncedCount = pipeline.filter(x=>x.status==="Synced").length;
-
-  // Pipeline stage counts
-  const STAGES = ["In Review","Hot Deal","Watching","Declined","Synced"];
-  const STAGE_COLORS = {
-    "In Review": "var(--brand2)",
-    "Hot Deal": "var(--dangerText)",
-    "Watching": "var(--warnText)",
-    "Declined": "var(--muted)",
-    "Synced": "var(--goodText)"
-  };
-  const STAGE_BG = {
-    "In Review": "var(--chip)",
-    "Hot Deal": "var(--dangerBg)",
-    "Watching": "var(--warnBg)",
-    "Declined": "var(--soft2)",
-    "Synced": "var(--goodBg)"
-  };
-  const stageCounts = {};
-  STAGES.forEach(st=>{ stageCounts[st] = 0; });
-  pipeline.forEach(x=>{ if(stageCounts[x.status]!==undefined) stageCounts[x.status]++; });
-
-  // Score histogram buckets
-  const BUCKETS = [
-    { range:"0–20",  label:"Sehr schwach", color:"#c62828" },
-    { range:"21–40", label:"Schwach",       color:"#e65100" },
-    { range:"41–60", label:"Mittel",        color:"#f9a825" },
-    { range:"61–80", label:"Stark",         color:"#558b2f" },
-    { range:"81–100",label:"Top",           color:"#1b5e20" }
-  ];
-  const bucketCounts = [0,0,0,0,0];
-  scores.forEach(sc=>{
-    if(sc <= 20) bucketCounts[0]++;
-    else if(sc <= 40) bucketCounts[1]++;
-    else if(sc <= 60) bucketCounts[2]++;
-    else if(sc <= 80) bucketCounts[3]++;
-    else bucketCounts[4]++;
-  });
-  const maxBucket = Math.max(1, ...bucketCounts);
-
-  // Sector + Stage distributions
-  const sectorDist = groupBy(startups, s=>s.sector);
-  const stageDist = groupBy(startups, s=>s.stage);
-  const maxSector = sectorDist.length > 0 ? sectorDist[0][1] : 1;
-  const maxStage = stageDist.length > 0 ? stageDist[0][1] : 1;
-
-  // Funnel numbers
+  const syncedCount = pipeline.filter(x => x.status === 'Synced').length;
   const funnelTotal = startups.length;
-  const funnelAccepted = funnelTotal; // all in dataset are accepted
   const funnelPipeline = pipeline.length;
   const funnelSynced = syncedCount;
 
-  // --- Build HTML ---
+  // Pipeline stage counts
+  const STAGES = ['In Review', 'Hot Deal', 'Watching', 'Declined', 'Synced'];
+  const STAGE_DOT_COLORS = { 'In Review': '#0A84FF', 'Hot Deal': '#ef4444', 'Watching': '#f59e0b', 'Declined': '#6b7280', 'Synced': '#00dfc1' };
+  const STAGE_DOT_LABELS = { 'In Review': 'IN REVIEW', 'Hot Deal': 'HOT DEALS', 'Watching': 'WATCHING', 'Declined': 'DECLINED', 'Synced': 'SYNCED' };
+  const stageCounts = {};
+  STAGES.forEach(st => { stageCounts[st] = 0; });
+  pipeline.forEach(x => { if (stageCounts[x.status] !== undefined) stageCounts[x.status]++; });
 
-  // KPI Header
-  const subsPulse = subs.length > 0 ? ' dash-pulse' : '';
-  const kpiHtml = `
-    <div class="dash-grid dash-grid-4 dash-kpi-grid">
-      <div class="dash-kpi dash-kpi-priority-1">
-        <div class="dash-kpi-value">${funnelTotal}</div>
-        <div class="dash-kpi-label">📊 Gesamt Deals</div>
-        <div class="dash-kpi-sub">Im aktuellen Dataset</div>
-      </div>
-      <div class="dash-kpi dash-kpi-priority-1${subsPulse}">
-        <div class="dash-kpi-value">${subs.length}</div>
-        <div class="dash-kpi-label">📥 Neue Submissions</div>
-        <div class="dash-kpi-sub">Warten auf Review</div>
-      </div>
-      <div class="dash-kpi">
-        <div class="dash-kpi-value">${pipeline.length}</div>
-        <div class="dash-kpi-label">📋 In Pipeline</div>
-        <div class="dash-kpi-sub">Aktive Deals im Screening</div>
-      </div>
-      <div class="dash-kpi">
-        <div class="dash-kpi-value">${syncedCount}</div>
-        <div class="dash-kpi-label">✓ Synced to CRM</div>
-        <div class="dash-kpi-sub">Erfolgreich übergeben</div>
-      </div>
-      <div class="dash-kpi">
-        <div class="dash-kpi-value">${avgScore}</div>
-        <div class="dash-kpi-label">⚡ Ø Score</div>
-        <div class="dash-kpi-sub">Aktives Ruleset: ${escapeHTML(rulesetName)}</div>
-      </div>
-    </div>
-  `;
+  // Score buckets
+  const buckets = [0, 0, 0, 0, 0];
+  scores.forEach(sc => {
+    if (sc <= 20) buckets[0]++;
+    else if (sc <= 40) buckets[1]++;
+    else if (sc <= 60) buckets[2]++;
+    else if (sc <= 80) buckets[3]++;
+    else buckets[4]++;
+  });
+  const BUCKET_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#00dfc1', '#059669'];
+  const BUCKET_LABELS = ['0–20', '21–40', '41–60', '61–80', '81–100'];
+  const scoreDonutSegs = buckets.map((v, i) => ({ value: v, color: BUCKET_COLORS[i] }));
 
-  // Funnel bars
-  const funnelSteps = [
-    { label:"Eingereicht", val:funnelTotal, color:"var(--chip)", border:"var(--chipBorder)" },
-    { label:"Angenommen", val:funnelAccepted, color:"var(--brand2)", border:"var(--brand2)" },
-    { label:"In Pipeline", val:funnelPipeline, color:"var(--warnBg)", border:"var(--warnBorder)" },
-    { label:"An CRM übergeben", val:funnelSynced, color:"var(--goodBg)", border:"var(--goodBorder)" }
-  ];
-  const funnelHtml = funnelSteps.map(step=>{
-    const w = pctOf(step.val, funnelTotal);
-    return `
-      <div class="funnel-row">
-        <div class="funnel-label">${escapeHTML(step.label)}</div>
-        <div class="funnel-bar-wrap">
-          <div class="funnel-bar" style="width:${w}%; background:${step.color}; border:1px solid ${step.border};"></div>
-        </div>
-        <div class="funnel-value"><span class="mono">${step.val}</span></div>
-      </div>
-    `;
-  }).join("");
+  // Sector donut
+  const SECTOR_COLORS = {
+    'B2B SaaS': '#0A84FF', 'FinTech': '#00dfc1', 'HealthTech': '#f59e0b',
+    'DeepTech': '#ef4444', 'AI': '#a78bfa', 'ClimateTech': '#34d399',
+    'Cybersecurity': '#fb923c', 'PropTech': '#60a5fa', 'Marketplace': '#f472b6', 'DevTools': '#94a3b8'
+  };
+  const sectorDist = groupBy(startups, s => s.sector).slice(0, 5);
+  const sektorDonutSegs = sectorDist.map(([name, cnt]) => ({ value: cnt, color: SECTOR_COLORS[name] || '#94a3b8' }));
 
-  // Pipeline segment bar
-  const pipeTotal = Math.max(1, pipeline.length);
-  const pipeSegHtml = pipeline.length === 0
-    ? `<div class="dash-panel-sub">Noch keine Deals in der Pipeline.</div>`
-    : `
-      <div class="pipe-seg-bar">
-        ${STAGES.map(st=>{
-          const pct = pctOf(stageCounts[st], pipeTotal);
-          if(pct === 0) return "";
-          return `<div class="pipe-seg" style="width:${pct}%; background:${STAGE_BG[st]};" title="${escapeHTML(st)}: ${stageCounts[st]}"></div>`;
-        }).join("")}
-      </div>
-      <div class="pipe-legend">
-        ${STAGES.map(st=>`
-          <div class="pipe-legend-item">
-            <div class="pipe-legend-dot" style="background:${STAGE_COLORS[st]};"></div>
-            <span>${escapeHTML(st)}: ${stageCounts[st]}</span>
-          </div>
-        `).join("")}
-      </div>
-    `;
+  // Stage distribution (all stages)
+  const ALL_STAGES = ['Pre-Seed', 'Seed', 'Pre-Series A', 'Series A', 'Series B'];
+  const stageDist = {};
+  ALL_STAGES.forEach(st => { stageDist[st] = 0; });
+  startups.forEach(s => { if (stageDist[s.stage] !== undefined) stageDist[s.stage]++; });
+  const maxStageCount = Math.max(1, ...Object.values(stageDist));
 
-  // Score histogram
-  const histoHtml = `
-    <div class="histogram">
-      ${BUCKETS.map((b,i)=>{
-        const cnt = bucketCounts[i];
-        const pct = Math.round((cnt/maxBucket)*100);
-        return `
-          <div class="histo-col">
-            <div class="histo-count">${cnt}</div>
-            <div class="histo-bar" style="height:${pct}%; background:${b.color};"></div>
-            <div class="histo-label">${escapeHTML(b.range)}<br>${escapeHTML(b.label)}</div>
-          </div>
-        `;
-      }).join("")}
-    </div>
-  `;
-
-  // Sector distribution
-  const sectorHtml = sectorDist.slice(0,10).map(([name,cnt])=>{
-    const w = pctOf(cnt, maxSector);
-    return `
-      <div class="hbar-row">
-        <div class="hbar-label" title="${escapeHTML(name)}">${escapeHTML(name)}</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:${w}%;"></div></div>
-        <div class="hbar-value">${cnt}</div>
-      </div>
-    `;
-  }).join("");
-
-  // Stage distribution
-  const stageHtml = stageDist.map(([name,cnt])=>{
-    const w = pctOf(cnt, maxStage);
-    return `
-      <div class="hbar-row">
-        <div class="hbar-label" title="${escapeHTML(name)}">${escapeHTML(name)}</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:${w}%;"></div></div>
-        <div class="hbar-value">${cnt}</div>
-      </div>
-    `;
-  }).join("");
-
-  // Decline reasons distribution
-  const declinedWithReason = pipeline.filter(x => x.status === "Declined" && x.decline_reason);
-  const declineReasonDist = groupBy(declinedWithReason, x => x.decline_reason);
+  // Decline reasons
+  const declinedDeals = pipeline.filter(x => x.status === 'Declined' && x.decline_reason);
+  const declineReasonDist = groupBy(declinedDeals, x => x.decline_reason);
   const maxDeclineCount = declineReasonDist.length > 0 ? declineReasonDist[0][1] : 1;
-  const declineHtml = declineReasonDist.length === 0
-    ? `<div class="hint">Noch keine Deals abgelehnt.</div>`
+
+  // --- KPI Tiles ---
+  const subsPulse = subs.length > 0 ? 'dash-pulse' : '';
+  const kpiHtml = `
+    <div class="dbv2-kpi-row">
+      <div class="dbv2-kpi">
+        <div class="dbv2-kpi-tag"><div class="dbv2-kpi-dot" style="background:#0A84FF"></div>GESAMT DEALS</div>
+        <div class="dbv2-kpi-val">${funnelTotal}</div>
+        <div class="dbv2-kpi-sub">Im aktuellen Dataset</div>
+      </div>
+      <div class="dbv2-kpi ${subsPulse}">
+        <div class="dbv2-kpi-tag"><span class="dash-pulse" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#0A84FF;flex-shrink:0;"></span>NEUE SUBMISSIONS</div>
+        <div class="dbv2-kpi-val">${subs.length}</div>
+        <div class="dbv2-kpi-sub">Warten auf Review</div>
+      </div>
+      <div class="dbv2-kpi">
+        <div class="dbv2-kpi-tag"><div class="dbv2-kpi-dot" style="background:#a78bfa"></div>IN PIPELINE</div>
+        <div class="dbv2-kpi-val">${pipeline.length}</div>
+        <div class="dbv2-kpi-sub">Aktive Deals im Screening</div>
+      </div>
+      <div class="dbv2-kpi">
+        <div class="dbv2-kpi-tag"><div class="dbv2-kpi-dot" style="background:#00dfc1"></div>SYNCED TO CRM</div>
+        <div class="dbv2-kpi-val">${syncedCount}</div>
+        <div class="dbv2-kpi-sub">Erfolgreich übergeben</div>
+      </div>
+      <div class="dbv2-kpi">
+        <div class="dbv2-kpi-tag"><div class="dbv2-kpi-dot" style="background:#f59e0b"></div>Ø SCORE</div>
+        <div class="dbv2-kpi-val">${avgScore}</div>
+        <div class="dbv2-kpi-sub">Aktives Ruleset: ${escapeHTML(rulesetName)}</div>
+      </div>
+    </div>`;
+
+  // --- Pipeline Status + Funnel ---
+  const dotsHtml = STAGES.map(st => `
+    <div class="dbv2-dot-item">
+      <div class="dbv2-dot-top"><div class="dbv2-dot-circle" style="background:${STAGE_DOT_COLORS[st]}"></div>${escapeHTML(STAGE_DOT_LABELS[st])}</div>
+      <div class="dbv2-dot-count">${stageCounts[st]}</div>
+    </div>`).join('');
+
+  const funnelSteps = [
+    { label: 'EINGEREICHT', val: funnelTotal, pct: 100, color: 'rgba(128,128,128,0.35)' },
+    { label: 'ANGENOMMEN', val: funnelTotal, pct: 100, color: 'var(--accent)' },
+    { label: 'IN PIPELINE', val: funnelPipeline, pct: pctOf(funnelPipeline, funnelTotal || 1), color: '#f59e0b' },
+    { label: 'AN CRM', val: funnelSynced, pct: pctOf(funnelSynced, funnelTotal || 1), color: '#00dfc1' }
+  ];
+  const funnelHtml = funnelSteps.map(f => `
+    <div class="dbv2-frow">
+      <div class="dbv2-flabel">${escapeHTML(f.label)}</div>
+      <div class="dbv2-ftrack"><div class="dbv2-ffill" style="width:${f.pct}%;background:${f.color}"></div></div>
+      <div class="dbv2-fcount">${f.val}</div>
+    </div>`).join('');
+
+  const row2Html = `
+    <div class="dbv2-row2">
+      <div class="dbv2-panel dbv2-p-wide">
+        <div class="dbv2-panel-title">Pipeline Status</div>
+        <div class="dbv2-panel-sub">Aktueller Bearbeitungsstatus der gesamten Pipeline</div>
+        <div class="dbv2-big-bar"></div>
+        <div class="dbv2-dots-row">${dotsHtml}</div>
+      </div>
+      <div class="dbv2-panel dbv2-p-narrow">
+        <div class="dbv2-panel-title">Dealflow Funnel</div>
+        <div class="dbv2-panel-sub">Eingang bis CRM</div>
+        ${funnelHtml}
+      </div>
+    </div>`;
+
+  // --- Score Donut + Absage-Gründe ---
+  const scoreDonutSvg = buildDonutSVG(scoreDonutSegs, 120, 18);
+  const scoreLegendHtml = BUCKET_LABELS.map((lbl, i) => `
+    <div class="dbv2-dleg-item">
+      <div class="dbv2-dleg-dot" style="background:${BUCKET_COLORS[i]}"></div>
+      ${escapeHTML(lbl)} (${buckets[i]})
+    </div>`).join('');
+
+  const absageHtml = declineReasonDist.length === 0
+    ? `<div class="dbv2-empty"><div class="dbv2-empty-icon">!</div><div class="dbv2-empty-text">Noch keine Deals abgelehnt.</div></div>`
     : declineReasonDist.map(([key, cnt]) => {
         const label = DECLINE_REASONS.find(r => r.key === key)?.label || key;
         const w = pctOf(cnt, maxDeclineCount);
-        return `
-          <div class="hbar-row">
-            <div class="hbar-label" title="${escapeHTML(label)}">${escapeHTML(label)}</div>
-            <div class="hbar-track"><div class="hbar-fill" style="width:${w}%;"></div></div>
-            <div class="hbar-value">${cnt}</div>
+        return `<div class="dbv2-frow"><div class="dbv2-flabel" title="${escapeHTML(label)}" style="min-width:130px;font-size:9px">${escapeHTML(label)}</div><div class="dbv2-ftrack"><div class="dbv2-ffill" style="width:${w}%;background:var(--dangerText)"></div></div><div class="dbv2-fcount">${cnt}</div></div>`;
+      }).join('');
+
+  const row3Html = `
+    <div class="dbv2-row3">
+      <div class="dbv2-panel dbv2-p-half">
+        <div class="dbv2-panel-title">Score Verteilung</div>
+        <div class="dbv2-panel-sub">Anzahl Deals pro Score-Bereich</div>
+        <div class="dbv2-donut-wrap">
+          <div class="dbv2-donut-pos">${scoreDonutSvg}</div>
+          <div class="dbv2-dleg">${scoreLegendHtml}</div>
+        </div>
+      </div>
+      <div class="dbv2-panel dbv2-p-half">
+        <div class="dbv2-panel-title">Häufigste Absage-Gründe</div>
+        <div class="dbv2-panel-sub">Nur Deals mit Status „Declined"</div>
+        ${absageHtml}
+      </div>
+    </div>`;
+
+  // --- Stage Column-Chart + Sektor Donut ---
+  const stageColsHtml = ALL_STAGES.map(st => {
+    const cnt = stageDist[st] || 0;
+    const h = Math.round((cnt / maxStageCount) * 100);
+    return `<div class="dbv2-sc-wrap"><div class="dbv2-sc-count">${cnt}</div><div class="dbv2-sc-bar" style="height:${Math.max(h, 4)}%"></div><div class="dbv2-sc-label">${escapeHTML(st)}</div></div>`;
+  }).join('');
+
+  const sektorDonutSvg = buildDonutSVG(sektorDonutSegs, 120, 16);
+  const sektorLegendHtml = sectorDist.map(([name, cnt]) => `
+    <div class="dbv2-dleg-item">
+      <div class="dbv2-dleg-dot" style="background:${SECTOR_COLORS[name] || '#94a3b8'}"></div>
+      ${escapeHTML(name)} &nbsp;<strong style="color:var(--text-primary);font-weight:800">${cnt}</strong>
+    </div>`).join('');
+
+  const row4Html = `
+    <div class="dbv2-row3">
+      <div class="dbv2-panel dbv2-p-half">
+        <div class="dbv2-panel-title">Stage Verteilung</div>
+        <div class="dbv2-panel-sub">Pipeline-Reife über alle Deals</div>
+        <div class="dbv2-stage-chart">${stageColsHtml}</div>
+      </div>
+      <div class="dbv2-panel dbv2-p-half">
+        <div class="dbv2-panel-title">Sektor Verteilung</div>
+        <div class="dbv2-panel-sub">Top-Sektoren im aktuellen Datensatz</div>
+        <div class="dbv2-donut-wrap">
+          <div class="dbv2-donut-pos">
+            ${sektorDonutSvg}
+            <div class="dbv2-donut-center">
+              <div class="dbv2-donut-center-val">${funnelTotal}</div>
+              <div class="dbv2-donut-center-sub">TOTAL</div>
+            </div>
           </div>
-        `;
-      }).join("");
-
-  // Recent activity
-  const recentEvents = activity.slice(0,10);
-  const activityHtml = recentEvents.length === 0
-    ? `<div class="hint">Noch keine Aktivitäten.</div>`
-    : `
-      <ul class="activity-mini">
-        ${recentEvents.map(ev=>{
-          const label = DASHBOARD_EVENT_LABELS[ev.event] || escapeHTML(ev.event || "Event");
-          const ts = ev.ts ? timeAgo(ev.ts) : "—";
-          const id = ev.anon_id ? escapeHTML((window.startups||[]).find(x=>x?.anon_id===ev.anon_id)?.company_name || ev.anon_id) : "";
-          return `
-            <li>
-              <span class="activity-mini-time">${escapeHTML(ts)}</span>
-              <span class="activity-mini-event">${label}</span>
-              ${id ? `<span class="activity-mini-label">${id}</span>` : ""}
-            </li>
-          `;
-        }).join("")}
-      </ul>
-    `;
-
-  view.innerHTML = `
-    <div class="dash-shell">
-    <div class="dash-head">
-      <h2 class="dash-title">Dashboard</h2>
-      <div class="dash-subtitle">Gesamtüberblick über Dealflow, Pipeline und Score-Verteilung (Live aus der lokalen Demo).</div>
-    </div>
-
-    ${kpiHtml}
-
-    <div class="dash-grid dash-grid-2 dash-section">
-      <div class="dash-panel">
-        <div class="dash-panel-title">Dealflow Funnel</div>
-        <div class="dash-panel-sub">Vom Eingang bis zur CRM-Übergabe.</div>
-        ${funnelHtml}
+          <div class="dbv2-dleg">${sektorLegendHtml}</div>
+        </div>
       </div>
-      <div class="dash-panel">
-        <div class="dash-panel-title">Pipeline Status</div>
-        <div class="dash-panel-sub">Verteilung nach aktuellem Bearbeitungsstatus.</div>
-        ${pipeSegHtml}
-      </div>
-    </div>
+    </div>`;
 
-    <div class="dash-grid dash-grid-2 dash-section">
-      <div class="dash-panel">
-        <div class="dash-panel-title">Score Verteilung</div>
-        <div class="dash-panel-sub">Anzahl Deals pro Score-Bereich.</div>
-        ${histoHtml}
-      </div>
-      <div class="dash-panel">
-        <div class="dash-panel-title">Sektor Verteilung</div>
-        <div class="dash-panel-sub">Top-Sektoren im aktuellen Datensatz.</div>
-        ${sectorHtml || '<div class="hint">Keine Daten.</div>'}
-      </div>
-    </div>
+  // --- Activity Table ---
+  const recentEvents = activity.slice(0, 10);
+  const actRowsHtml = recentEvents.length === 0
+    ? `<tr><td colspan="4" style="padding:20px 0;color:var(--text-secondary);font-weight:800;">Noch keine Aktivitäten.</td></tr>`
+    : recentEvents.map(ev => {
+        const ts = ev.ts ? timeAgo(ev.ts) : '—';
+        const s = startups.find(x => x?.anon_id === ev.anon_id);
+        const dealName = s ? escapeHTML(s.company_name || s.anon_id) : (ev.anon_id ? escapeHTML(ev.anon_id) : '—');
+        const actionLabel = escapeHTML(DASHBOARD_EVENT_LABELS[ev.event] || ev.event || 'Event');
+        const moduleLabel = ev.event && ev.event.startsWith('PIPELINE') ? 'PIPELINE'
+          : ev.event && ev.event.startsWith('SUBMISSION') ? 'SUBMISSION'
+          : ev.event && ev.event.startsWith('CRM') ? 'CRM'
+          : ev.event && ev.event.startsWith('NOTE') ? 'NOTIZ'
+          : ev.event && ev.event.startsWith('COMPARE') ? 'COMPARE'
+          : 'EVENT';
+        return `<tr>
+          <td class="dbv2-act-time">${escapeHTML(ts)}</td>
+          <td><span class="dbv2-act-badge">${escapeHTML(moduleLabel)}</span></td>
+          <td>${dealName}</td>
+          <td>${actionLabel}</td>
+        </tr>`;
+      }).join('');
 
-    <div class="dash-grid dash-grid-2 dash-section">
-      <div class="dash-panel">
-        <div class="dash-panel-title">Stage Verteilung</div>
-        <div class="dash-panel-sub">Pipeline-Reife über alle Deals.</div>
-        ${stageHtml || '<div class="hint">Keine Daten.</div>'}
+  const actHtml = `
+    <div class="dbv2-panel" style="margin-top:10px;">
+      <div class="dbv2-act-header">
+        <div>
+          <div class="dbv2-panel-title">Letzte Aktivitäten</div>
+          <div class="dbv2-panel-sub">Die neuesten Workspace-Events und Statusänderungen</div>
+        </div>
+        <button class="dbv2-act-link" id="dashActAllBtn">Alle anzeigen</button>
       </div>
-      <div class="dash-panel">
-        <div class="dash-panel-title">Häufigste Absage-Gründe</div>
-        <div class="dash-panel-sub">Nur Deals mit Status „Declined".</div>
-        ${declineHtml}
-      </div>
-    </div>
+      <table class="dbv2-act-table">
+        <thead><tr><th>ZEITPUNKT</th><th>STATUS / MODUL</th><th>DEAL</th><th>AKTION</th></tr></thead>
+        <tbody>${actRowsHtml}</tbody>
+      </table>
+    </div>`;
 
-    <div class="dash-grid dash-grid-2 dash-section">
-      <div class="dash-panel">
-        <div class="dash-panel-title">Letzte Aktivitäten</div>
-        <div class="dash-panel-sub">Die 10 neuesten Workspace-Events.</div>
-        ${activityHtml}
-      </div>
-    </div>
-    </div>
-  `;
+  // --- Assemble ---
+  view.innerHTML = `<div style="padding:4px 0 8px;">${kpiHtml}${row2Html}${row3Html}${row4Html}${actHtml}</div>`;
+
+  // Bind activity link
+  const dashActBtn = document.getElementById('dashActAllBtn');
+  if (dashActBtn) dashActBtn.onclick = () => { currentView = 'activity'; renderCurrent(); };
 }
