@@ -35,28 +35,24 @@ function bindLeadFormForStartup(s){
 }
 
 function bindInboxHeaderButtons(){
-  const exportBtn = document.getElementById("exportJsonBtn");
-  const clearBtn = document.getElementById("clearLeadsBtn");
+  const exportBtn = document.getElementById('exportJsonBtn');
+  const clearBtn  = document.getElementById('clearLeadsBtn');
 
   if(exportBtn){
     exportBtn.onclick = async ()=>{
-      const leads = getLeads().slice().sort((a,b)=>b.ts-a.ts);
-      const payload = {
-        exported_at: new Date().toISOString(),
-        leads_count: leads.length,
-        leads
-      };
-      const text = JSON.stringify(payload, null, 2);
-      const downloaded = downloadTextFile("core_anfragen_export.json", text);
-      if(!downloaded) await copyToClipboard(text);
-      toast(downloaded ? "Export bereit" : "Export kopiert", downloaded ? "JSON-Download gestartet" : "JSON liegt in der Zwischenablage");
+      const leads   = getLeads().slice().sort((a,b)=>b.ts-a.ts);
+      const payload = { exported_at: new Date().toISOString(), leads_count: leads.length, leads };
+      const text    = JSON.stringify(payload, null, 2);
+      const ok      = downloadTextFile('core_anfragen_export.json', text);
+      if(!ok) await copyToClipboard(text);
+      toast(ok ? 'Export bereit' : 'Export kopiert', ok ? 'JSON-Download gestartet' : 'JSON in Zwischenablage');
     };
   }
 
   if(clearBtn){
     clearBtn.onclick = ()=>{
       setLeads([]);
-      toast("Gelöscht", "Alle Anfragen entfernt");
+      toast('Gelöscht', 'Alle Anfragen entfernt');
       renderInbox();
     };
   }
@@ -64,47 +60,44 @@ function bindInboxHeaderButtons(){
 
 function renderInbox(){
   hideAllViews();
-  const viewInbox = document.getElementById("viewInbox");
+  const viewInbox = document.getElementById('viewInbox');
   if(!viewInbox) return;
-  viewInbox.style.display = "";
+  viewInbox.style.display = '';
 
   const leads = getLeads().slice().sort((a,b)=>b.ts-a.ts);
-  viewInbox.innerHTML = "";
+  viewInbox.innerHTML = '';
 
-  const resultCount = document.getElementById("resultCount");
-  const activeFilterCount = document.getElementById("activeFilterCount");
-  if(resultCount) resultCount.textContent = leads.length + " Anfragen";
-  if(activeFilterCount) activeFilterCount.textContent = "0 Filter aktiv";
+  const resultCount      = document.getElementById('resultCount');
+  const activeFilterCount = document.getElementById('activeFilterCount');
+  if(resultCount)       resultCount.textContent       = leads.length + ' Anfragen';
+  if(activeFilterCount) activeFilterCount.textContent = '0 Filter aktiv';
 
-  // ── Header ──
-  const header = document.createElement("div");
-  header.className = "inbox2-header";
+  /* ---- Header ---- */
+  const header = document.createElement('div');
+  header.className = 'anf-header';
   header.innerHTML = `
-    <div class="inbox2-header-left">
-      <h2 class="inbox2-header-title">Anfragen <span class="inbox2-header-count">(lokal gespeichert)</span></h2>
-      <p class="inbox2-header-sub">Verwalten Sie eingehende Interessensbekundungen und Startup-Anfragen direkt in Ihrer lokalen Instanz.</p>
+    <div class="anf-header-left">
+      <h2 class="anf-title">Anfragen</h2>
+      <p class="anf-subtitle">Eingehende Interessensbekundungen und Startup-Anfragen. Lokal gespeichert, keine Uebertragung an Dritte.</p>
     </div>
-    <div class="inbox2-header-right">
-      <div class="inbox2-header-badge">
-        <span class="inbox2-badge-dot"></span>
-        <span class="inbox2-badge-text">${leads.length} gesendete Anfrage${leads.length !== 1 ? "n" : ""}</span>
+    <div class="anf-header-right">
+      <div class="anf-count-pill">
+        <span class="anf-dot"></span>
+        <span>${leads.length} Anfrage${leads.length !== 1 ? 'n' : ''}</span>
       </div>
-      <div class="inbox2-header-actions">
-        <button class="btn secondary" id="exportJsonBtn">Export JSON</button>
-        <button class="btn secondary" id="clearLeadsBtn">Alle löschen</button>
-      </div>
+      <button class="btn secondary" id="exportJsonBtn">Export JSON</button>
+      <button class="btn secondary" id="clearLeadsBtn">Alle loeschen</button>
     </div>
   `;
   viewInbox.appendChild(header);
 
-  // ── Empty state ──
+  /* ---- Empty state ---- */
   if(leads.length === 0){
-    const empty = document.createElement("div");
-    empty.className = "inbox2-empty-state";
+    const empty = document.createElement('div');
+    empty.className = 'anf-empty';
     empty.innerHTML = `
-      <div class="inbox2-empty-icon">📭</div>
-      <h3 class="inbox2-empty-title">Keine Anfragen gefunden</h3>
-      <p class="inbox2-empty-sub">Neue Anfragen werden hier automatisch erscheinen, sobald Investoren Interesse an Startups bekunden.</p>
+      <p class="anf-empty-title">Keine Anfragen vorhanden</p>
+      <p class="anf-empty-sub">Neue Anfragen erscheinen hier, sobald Investoren Interesse an Startups bekunden.</p>
     `;
     viewInbox.appendChild(empty);
     bindInboxHeaderButtons();
@@ -112,87 +105,144 @@ function renderInbox(){
     return;
   }
 
-  // ── Card grid ──
-  const grid = document.createElement("div");
-  grid.className = "inbox2-grid";
+  /* ---- Table ---- */
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'anf-table-wrap';
 
-  leads.forEach((l)=>{
-    const card = document.createElement("div");
-    card.className = "inbox2-card";
+  const tableScroll = document.createElement('div');
+  tableScroll.className = 'anf-table-scroll';
 
-    const dt = new Date(l.ts);
-    const dateStr = Number.isFinite(dt.getTime())
-      ? dt.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })
-        + " \u2022 "
-        + dt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
-      : "\u2014";
+  const table = document.createElement('table');
+  table.className = 'anf-table';
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th class="anf-th-chev"></th>
+        <th>Startup</th>
+        <th>Anfragender</th>
+        <th>Firma / Fonds</th>
+        <th>Nachricht</th>
+        <th>Eingegangen</th>
+        <th style="text-align:right">Aktionen</th>
+      </tr>
+    </thead>
+    <tbody id="anfTableBody"></tbody>
+  `;
 
-    const displayName = l.display_label || startupLabel({ anon_id: l.anon_id });
-    const msgTruncated = (l.msg || "\u2014").slice(0, 280) + ((l.msg || "").length > 280 ? "\u2026" : "");
+  tableScroll.appendChild(table);
+  tableWrap.appendChild(tableScroll);
+  viewInbox.appendChild(tableWrap);
 
-    card.innerHTML = `
-      <div class="inbox2-card-head">
-        <h3 class="inbox2-card-title">Anfrage zu ${escapeHTML(displayName)}</h3>
-        <span class="inbox2-card-time">${escapeHTML(dateStr)}</span>
-      </div>
+  const tbody   = document.getElementById('anfTableBody');
+  const openSet = new Set();
 
-      <div class="inbox2-sections">
-        <div class="inbox2-section">
-          <div class="inbox2-section-label">
-            <span class="inbox2-section-icon">&#x1F464;</span>
-            <span class="inbox2-section-label-text">Requester</span>
+  function fmtDate(ts){
+    const dt = new Date(ts);
+    if(!Number.isFinite(dt.getTime())) return '\u2014';
+    return dt.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' })
+      + ' \u00B7 '
+      + dt.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function renderRows(){
+    tbody.innerHTML = '';
+
+    leads.forEach((l, i)=>{
+      const isOpen      = openSet.has(i);
+      const dateStr     = fmtDate(l.ts);
+      const displayName = l.display_label || startupLabel({ anon_id: l.anon_id });
+      const msgPreview  = (l.msg || '\u2014').slice(0, 55) + ((l.msg||'').length > 55 ? '\u2026' : '');
+      const msgFull     = escapeHTML(l.msg || '\u2014');
+
+      /* -- Main row -- */
+      const mainRow = document.createElement('tr');
+      mainRow.className = 'anf-row-main' + (isOpen ? ' open' : '');
+      mainRow.innerHTML = `
+        <td class="anf-td-chev"><span class="anf-chev${isOpen ? ' open' : ''}">&#x203A;</span></td>
+        <td>
+          <span class="anf-startup-name">${escapeHTML(displayName)}</span>
+          <span class="anf-startup-id">${escapeHTML(l.anon_id)}</span>
+        </td>
+        <td>
+          <div class="anf-person-name">${escapeHTML(l.name || '\u2014')}</div>
+          <div class="anf-person-sub">${escapeHTML(l.email || '\u2014')}</div>
+        </td>
+        <td><span class="anf-fonds">${escapeHTML(l.firm || '\u2014')}</span></td>
+        <td><span class="anf-msg-preview">${escapeHTML(msgPreview)}</span></td>
+        <td class="anf-datum">${escapeHTML(dateStr)}</td>
+        <td>
+          <div class="anf-actions">
+            ${!isOpen ? `<button class="btn small" data-open-startup="${escapeHTML(l.anon_id)}">Startup oeffnen</button>` : ''}
+            <button class="btn secondary small" data-del-ts="${String(l.ts)}">Loeschen</button>
           </div>
-          <p class="inbox2-section-value">${escapeHTML(l.name || "\u2014")}</p>
-          ${l.email ? `<p class="inbox2-section-sub">${escapeHTML(l.email)}</p>` : ""}
-        </div>
+        </td>
+      `;
 
-        <div class="inbox2-section">
-          <div class="inbox2-section-label">
-            <span class="inbox2-section-icon">&#x1F3E2;</span>
-            <span class="inbox2-section-label-text">Company / Fund</span>
-          </div>
-          <p class="inbox2-section-value">${escapeHTML(l.firm || "\u2014")}</p>
-        </div>
+      mainRow.addEventListener('click', (e)=>{
+        if(e.target.closest('button')) return;
+        if(isOpen) openSet.delete(i);
+        else       openSet.add(i);
+        renderRows();
+      });
 
-        <div class="inbox2-message">
-          <div class="inbox2-section-label">
-            <span class="inbox2-section-icon inbox2-message-icon">&#x1F4AC;</span>
-            <span class="inbox2-section-label-text inbox2-message-label-text">Message</span>
-          </div>
-          <p class="inbox2-message-text">&ldquo;${escapeHTML(msgTruncated)}&rdquo;</p>
-        </div>
-      </div>
+      tbody.appendChild(mainRow);
 
-      <div class="inbox2-actions">
-        <button class="inbox2-btn-open" data-action="open" data-id="${escapeHTML(l.anon_id)}">
-          &#x1F441; Startup &ouml;ffnen
-        </button>
-        <button class="inbox2-btn-delete" data-action="delete" data-ts="${String(l.ts)}" title="Anfrage l&ouml;schen" aria-label="Anfrage l&ouml;schen">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h10M6 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M5 4l.5 9M11 4l-.5 9M8 4v9"/></svg>
-        </button>
-      </div>
-    `;
-
-    card.addEventListener("click", (e)=>{
-      const btn = e.target.closest("button");
-      if(!btn) return;
-      const action = btn.dataset.action;
-      if(action === "open"){
-        openModalById(btn.dataset.id || "");
-        return;
-      }
-      if(action === "delete"){
-        const ts = Number(btn.dataset.ts);
-        setLeads(getLeads().filter(x=>Number(x.ts)!==ts));
-        toast("Gel\u00f6scht", "Anfrage entfernt");
-        renderInbox();
+      /* -- Detail row (only when open) -- */
+      if(isOpen){
+        const detailRow = document.createElement('tr');
+        detailRow.className = 'anf-row-detail';
+        detailRow.innerHTML = `
+          <td colspan="7">
+            <div class="anf-detail-panel">
+              <div class="anf-detail-meta">
+                <div class="anf-meta-item">
+                  <div class="anf-meta-label">Anfragender</div>
+                  <div class="anf-meta-value">${escapeHTML(l.name || '\u2014')}</div>
+                </div>
+                <div class="anf-meta-item">
+                  <div class="anf-meta-label">E-Mail</div>
+                  <div class="anf-meta-value">${escapeHTML(l.email || '\u2014')}</div>
+                </div>
+                <div class="anf-meta-item">
+                  <div class="anf-meta-label">Firma / Fonds</div>
+                  <div class="anf-meta-value">${escapeHTML(l.firm || '\u2014')}</div>
+                </div>
+                <div class="anf-meta-item">
+                  <div class="anf-meta-label">Eingegangen</div>
+                  <div class="anf-meta-value anf-meta-muted">${escapeHTML(dateStr)}</div>
+                </div>
+              </div>
+              <div class="anf-msg-block">
+                <div class="anf-msg-block-label">Nachricht</div>
+                <div class="anf-msg-block-text">${msgFull}</div>
+              </div>
+              <div class="anf-detail-actions">
+                <button class="btn" data-open-startup="${escapeHTML(l.anon_id)}">Startup oeffnen</button>
+                <button class="btn secondary" data-del-ts="${String(l.ts)}">Anfrage loeschen</button>
+              </div>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(detailRow);
       }
     });
 
-    grid.appendChild(card);
-  });
+    /* Bind buttons after render */
+    tbody.querySelectorAll('[data-open-startup]').forEach(btn=>{
+      btn.onclick = (e)=>{ e.stopPropagation(); openModalById(btn.getAttribute('data-open-startup')); };
+    });
+    tbody.querySelectorAll('[data-del-ts]').forEach(btn=>{
+      btn.onclick = (e)=>{
+        e.stopPropagation();
+        const ts = Number(btn.getAttribute('data-del-ts'));
+        setLeads(getLeads().filter(x=>Number(x.ts) !== ts));
+        toast('Geloescht', 'Anfrage entfernt');
+        renderInbox();
+      };
+    });
+  }
 
-  viewInbox.appendChild(grid);
+  renderRows();
   bindInboxHeaderButtons();
   updateCounts();
 }
