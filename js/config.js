@@ -13,7 +13,8 @@ const LS_KEYS = {
   savedFilters: "core_saved_filters_v1",
   activity: "core_activity_v1",
   submissions: "core_submissions_v1",
-  notes: "core_notes_v1"
+  notes: "core_notes_v1",
+  outreach: "core_outreach_v1"
 };
 
 /* =========================

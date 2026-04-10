@@ -543,5 +543,20 @@
     </div>
   </div>
 
+  <div id="followup-modal-overlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal followup-modal" role="dialog" aria-modal="true">
+      <h3 id="followup-modal-title">Follow-up senden</h3>
+      <div class="followup-tpl-bar">
+        <button class="followup-tpl-btn active" data-tpl="reminder">Reminder</button>
+        <button class="followup-tpl-btn" data-tpl="gespraech">Gesprächsanfrage</button>
+      </div>
+      <textarea id="followup-modal-text" rows="7"></textarea>
+      <div class="modal-actions">
+        <button id="followup-modal-cancel">Abbrechen</button>
+        <button id="followup-modal-send" class="btn-primary">Senden (Demo)</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
