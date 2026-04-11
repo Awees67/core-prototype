@@ -3248,3 +3248,377 @@ tbody td,
 .dbv2-empty-text{font-size:12px;color:var(--text-secondary);font-weight:800;}
 @media(max-width:860px){.dbv2-kpi-row{grid-template-columns:1fr 1fr;}.dbv2-kpi:nth-child(5){grid-column:1/-1;}.dbv2-p-wide,.dbv2-p-narrow,.dbv2-p-half{min-width:100%;flex:1 1 100%;}.dbv2-row2{flex-direction:column;}.dbv2-row3{flex-direction:column;}}
 .dbv2-row3{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+
+/* =========================
+   DEAL VIEW — Vollbild Modal v1
+========================= */
+.modal-backdrop { padding: 0 !important; }
+
+.modal {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+  background: #0b1220 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  resize: none !important;
+  min-width: unset !important;
+  min-height: unset !important;
+  overflow: hidden !important;
+  color: #eef3fb !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.deal-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+  background: #0b1220;
+}
+.deal-topbar-nav { display: flex; gap: 6px; }
+.deal-topbar-spacer { flex: 1; }
+
+.deal-btn-nav {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #8a97ae;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+.deal-btn-nav:hover { background: rgba(255,255,255,0.1); color: #eef3fb; }
+
+.deal-btn-sec {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #eef3fb;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+.deal-btn-sec:hover { background: rgba(255,255,255,0.12); }
+.deal-btn-sec:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.deal-btn-crm {
+  background: #0f6e56;
+  border: none;
+  color: #b8ffd2;
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.deal-btn-crm:hover { background: #0a5a45; }
+.deal-btn-crm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.deal-btn-primary {
+  background: #1976d2;
+  border: none;
+  color: #fff;
+  padding: 7px 16px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.deal-btn-primary:hover { background: #1565c0; }
+.deal-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.deal-main {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.deal-left {
+  overflow-y: auto;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+
+.deal-right {
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  background: #0d1829;
+}
+
+.deal-hero { display: flex; gap: 16px; align-items: flex-start; }
+.deal-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1d3a5c, #0f2840);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 600;
+  color: #4b96f5;
+  flex-shrink: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  user-select: none;
+}
+.deal-hero-info { flex: 1; }
+.deal-hero-name {
+  font-size: 24px;
+  font-weight: 600;
+  color: #eef3fb;
+  letter-spacing: -0.4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.deal-stage-badge {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(75,150,245,0.15);
+  color: #4b96f5;
+  border: 1px solid rgba(75,150,245,0.3);
+  padding: 3px 9px;
+  border-radius: 4px;
+}
+.deal-plaus-badge {
+  font-size: 10px;
+  font-weight: 500;
+  background: rgba(0,223,193,0.12);
+  color: #00dfc1;
+  border: 1px solid rgba(0,223,193,0.25);
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deal-plaus-badge.fail { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.25); }
+.deal-plaus-badge.warn { background: rgba(245,158,11,0.12); color: #f59e0b; border-color: rgba(245,158,11,0.25); }
+.deal-hero-desc {
+  font-size: 13px;
+  color: #8a97ae;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  max-width: 560px;
+}
+.deal-hero-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.deal-meta-pill {
+  font-size: 11px;
+  color: #8a97ae;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 3px 9px;
+  border-radius: 4px;
+}
+
+.deal-section { display: flex; flex-direction: column; gap: 7px; }
+.deal-sec-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.deal-kpi-row { display: grid; gap: 6px; }
+.deal-kpi-row.c2 { grid-template-columns: repeat(2,1fr); }
+.deal-kpi-row.c3 { grid-template-columns: repeat(3,1fr); }
+.deal-kpi-row.c4 { grid-template-columns: repeat(4,1fr); }
+.deal-kpi-row.c5 { grid-template-columns: repeat(5,1fr); }
+
+.deal-kpi {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 11px 13px;
+}
+.deal-kpi.pos { border-color: rgba(0,223,193,0.2); background: rgba(0,223,193,0.04); }
+.deal-kpi.neg { border-color: rgba(248,113,113,0.2); background: rgba(248,113,113,0.04); }
+.deal-kpi.warn { border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.04); }
+.deal-kpi.score-good { border-color: rgba(0,223,193,0.25); background: rgba(0,223,193,0.06); }
+.deal-kpi.score-info { border-color: rgba(75,150,245,0.25); background: rgba(75,150,245,0.07); }
+
+.deal-kpi-lbl {
+  font-size: 10px;
+  color: #4e5a6e;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 500;
+}
+.deal-kpi-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 17px;
+  font-weight: 500;
+  color: #eef3fb;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.deal-kpi-val.green { color: #00dfc1; }
+.deal-kpi-val.red   { color: #f87171; }
+.deal-kpi-val.amber { color: #f59e0b; }
+.deal-kpi-val.blue  { color: #4b96f5; }
+.deal-kpi-val.sm    { font-size: 14px; }
+.deal-kpi-val.lg    { font-size: 21px; }
+.deal-kpi-sub { font-size: 10px; color: #4e5a6e; margin-top: 3px; }
+
+.deal-own-row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr;
+  gap: 6px;
+}
+.deal-own-ticket {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 11px 13px;
+  min-width: 100px;
+}
+.deal-own-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 0 8px 8px 0;
+  border-left: 2px solid rgba(75,150,245,0.35);
+  padding: 11px 13px;
+}
+.deal-own-item.dim { border-left-color: rgba(255,255,255,0.12); }
+.deal-own-sum { font-size: 10px; color: #4e5a6e; text-align: right; margin-top: 4px; }
+
+.deal-notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.deal-notes-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #4e5a6e;
+}
+.deal-notes-edit {
+  background: none;
+  border: none;
+  color: #4e5a6e;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+.deal-notes-edit:hover { color: #8a97ae; background: rgba(255,255,255,0.06); }
+
+.deal-note-entry {
+  border-left: 2px solid rgba(255,255,255,0.07);
+  padding: 0 0 14px 12px;
+}
+.deal-note-sep { height: 1px; background: rgba(255,255,255,0.05); margin: 12px 0; }
+.deal-note-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.deal-note-ts {
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #4e5a6e;
+  letter-spacing: 0.04em;
+}
+.deal-note-author {
+  font-size: 10px;
+  font-weight: 500;
+  color: #4e5a6e;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.deal-note-text {
+  font-size: 12px;
+  color: #8a97ae;
+  line-height: 1.65;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  padding: 9px 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  position: relative;
+}
+.deal-note-delete {
+  float: right;
+  background: none;
+  border: none;
+  color: #4e5a6e;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 8px;
+  padding: 0 3px;
+}
+.deal-note-delete:hover { color: #f87171; }
+
+.deal-note-add {
+  margin-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 14px;
+  flex-shrink: 0;
+}
+.deal-note-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 7px;
+  padding: 9px 11px;
+  color: #eef3fb;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  resize: none;
+  min-height: 72px;
+  outline: none;
+  box-sizing: border-box;
+}
+.deal-note-input::placeholder { color: #4e5a6e; }
+.deal-note-input:focus { border-color: rgba(75,150,245,0.4); }
+.deal-note-save {
+  margin-top: 7px;
+  width: 100%;
+  background: #1976d2;
+  border: none;
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  cursor: pointer;
+}
+.deal-note-save:hover { background: #1565c0; }
+.deal-note-hint { margin-top: 6px; font-size: 10px; color: #4e5a6e; }
+
+.deal-notes-empty { font-size: 12px; color: #4e5a6e; padding: 8px 0; }
+
+@media (max-width: 900px) {
+  .deal-main { grid-template-columns: 1fr; }
+  .deal-right { border-top: 1px solid rgba(255,255,255,0.07); max-height: 340px; }
+  .deal-kpi-row.c5 { grid-template-columns: repeat(3,1fr); }
+  .deal-own-row { grid-template-columns: 1fr 1fr; }
+}
