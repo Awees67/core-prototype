@@ -110,7 +110,6 @@ function renderInbox() {
             <div class="ot-stat-chip"><span class="ot-sdot" style="background:#1D9E75"></span><span class="ot-sn">${replied.length}</span><span>geantwortet</span></div>
             <div class="ot-stat-chip"><span class="ot-sdot" style="background:#1D9E75"></span><span class="ot-sn">${calls.length}</span><span>Calls geplant</span></div>
           </div>
-          <button class="btn" id="otSendNewBtn">+ Anfrage senden</button>
         </div>
       </div>
 
@@ -148,9 +147,6 @@ function renderInbox() {
   view.querySelectorAll('.ot-tab').forEach(tab => {
     tab.onclick = () => { _otTab = tab.getAttribute('data-tab'); _otSelected = null; _otChecked.clear(); renderInbox(); };
   });
-
-  const sendBtn = document.getElementById('otSendNewBtn');
-  if (sendBtn) sendBtn.onclick = () => _otOpenSendModal(null);
 
   if (_otTab !== 'geplante_calls') {
     _otRenderList(listItems);
@@ -296,12 +292,14 @@ function _otRenderDetail(item) {
     <div class="ot-detail-body">
       ${rec ? `<div class="ot-fw-alert"><div class="ot-fw-alert-title">Follow-up empfohlen — ${daysSince} Tage ohne Antwort</div><div class="ot-fw-alert-text">Der Großteil der Conversions entsteht über Follow-ups. Sende jetzt einen Reminder oder eine direkte Anfrage für ein Gespräch.</div></div>` : ''}
       <div class="ot-thread-label">Verlauf</div>
-      ${msgs.map(m => {
+      ${msgs.map((m, idx) => {
       const fullText = m.text || '';
       const PREVIEW_LEN = 300;
       const isLong = fullText.length > PREVIEW_LEN;
       const bubbleId = 'bubble_' + m.id;
+      const isFollowUp = m.direction === 'outbound' && idx > 0;
       return `
+        ${isFollowUp ? '<div class="ot-followup-marker">Follow-up</div>' : ''}
         <div class="ot-bubble ${m.direction === 'outbound' ? 'outbound' : 'inbound'}">
           <div class="ot-bubble-sender">${escapeHTML(m.sender || '')} · ${new Date(m.ts).toLocaleDateString('de-DE')} ${new Date(m.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</div>
           <div class="ot-bubble-text" id="${bubbleId}" data-expanded="false" data-full="${encodeURIComponent(fullText)}">${isLong ? escapeHTML(fullText.slice(0, PREVIEW_LEN)).replace(/\n/g, '<br>') + '…' : escapeHTML(fullText).replace(/\n/g, '<br>')}</div>
@@ -573,6 +571,7 @@ function _otOpenFollowupModal(item) {
       arr[idx].last_message_preview = text.slice(0, 70);
       arr[idx].last_message_from = 'outbound';
       arr[idx].last_activity_at = Date.now();
+      arr[idx].followup_sent = true;
       setOutreach(arr);
     }
     overlay.setAttribute('aria-hidden', 'true');
