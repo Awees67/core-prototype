@@ -127,8 +127,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
       toast("Suche", "Fokus gesetzt");
     }
     if(document.getElementById("modalBackdrop").style.display === "flex"){
-      if(e.key === "ArrowRight") document.getElementById("nextBtn").click();
-      if(e.key === "ArrowLeft") document.getElementById("prevBtn").click();
+      if(e.key === "ArrowRight") document.getElementById("dvNextBtn")?.click();
+      if(e.key === "ArrowLeft") document.getElementById("dvPrevBtn")?.click();
     }
   });
 });
