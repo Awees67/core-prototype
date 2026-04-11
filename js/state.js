@@ -471,62 +471,87 @@ function computeFollowupRecommended(item){
   const days = (Date.now() - item.sent_at) / (1000 * 60 * 60 * 24);
   return days >= 3;
 }
-function seedDemoOutreach(startups){
-  if(getOutreach().length > 0) return;
+function seedDemoOutreach(startups) {
+  if (getOutreach().length > 0) return;
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
+
   const contacts = [
-    { name:'Tim Berger',    email:'tim.berger@startup.io' },
-    { name:'Sarah Moll',    email:'s.moll@startup.io'     },
-    { name:'Klaus Winter',  email:'k.winter@startup.io'   },
-    { name:'Anna Kern',     email:'a.kern@startup.io'     },
-    { name:'Leon Huber',    email:'l.huber@startup.io'    }
+    { name: 'Tim Berger',   email: 'tim.berger@stackly.io',    sector: 'B2B SaaS',  stage: 'Seed' },
+    { name: 'Sarah Moll',   email: 's.moll@pipeforge.io',     sector: 'DevTools',  stage: 'Pre-Seed' },
+    { name: 'Anna Kern',    email: 'a.kern@mediloop.io',      sector: 'HealthTech', stage: 'Seed' },
+    { name: 'Leon Huber',   email: 'l.huber@cortexia.io',     sector: 'AI',        stage: 'Pre-Seed' }
   ];
-  const statuses = ['keine_antwort','keine_antwort','keine_antwort','geantwortet','anfrage_gesendet'];
-  const sentDaysAgo = [5, 3, 7, 2, 0];
-  const previews = [
-    'Hallo Tim, wir haben euer Startup in unserem Dealflow entdeckt...',
-    'Hallo Sarah, wir verfolgen euch schon eine Weile mit Interesse...',
-    'Guten Tag Klaus, euer Ansatz im FinTech-Bereich klingt spannend...',
-    'Hallo Anna, vielen Dank für eure schnelle Rückmeldung!',
-    'Hallo Leon, wir sind auf euer Produkt aufmerksam geworden...'
+
+  const configs = [
+    {
+      startup: startups[0] || startups[0],
+      label: startups[0] ? (startups[0].company_name || startups[0].anon_id) : 'Stackly',
+      contact: contacts[0],
+      status: 'keine_antwort',
+      daysAgo: 5,
+      tpl: 'interesse'
+    },
+    {
+      startup: startups[1] || startups[1],
+      label: startups[1] ? (startups[1].company_name || startups[1].anon_id) : 'Pipeforge',
+      contact: contacts[1],
+      status: 'keine_antwort',
+      daysAgo: 3,
+      tpl: 'screening'
+    },
+    {
+      startup: startups[2] || startups[2],
+      label: startups[2] ? (startups[2].company_name || startups[2].anon_id) : 'Mediloop',
+      contact: contacts[2],
+      status: 'geantwortet',
+      daysAgo: 2,
+      tpl: 'interesse'
+    },
+    {
+      startup: startups[3] || startups[3],
+      label: startups[3] ? (startups[3].company_name || startups[3].anon_id) : 'Cortexia',
+      contact: contacts[3],
+      status: 'anfrage_gesendet',
+      daysAgo: 0,
+      tpl: 'interesse'
+    }
   ];
-  const replyPreviews = [
-    null, null, null,
-    'Hallo, danke für Ihre Nachricht! Wir würden uns sehr über ein Gespräch freuen...',
-    null
-  ];
-  const items = statuses.map((status, i)=>{
-    const s = startups[i] || startups[0];
-    const c = contacts[i];
-    const daysAgo = sentDaysAgo[i];
-    const sentAt = now - daysAgo * day;
-    const msgs = [{
+
+  const outreachItems = configs.map(cfg => {
+    const sentAt = now - cfg.daysAgo * day;
+    const outMsg = {
       id: uid(),
       direction: 'outbound',
       sender: 'Du · aweesfond',
-      text: previews[i],
+      text: cfg.tpl === 'screening'
+        ? `Hallo ${cfg.contact.name.split(' ')[0]},\n\nvielen Dank für eure Einreichung bei unserem Fonds. Nach einer ersten Sichtung eures Profils würden wir euch gern besser kennenlernen.\n\nWäre ein 20-minütiges Screening-Gespräch in den nächsten Tagen möglich? Dabei würde ich gern mehr über euren aktuellen Stand, eure Traktion und euren Kapitalbedarf erfahren.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`
+        : `Hallo ${cfg.contact.name.split(' ')[0]},\n\nvielen Dank für eure Bewerbung bei Awees Ventures. Wir haben euer Profil gesichtet und sind sehr interessiert an einem kurzen Kennenlernen.\n\nHätten Sie in den nächsten Tagen kurz Zeit für einen 15-minütigen Intro-Call? Ich würde mich freuen, mehr über euren aktuellen Stand zu erfahren.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`,
       ts: sentAt
-    }];
-    if(status === 'geantwortet' && replyPreviews[i]){
+    };
+
+    const msgs = [outMsg];
+
+    if (cfg.status === 'geantwortet') {
       msgs.push({
         id: uid(),
         direction: 'inbound',
-        sender: c.name,
-        text: replyPreviews[i],
+        sender: cfg.contact.name,
+        text: `Hallo Andreas,\n\nvielen Dank für Ihre Nachricht! Wir freuen uns sehr über Ihr Interesse. Ein Kennenlerngespräch klingt toll — ich schicke Ihnen gleich einen Calendly-Link.\n\nBeste Grüße\n${cfg.contact.name}`,
         ts: sentAt + 6 * 60 * 60 * 1000
       });
     }
-    const lastMsg = msgs[msgs.length-1];
+
+    const lastMsg = msgs[msgs.length - 1];
     return {
       id: uid(),
-      anon_id: s.anon_id,
-      display_label: s.company_name || s.anon_id,
-      contact_name: c.name,
-      contact_email: c.email,
-      sector: s.sector || '—',
-      stage: s.stage || '—',
-      status,
+      anon_id: cfg.startup ? cfg.startup.anon_id : null,
+      display_label: cfg.label,
+      contact_name: cfg.contact.name,
+      contact_email: cfg.contact.email,
+      sector: cfg.contact.sector,
+      stage: cfg.contact.stage,
+      status: cfg.status,
       sent_at: sentAt,
       last_activity_at: lastMsg.ts,
       last_message_preview: lastMsg.text.slice(0, 70),
@@ -536,5 +561,6 @@ function seedDemoOutreach(startups){
       messages: msgs
     };
   });
-  setOutreach(items);
+
+  setOutreach(outreachItems);
 }
