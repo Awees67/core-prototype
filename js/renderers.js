@@ -232,45 +232,6 @@ function attachWorkspaceHandlers(){
     }
   });
 
-  // modal buttons
-  const addCompareBtn = document.getElementById("addCompareBtn");
-  if(addCompareBtn){
-    addCompareBtn.addEventListener("click", ()=>{
-      const s = _modalStartup || startups[modalIndex];
-      if(!s) return;
-      addToCompare(s.anon_id);
-    });
-  }
-
-  const addToPipelineBtn = document.getElementById("addToPipelineBtn");
-  if(addToPipelineBtn){
-    addToPipelineBtn.addEventListener("click", ()=>{
-      if(!_modalStartup) return;
-      const anon_id = _modalStartup.anon_id;
-      const existing = getPipeline().find(x=>x.anon_id===anon_id);
-      if(existing) return;
-      pipelineAdd(anon_id, "In Review");
-      toast("Pipeline", "Deal zur Pipeline hinzugefügt");
-      syncModalPipelineButtons(_modalStartup);
-      if(currentView === "pipeline") renderPipeline();
-    });
-  }
-
-  const pushToCrmBtn = document.getElementById("pushToCrmBtn");
-  if(pushToCrmBtn){
-    pushToCrmBtn.addEventListener("click", ()=>{
-      if(!_modalStartup) return;
-      const anon_id = _modalStartup.anon_id;
-      const item = getPipeline().find(x=>x.anon_id===anon_id);
-      if(item && item.status === "Declined"){
-        if(!confirm("Dieser Deal wurde declined. Trotzdem ins CRM pushen?")) return;
-      }
-      pipelinePushToCRM(anon_id);
-      syncModalPipelineButtons(_modalStartup);
-      if(currentView === "pipeline") renderPipeline();
-    });
-  }
-
   // tray buttons
   on("compareClearBtn","click", clearCompare);
   on("compareOpenBtn","click", ()=>{

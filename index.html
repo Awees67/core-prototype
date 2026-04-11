@@ -97,47 +97,7 @@
   <!-- DETAILS MODAL -->
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal" role="document" aria-label="Startup Details">
-      <div class="modal-header">
-        <div class="modal-title">
-          <h2 id="modalH2">Startup</h2>
-          <p id="modalSub">—</p>
-        </div>
-        <button class="close" id="modalClose" aria-label="Schließen">Schließen</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="panel">
-          <h3>KPI-Übersicht</h3>
-          <div class="kpi-grid" id="kpiGrid"></div>
-          <div class="helper" id="kpiHint" style="margin-top:10px;">—</div>
-        </div>
-
-        <div class="panel" id="notesPanel">
-          <h3>Notizen <span class="notes-count" id="notesCount"></span></h3>
-          <div id="notesList"></div>
-          <div class="notes-input-row">
-            <textarea id="noteInput" placeholder="Notiz hinzufügen..." maxlength="500" rows="2"></textarea>
-            <button class="btn" id="addNoteBtn" type="button">Speichern</button>
-          </div>
-          <div class="helper" style="margin-top:6px;">Notizen sind lokal gespeichert und für das gesamte Team sichtbar.</div>
-        </div>
-
-      </div>
-
-      <div class="modal-footer">
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn secondary" id="prevBtn">Zurück</button>
-          <button class="btn secondary" id="nextBtn">Weiter</button>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-          <button class="btn secondary" id="openSendAnfrageBtn">Anfrage senden</button>
-          <button class="btn secondary" id="addToPipelineBtn">Add to Pipeline</button>
-          <button class="btn" id="pushToCrmBtn" style="font-weight:950;">Push to CRM</button>
-          <button class="btn secondary" id="addCompareBtn">Add to Compare</button>
-        </div>
-      </div>
     </div>
-  </div>
 
   <!-- FILTER MODAL -->
   <div class="filter-backdrop" id="filterBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
