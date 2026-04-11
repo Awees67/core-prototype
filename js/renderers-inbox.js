@@ -498,6 +498,13 @@ function _otOpenSendModal(prefilledStartup) {
     const now = Date.now();
     const fake = currentStartup || { anon_id: null, display_label: 'Unbekannt', contact_name: '—', contact_email: '—', sector: '—', stage: '—' };
 
+    // Prevent duplicate: check if outreach already exists for this startup
+    if (fake.anon_id && getOutreach().some(x => x.anon_id === fake.anon_id)) {
+      toast('Bereits angefragt', fake.display_label + ' hat bereits eine Anfrage.');
+      _close();
+      return;
+    }
+
     const newEntry = {
       id: uid(),
       anon_id: fake.anon_id,
