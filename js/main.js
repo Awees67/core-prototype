@@ -119,6 +119,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
       closePrivacy();
       closeSignalPopover();
       if(typeof closeDeclineDialog === "function") closeDeclineDialog();
+      const _otBd = document.getElementById('otSendBackdrop'); if(_otBd && _otBd.style.display==='flex'){ _otBd.style.display='none'; _otBd.setAttribute('aria-hidden','true'); document.body.classList.remove('no-scroll'); }
     }
     if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="k"){
       e.preventDefault();

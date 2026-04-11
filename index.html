@@ -532,6 +532,56 @@
   <script src="js/renderers.js"></script>
   <script src="js/main.js"></script>
 
+  <div class="ot-send-backdrop" id="otSendBackdrop" aria-hidden="true">
+  <div class="ot-send-modal" role="dialog" aria-modal="true" aria-label="Anfrage senden">
+    <div class="ot-send-head">
+      <div>
+        <div class="ot-send-title">Anfrage senden</div>
+        <div class="ot-send-sub">E-Mail wird direkt aus deinem verbundenen Postfach versendet</div>
+      </div>
+      <button class="close" id="otSendCloseBtn" aria-label="Schließen">Schließen</button>
+    </div>
+    <div class="ot-send-body">
+      <div class="ot-startup-chip">
+        <div class="ot-avatar" id="otSendAvatar">?</div>
+        <div>
+          <div class="ot-chip-name" id="otSendChipName">Startup</div>
+          <div class="ot-chip-meta" id="otSendChipMeta">—</div>
+        </div>
+      </div>
+      <div class="ot-field-block" style="margin-top:10px;">
+        <div class="ot-field-label">Von</div>
+        <div class="ot-from-chip"><span class="ot-from-dot"></span><span>a.wees@aweesfond.vc</span><span style="font-size:0.7rem;color:var(--text-secondary);margin-left:8px;">· Gmail verbunden</span></div>
+      </div>
+      <div class="ot-field-block" style="margin-top:10px;">
+        <div class="ot-field-label">An</div>
+        <div class="ot-from-chip" style="background:var(--surface-raised);"><span id="otSendToAddr" style="color:var(--accent);">—</span></div>
+      </div>
+      <div class="ot-field-block" style="margin-top:10px;">
+        <div class="ot-field-label">Betreff</div>
+        <input class="ot-subject-input" type="text" id="otSendSubject" placeholder="Betreff eingeben">
+      </div>
+      <div class="ot-tpl-bar">
+        <button class="ot-tpl-btn active" data-tpl="interesse">Interesse bestätigen</button>
+        <button class="ot-tpl-btn" data-tpl="screening">Screening-Anfrage</button>
+        <button class="ot-tpl-btn" data-tpl="blank">Blank</button>
+      </div>
+      <div class="ot-field-block" style="margin-top:8px;padding-bottom:0;">
+        <div class="ot-field-label">Nachricht</div>
+      </div>
+      <textarea class="ot-body-textarea" id="otSendBody" rows="8"></textarea>
+      <div class="ot-char-count"><span id="otSendCharCount">0</span> Zeichen</div>
+    </div>
+    <div class="ot-send-footer">
+      <div class="ot-footer-hint">conversation_id wird automatisch gesetzt</div>
+      <div class="ot-send-actions">
+        <button class="btn secondary" id="otSendCancelBtn">Abbrechen</button>
+        <button class="ot-btn-send" id="otSendConfirmBtn">E-Mail senden</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <div id="input-modal-overlay" class="modal-overlay" aria-hidden="true">
     <div class="modal input-modal" role="dialog" aria-modal="true">
       <h3 id="input-modal-title"></h3>
