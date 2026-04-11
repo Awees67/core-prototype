@@ -122,31 +122,6 @@
           <div class="helper" style="margin-top:6px;">Notizen sind lokal gespeichert und für das gesamte Team sichtbar.</div>
         </div>
 
-        <div class="panel">
-          <h3>Interesse anfragen</h3>
-          <div class="form-row">
-            <div>
-              <label for="leadName">Name</label>
-              <input type="text" id="leadName" placeholder="Max Mustermann">
-            </div>
-            <div>
-              <label for="leadEmail">E-Mail</label>
-              <input type="email" id="leadEmail" placeholder="max@firma.com">
-            </div>
-          </div>
-
-          <label for="leadFirm">Firma / Fonds</label>
-          <input type="text" id="leadFirm" placeholder="Firma / Fonds (optional)">
-
-          <label for="leadMsg">Nachricht</label>
-          <textarea id="leadMsg" placeholder="Kurz: Warum relevant? Was brauchst du als nächsten Schritt?"></textarea>
-
-          <div class="helper">Demo: Es wird nur lokal gespeichert (keine Übertragung).</div>
-
-          <div class="card-actions" style="margin-top:10px;">
-            <button class="btn" id="sendLeadBtn">Anfrage speichern</button>
-          </div>
-        </div>
       </div>
 
       <div class="modal-footer">
@@ -155,6 +130,7 @@
           <button class="btn secondary" id="nextBtn">Weiter</button>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn secondary" id="openSendAnfrageBtn">Anfrage senden</button>
           <button class="btn secondary" id="addToPipelineBtn">Add to Pipeline</button>
           <button class="btn" id="pushToCrmBtn" style="font-weight:950;">Push to CRM</button>
           <button class="btn secondary" id="addCompareBtn">Add to Compare</button>
