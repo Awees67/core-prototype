@@ -476,11 +476,20 @@ function seedDemoOutreach(startups) {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
 
+  // Use contact data from startup objects if available (generated in data.js), fallback to hardcoded
+  function _contactFor(startup, fallbackName, fallbackEmail, fallbackSector, fallbackStage) {
+    return {
+      name: (startup && startup.contact_name) || fallbackName,
+      email: (startup && startup.contact_email) || fallbackEmail,
+      sector: (startup && startup.sector) || fallbackSector,
+      stage: (startup && startup.stage) || fallbackStage
+    };
+  }
   const contacts = [
-    { name: 'Tim Berger',   email: 'tim.berger@stackly.io',    sector: 'B2B SaaS',  stage: 'Seed' },
-    { name: 'Sarah Moll',   email: 's.moll@pipeforge.io',     sector: 'DevTools',  stage: 'Pre-Seed' },
-    { name: 'Anna Kern',    email: 'a.kern@mediloop.io',      sector: 'HealthTech', stage: 'Seed' },
-    { name: 'Leon Huber',   email: 'l.huber@cortexia.io',     sector: 'AI',        stage: 'Pre-Seed' }
+    _contactFor(startups[0], 'Tim Berger',  't.berger@stackly.io',  'B2B SaaS',   'Seed'),
+    _contactFor(startups[1], 'Sarah Moll',  's.moll@pipeforge.io',  'DevTools',   'Pre-Seed'),
+    _contactFor(startups[2], 'Anna Kern',   'a.kern@mediloop.io',   'HealthTech', 'Seed'),
+    _contactFor(startups[3], 'Leon Huber',  'l.huber@cortexia.io',  'AI',         'Pre-Seed')
   ];
 
   const configs = [
@@ -523,10 +532,10 @@ function seedDemoOutreach(startups) {
     const outMsg = {
       id: uid(),
       direction: 'outbound',
-      sender: 'Du · aweesfond',
+      sender: 'Paretix Ventures',
       text: cfg.tpl === 'screening'
-        ? `Hallo ${cfg.contact.name.split(' ')[0]},\n\nvielen Dank für eure Einreichung bei unserem Fonds. Nach einer ersten Sichtung eures Profils würden wir euch gern besser kennenlernen.\n\nWäre ein 20-minütiges Screening-Gespräch in den nächsten Tagen möglich? Dabei würde ich gern mehr über euren aktuellen Stand, eure Traktion und euren Kapitalbedarf erfahren.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`
-        : `Hallo ${cfg.contact.name.split(' ')[0]},\n\nvielen Dank für eure Bewerbung bei Awees Ventures. Wir haben euer Profil gesichtet und sind sehr interessiert an einem kurzen Kennenlernen.\n\nHätten Sie in den nächsten Tagen kurz Zeit für einen 15-minütigen Intro-Call? Ich würde mich freuen, mehr über euren aktuellen Stand zu erfahren.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`,
+        ? `Hallo ${cfg.contact.name.split(' ')[0]},\n\nvielen Dank für eure Einreichung bei unserem Fonds. Nach einer ersten Sichtung eures Profils würden wir euch gern besser kennenlernen.\n\nWäre ein 20-minütiges Screening-Gespräch in den nächsten Tagen möglich? Dabei würde ich gern mehr über euren aktuellen Stand, eure Traktion und euren Kapitalbedarf erfahren.\n\nMit freundlichen Grüßen\nParetix Ventures`
+        : `Hallo ${cfg.contact.name.split(' ')[0]},\n\nvielen Dank für eure Bewerbung bei Paretix Ventures. Wir haben euer Profil gesichtet und sind sehr interessiert an einem kurzen Kennenlernen.\n\nHätten Sie in den nächsten Tagen kurz Zeit für einen 15-minütigen Intro-Call? Ich würde mich freuen, mehr über euren aktuellen Stand zu erfahren.\n\nMit freundlichen Grüßen\nParetix Ventures`,
       ts: sentAt
     };
 
