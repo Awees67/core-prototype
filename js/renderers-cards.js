@@ -164,6 +164,7 @@ function _renderCardsContent(grid){
   const allNotes = getNotes();
   const noteCountMap = {};
   allNotes.forEach(n => { noteCountMap[n.anon_id] = (noteCountMap[n.anon_id] || 0) + 1; });
+  const outreachIds = new Set(getOutreach().map(x => x.anon_id).filter(Boolean));
   const frag = document.createDocumentFragment();
 
   // Load active ruleset name once before loop
@@ -188,6 +189,7 @@ function _renderCardsContent(grid){
     const pipelineBtnText = pipelineStatus === "Synced" ? "✓ Synced" :
                              pipelineStatus ? "✓ In Pipeline" : "Add to Pipeline";
     const pipelineBtnDisabled = pipelineStatus ? "disabled" : "";
+    const hasOutreach = outreachIds.has(s.anon_id);
 
     const marketLabel = s.market_served.includes("DACH") ? "DACH (DE•AT•CH)" : (s.market_served[0] || "—");
 
@@ -203,6 +205,7 @@ function _renderCardsContent(grid){
       <div class="card-name">
         ${escapeHTML(startupLabel(s))}
         <span class="cid">${escapeHTML(s.anon_id)}</span>
+        ${hasOutreach ? '<span class="card-angefragt-pill">Angefragt</span>' : ''}
       </div>
       <div class="tags">
         <span class="tag">${escapeHTML(s.origin_country)}</span>

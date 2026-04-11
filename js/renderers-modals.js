@@ -122,10 +122,18 @@ function openModalWithStartup(s, list){
   if (sendAnfrageBtn) {
     const newSendBtn = sendAnfrageBtn.cloneNode(true);
     sendAnfrageBtn.parentNode.replaceChild(newSendBtn, sendAnfrageBtn);
-    newSendBtn.addEventListener('click', () => {
-      closeModal();
-      if (typeof _otOpenSendModal === 'function') _otOpenSendModal(s);
-    });
+    const alreadyContacted = (typeof getOutreach === 'function') && getOutreach().some(x => x.anon_id === s.anon_id);
+    if (alreadyContacted) {
+      newSendBtn.textContent = '✓ Angefragt';
+      newSendBtn.disabled = true;
+      newSendBtn.style.opacity = '0.5';
+      newSendBtn.style.cursor = 'not-allowed';
+    } else {
+      newSendBtn.addEventListener('click', () => {
+        closeModal();
+        if (typeof _otOpenSendModal === 'function') _otOpenSendModal(s);
+      });
+    }
   }
   syncModalPipelineButtons(s);
   renderModalNotes(s.anon_id);

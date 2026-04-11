@@ -2040,6 +2040,19 @@ tbody td,
   flex-shrink: 0;
 }
 
+.card-angefragt-pill {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--goodText);
+  background: var(--goodBg);
+  border: 1px solid var(--goodBorder);
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 .startup-card .tags {
   display: flex;
   flex-wrap: wrap;
