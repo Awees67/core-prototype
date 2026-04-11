@@ -20,6 +20,13 @@ const OT_TEMPLATES = {
   }
 };
 
+function _generateStartupEmail(s) {
+  const raw = (s.company_name || s.anon_id || 'startup')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+  return 'team@' + raw + '.io';
+}
+
 function _otVorname(item) {
   return (item.contact_name || '').split(' ')[0] || item.contact_name || '';
 }
@@ -374,7 +381,26 @@ function _otOpenSendModal(prefilledStartup) {
   if (!backdrop) { toast('Bald verfügbar', 'E-Mail-Integration folgt'); return; }
 
   let currentTpl = 'interesse';
-  let currentStartup = prefilledStartup || null;
+
+  // Normalize: accept both outreach-style objects and raw startup objects from window.startups
+  let currentStartup = null;
+  if (prefilledStartup) {
+    const isRawStartup = !prefilledStartup.display_label && (prefilledStartup.company_name || prefilledStartup.anon_id);
+    if (isRawStartup) {
+      // Check if an outreach entry already exists for this startup (prefer real email)
+      const existingOutreach = getOutreach().find(x => x.anon_id === prefilledStartup.anon_id);
+      currentStartup = {
+        display_label: prefilledStartup.company_name || prefilledStartup.anon_id,
+        contact_name: existingOutreach ? existingOutreach.contact_name : 'Gründerteam',
+        contact_email: existingOutreach ? existingOutreach.contact_email : _generateStartupEmail(prefilledStartup),
+        sector: prefilledStartup.sector || '—',
+        stage: prefilledStartup.stage || '—',
+        anon_id: prefilledStartup.anon_id || null
+      };
+    } else {
+      currentStartup = prefilledStartup;
+    }
+  }
 
   const avatarEl  = document.getElementById('otSendAvatar');
   const nameEl    = document.getElementById('otSendChipName');

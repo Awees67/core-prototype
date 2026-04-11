@@ -116,6 +116,17 @@ function openModalWithStartup(s, list){
   }
 
   bindLeadFormForStartup(s);
+
+  // Bind 'Anfrage senden' button — opens outreach send modal pre-filled with this startup
+  const sendAnfrageBtn = document.getElementById('openSendAnfrageBtn');
+  if (sendAnfrageBtn) {
+    const newSendBtn = sendAnfrageBtn.cloneNode(true);
+    sendAnfrageBtn.parentNode.replaceChild(newSendBtn, sendAnfrageBtn);
+    newSendBtn.addEventListener('click', () => {
+      closeModal();
+      if (typeof _otOpenSendModal === 'function') _otOpenSendModal(s);
+    });
+  }
   syncModalPipelineButtons(s);
   renderModalNotes(s.anon_id);
 
