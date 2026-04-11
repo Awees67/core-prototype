@@ -185,6 +185,17 @@ const STARTUP_DESCRIPTIONS = {
   ]
 };
 
+const CONTACT_FIRST_NAMES = ['Klaus','Stefan','Anna','Maria','Thomas','Sarah','Michael','Julia','Markus','Laura','David','Nina','Felix','Lena','Christian','Sophie','Andreas','Hannah','Tobias','Lisa','Sebastian','Emma','Patrick','Mia','Florian','Leonie'];
+const CONTACT_LAST_NAMES = ['Winter','Müller','Weber','Fischer','Schneider','Bauer','Koch','Richter','Hoffmann','Wagner','Becker','Schulz','Wolf','Schäfer','Meyer','Lehmann','Hartmann','Klein','Krause','Braun','Zimmermann','Neumann','Schwarz','Lange','Huber','Maier'];
+
+function generateContactPerson(rng, companyName) {
+  const first = randChoice(rng, CONTACT_FIRST_NAMES);
+  const last = randChoice(rng, CONTACT_LAST_NAMES);
+  const slug = (companyName || 'startup').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const email = first[0].toLowerCase() + '.' + last.toLowerCase().replace(/ü/g,'ue').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ß/g,'ss') + '@' + slug + '.io';
+  return { contact_name: first + ' ' + last, contact_email: email };
+}
+
 function idFromIndex(rng, i){
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const prefix = letters[i % letters.length];
@@ -303,7 +314,9 @@ function buildStartup(rng, i){
     esop_pct: esop,
     employees_pct: employees,
 
-    notes: `HQ: ${origin} • Markt: ${Array.from(marketSet).join(", ")} • ${sector}${sub_sector ? " › " + sub_sector : ""} • ${stage}`
+    notes: `HQ: ${origin} • Markt: ${Array.from(marketSet).join(", ")} • ${sector}${sub_sector ? " › " + sub_sector : ""} • ${stage}`,
+    contact_name: null,
+    contact_email: null
   };
 }
 
@@ -334,6 +347,9 @@ function generateDataset(seed){
     const used = nameUsed[s.sector] || 0;
     s.company_name = pool[used] || `Startup ${s.anon_id}`;
     nameUsed[s.sector] = used + 1;
+    const contact = generateContactPerson(rng, s.company_name);
+    s.contact_name = contact.contact_name;
+    s.contact_email = contact.contact_email;
     s.notes = `${s.company_name} • ${s.notes}`;
     out.push(s);
   }

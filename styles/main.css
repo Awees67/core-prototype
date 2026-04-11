@@ -3159,6 +3159,19 @@ tbody td,
 [data-theme='dark'] .ot-detail { background:var(--soft2); }
 [data-theme='dark'] .ot-bulk-bar { background:rgba(25,118,210,0.12); border-color:rgba(25,118,210,0.25); }
 
+.ot-bubble-toggle {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 4px 0 0;
+  font-family: inherit;
+  display: block;
+}
+.ot-bubble-toggle:hover { text-decoration: underline; }
+
 /* === DASHBOARD V2 === */
 .dbv2-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;}
 .dbv2-kpi{background:var(--surface-raised);border:1px solid var(--border);border-radius:10px;padding:16px 14px;}

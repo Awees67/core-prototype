@@ -7,12 +7,12 @@
 /* ── Templates (VC → Bewerber) ── */
 const OT_TEMPLATES = {
   interesse: {
-    subject: (s) => `Ihre Bewerbung bei Awees Ventures — ${s.display_label}`,
-    body: (s) => `Hallo ${_otVorname(s)},\n\nvielen Dank für Ihre Bewerbung bei Awees Ventures. Wir haben das Profil von ${s.display_label} gesichtet und sind sehr interessiert an einem persönlichen Kennenlernen.\n\nHätten Sie in den nächsten Tagen kurz Zeit für einen 15-minütigen Intro-Call? Ich würde mich freuen, mehr über euren aktuellen Stand, eure Traction und eure Pläne zu erfahren.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`
+    subject: (s) => `Ihre Bewerbung bei Paretix Ventures — ${s.display_label}`,
+    body: (s, bearbeiter) => `Hallo ${_otVorname(s)},\n\nvielen Dank für Ihre Bewerbung bei Paretix Ventures. Wir haben das Profil von ${s.display_label} gesichtet und sind sehr interessiert an einem persönlichen Kennenlernen.\n\nHätten Sie in den nächsten Tagen kurz Zeit für einen 15-minütigen Intro-Call? Ich würde mich freuen, mehr über euren aktuellen Stand, eure Traction und eure Pläne zu erfahren.\n\nMit freundlichen Grüßen\n${bearbeiter || 'Paretix Ventures'}`
   },
   screening: {
     subject: (s) => `Screening-Gespräch — ${s.display_label}`,
-    body: (s) => `Hallo ${_otVorname(s)},\n\nvielen Dank für eure Einreichung. Nach einer ersten Sichtung eures Profils würden wir euch gern besser kennenlernen und mehr über euren aktuellen Stand erfahren.\n\nWäre ein 20-minütiges Screening-Gespräch in den nächsten Tagen möglich? Dabei würde ich gern auf folgende Punkte eingehen: aktuelle Traction, Unit Economics und euren Kapitalbedarf.\n\nBitte schickt mir einfach einen passenden Termin.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`
+    body: (s, bearbeiter) => `Hallo ${_otVorname(s)},\n\nvielen Dank für eure Einreichung. Nach einer ersten Sichtung eures Profils würden wir euch gern besser kennenlernen und mehr über euren aktuellen Stand erfahren.\n\nWäre ein 20-minütiges Screening-Gespräch in den nächsten Tagen möglich? Dabei würde ich gern auf folgende Punkte eingehen: aktuelle Traction, Unit Economics und euren Kapitalbedarf.\n\nBitte schickt mir einfach einen passenden Termin.\n\nMit freundlichen Grüßen\n${bearbeiter || 'Paretix Ventures'}`
   },
   blank: {
     subject: () => '',
@@ -25,6 +25,12 @@ function _generateStartupEmail(s) {
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '');
   return 'team@' + raw + '.io';
+}
+
+function _otGetBearbeiterLabel() {
+  const el = document.getElementById('otSendBearbeiter');
+  const name = el && el.value.trim();
+  return name ? name + ' · Paretix Ventures' : 'Paretix Ventures';
 }
 
 function _otVorname(item) {
@@ -290,11 +296,18 @@ function _otRenderDetail(item) {
     <div class="ot-detail-body">
       ${rec ? `<div class="ot-fw-alert"><div class="ot-fw-alert-title">Follow-up empfohlen — ${daysSince} Tage ohne Antwort</div><div class="ot-fw-alert-text">Der Großteil der Conversions entsteht über Follow-ups. Sende jetzt einen Reminder oder eine direkte Anfrage für ein Gespräch.</div></div>` : ''}
       <div class="ot-thread-label">Verlauf</div>
-      ${msgs.map(m => `
+      ${msgs.map(m => {
+      const fullText = m.text || '';
+      const PREVIEW_LEN = 300;
+      const isLong = fullText.length > PREVIEW_LEN;
+      const bubbleId = 'bubble_' + m.id;
+      return `
         <div class="ot-bubble ${m.direction === 'outbound' ? 'outbound' : 'inbound'}">
           <div class="ot-bubble-sender">${escapeHTML(m.sender || '')} · ${new Date(m.ts).toLocaleDateString('de-DE')} ${new Date(m.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</div>
-          <div class="ot-bubble-text">${escapeHTML(m.text || '').replace(/\n/g, '<br>')}</div>
-        </div>`).join('')}
+          <div class="ot-bubble-text" id="${bubbleId}" data-expanded="false" data-full="${encodeURIComponent(fullText)}">${isLong ? escapeHTML(fullText.slice(0, PREVIEW_LEN)).replace(/\n/g, '<br>') + '…' : escapeHTML(fullText).replace(/\n/g, '<br>')}</div>
+          ${isLong ? `<button class="ot-bubble-toggle" data-bubble="${bubbleId}">Mehr anzeigen</button>` : ''}
+        </div>`;
+      }).join('')}
     </div>
     <div class="ot-detail-actions">
       ${item.status === 'geantwortet'
@@ -309,6 +322,27 @@ function _otRenderDetail(item) {
       </div>
     </div>
   `;
+
+  // Expand/collapse long message bubbles
+  detail.querySelectorAll('.ot-bubble-toggle').forEach(btn => {
+    btn.onclick = () => {
+      const bubbleId = btn.getAttribute('data-bubble');
+      const textEl = document.getElementById(bubbleId);
+      if (!textEl) return;
+      const expanded = textEl.getAttribute('data-expanded') === 'true';
+      const fullText = decodeURIComponent(textEl.getAttribute('data-full') || '');
+      const PREVIEW_LEN = 300;
+      if (expanded) {
+        textEl.innerHTML = escapeHTML(fullText.slice(0, PREVIEW_LEN)).replace(/\n/g, '<br>') + '…';
+        textEl.setAttribute('data-expanded', 'false');
+        btn.textContent = 'Mehr anzeigen';
+      } else {
+        textEl.innerHTML = escapeHTML(fullText).replace(/\n/g, '<br>');
+        textEl.setAttribute('data-expanded', 'true');
+        btn.textContent = 'Weniger anzeigen';
+      }
+    };
+  });
 
   const fuBtn = document.getElementById('odFuBtn');
   if (fuBtn) fuBtn.onclick = () => _otOpenFollowupModal(item);
@@ -391,8 +425,8 @@ function _otOpenSendModal(prefilledStartup) {
       const existingOutreach = getOutreach().find(x => x.anon_id === prefilledStartup.anon_id);
       currentStartup = {
         display_label: prefilledStartup.company_name || prefilledStartup.anon_id,
-        contact_name: existingOutreach ? existingOutreach.contact_name : 'Gründerteam',
-        contact_email: existingOutreach ? existingOutreach.contact_email : _generateStartupEmail(prefilledStartup),
+        contact_name: existingOutreach ? existingOutreach.contact_name : (prefilledStartup.contact_name || 'Gründerteam'),
+        contact_email: existingOutreach ? existingOutreach.contact_email : (prefilledStartup.contact_email || _generateStartupEmail(prefilledStartup)),
         sector: prefilledStartup.sector || '—',
         stage: prefilledStartup.stage || '—',
         anon_id: prefilledStartup.anon_id || null
@@ -417,9 +451,11 @@ function _otOpenSendModal(prefilledStartup) {
     backdrop.querySelectorAll('.ot-tpl-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-tpl') === tpl));
     const t = OT_TEMPLATES[tpl];
     if (!t) return;
-    const fake = currentStartup || { display_label: 'Startup', contact_name: 'Gründer', contact_email: '—', sector: '—', stage: '—' };
+    const fake = currentStartup || { display_label: 'Startup', contact_name: 'Gründerteam', contact_email: '—', sector: '—', stage: '—' };
+    const bearbeiterEl = document.getElementById('otSendBearbeiter');
+    const bearbeiter = (bearbeiterEl && bearbeiterEl.value.trim()) || '';
     if (subjectEl) subjectEl.value = t.subject(fake);
-    if (bodyEl) { bodyEl.value = t.body(fake); if (charEl) charEl.textContent = bodyEl.value.length; }
+    if (bodyEl) { bodyEl.value = t.body(fake, bearbeiter); if (charEl) charEl.textContent = bodyEl.value.length; }
   }
 
   if (currentStartup) {
@@ -438,6 +474,8 @@ function _otOpenSendModal(prefilledStartup) {
 
   backdrop.querySelectorAll('.ot-tpl-btn').forEach(btn => { btn.onclick = () => _applyTemplate(btn.getAttribute('data-tpl')); });
   if (bodyEl) bodyEl.oninput = () => { if (charEl) charEl.textContent = bodyEl.value.length; };
+  const bearbeiterInputEl = document.getElementById('otSendBearbeiter');
+  if (bearbeiterInputEl) bearbeiterInputEl.addEventListener('input', () => _applyTemplate(currentTpl));
 
   backdrop.style.display = 'flex';
   backdrop.setAttribute('aria-hidden', 'false');
@@ -477,7 +515,7 @@ function _otOpenSendModal(prefilledStartup) {
       last_message_from: 'outbound',
       thread_id: 'thrd_' + Math.random().toString(16).slice(2, 10),
       conversation_id: 'conv_' + Math.random().toString(16).slice(2, 10),
-      messages: [{ id: uid(), direction: 'outbound', sender: 'Du · aweesfond', text: body, ts: now }]
+      messages: [{ id: uid(), direction: 'outbound', sender: _otGetBearbeiterLabel(), text: body, ts: now }]
     };
 
     const arr = getOutreach();
@@ -498,8 +536,8 @@ function _otOpenFollowupModal(item) {
   if (!overlay) return;
 
   const tpls = {
-    reminder: `Hallo ${_otVorname(item)},\n\nkurze Nachfrage zu meiner Anfrage von vor einigen Tagen — haben Sie die Gelegenheit gehabt, sie zu lesen?\n\nIch freue mich auf einen kurzen Austausch, falls ein Intro-Call interessant wäre.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`,
-    gespraech: `Hallo ${_otVorname(item)},\n\nwürden Sie nächste Woche kurz Zeit für einen 15-minütigen Call haben? Ich würde gern mehr über euren aktuellen Stand erfahren.\n\nBitte schicken Sie mir einfach einen passenden Termin zurück.\n\nMit freundlichen Grüßen\nAndreas Wees · Awees Ventures`
+    reminder: `Hallo ${_otVorname(item)},\n\nkurze Nachfrage zu meiner Anfrage von vor einigen Tagen — haben Sie die Gelegenheit gehabt, sie zu lesen?\n\nIch freue mich auf einen kurzen Austausch, falls ein Intro-Call interessant wäre.\n\nMit freundlichen Grüßen\nParetix Ventures`,
+    gespraech: `Hallo ${_otVorname(item)},\n\nwürden Sie nächste Woche kurz Zeit für einen 15-minütigen Call haben? Ich würde gern mehr über euren aktuellen Stand erfahren.\n\nBitte schicken Sie mir einfach einen passenden Termin zurück.\n\nMit freundlichen Grüßen\nParetix Ventures`
   };
 
   let currentTpl = 'reminder';
@@ -529,7 +567,7 @@ function _otOpenFollowupModal(item) {
     const arr = getOutreach();
     const idx = arr.findIndex(x => x.id === item.id);
     if (idx >= 0) {
-      const msg = { id: uid(), direction: 'outbound', sender: 'Du · aweesfond', text, ts: Date.now() };
+      const msg = { id: uid(), direction: 'outbound', sender: 'Paretix Ventures', text, ts: Date.now() };
       arr[idx].messages = arr[idx].messages || [];
       arr[idx].messages.push(msg);
       arr[idx].last_message_preview = text.slice(0, 70);
