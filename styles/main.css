@@ -3172,6 +3172,16 @@ tbody td,
 }
 .ot-bubble-toggle:hover { text-decoration: underline; }
 
+.ot-followup-marker {
+  font-size: 0.69rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  padding: 8px 0 2px;
+  display: block;
+}
+
 /* === DASHBOARD V2 === */
 .dbv2-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;}
 .dbv2-kpi{background:var(--surface-raised);border:1px solid var(--border);border-radius:10px;padding:16px 14px;}

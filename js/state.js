@@ -467,6 +467,7 @@ function updateOutreachItem(id, patch){
   setOutreach(arr);
 }
 function computeFollowupRecommended(item){
+  if(item.followup_sent) return false;
   if(item.status !== 'keine_antwort' && item.status !== 'anfrage_gesendet') return false;
   const days = (Date.now() - item.sent_at) / (1000 * 60 * 60 * 24);
   return days >= 3;
