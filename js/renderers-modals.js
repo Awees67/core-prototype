@@ -33,330 +33,291 @@ function openModalWithStartup(s, list){
   const backdrop = document.getElementById("modalBackdrop");
   backdrop.style.display = "flex";
   backdrop.setAttribute("aria-hidden","false");
-
   const modal = backdrop.querySelector(".modal");
   if(!modal) return;
 
-  // ── Helpers ──────────────────────────────────────────────
-  function fmtDeal(n){
-    if(n === null || n === undefined) return "—";
-    if(n >= 1000000) return "€" + (n/1000000).toFixed(2).replace(/\.?0+$/,"") + "M";
-    if(n >= 1000)    return "€" + Math.round(n/1000) + "k";
-    return "€" + Math.round(n);
+  // ── Helpers ──────────────────────────────────
+  function fmt(n){
+    if(n===null||n===undefined) return "—";
+    if(n>=1000000) return "€"+(n/1000000).toFixed(2).replace(/\.?0+$/,"")+"M";
+    if(n>=1000) return "€"+(n/1000).toFixed(0)+"k";
+    return "€"+Math.round(n);
+  }
+  function fmtFull(n){
+    if(n===null||n===undefined) return "—";
+    return "€"+Math.round(n).toLocaleString("de-DE");
   }
 
-  // ── Plausibility ─────────────────────────────────────────
-  const subs = (typeof getSubmissions==="function") ? getSubmissions() : [];
-  const sub  = subs.find(x=>x.anon_id===s.anon_id);
-  let plausBadgeHTML = "";
-  if(sub){
-    const pm = {
-      passed:  { cls:"",     txt:"✓ Plausibility Passed" },
-      flagged: { cls:"warn", txt:"⚠ Flagged" },
-      failed:  { cls:"fail", txt:"✗ Failed" }
-    }[sub.plausibility_status] || { cls:"fail", txt:"✗ Failed" };
-    plausBadgeHTML = `<span class="deal-plaus-badge ${pm.cls}" id="dealPlausBadge" data-plaus="${escapeHTML(s.anon_id)}">${pm.txt}</span>`;
-  }
-
-  // ── Custom Score ──────────────────────────────────────────
-  let scoreVal = "—"; let rulesetName = "Score";
+  // ── Custom Score ──────────────────────────────
+  let scoreVal="—", rulesetName="Standard Screening";
   try{
     const res = computeCustomIndexV6(s.anon_id);
     const rules = getCustomRulesV6();
-    rulesetName = rules.name || "Score";
-    if(res && res.score !== null) scoreVal = String(res.score);
+    rulesetName = rules.name||"Standard Screening";
+    if(res&&res.score!==null) scoreVal = String(res.score);
   }catch(_){}
+  const scoreNum = parseFloat(scoreVal);
+  const scoreColorClass = scoreNum>=70?"high":scoreNum>=40?"mid":"low";
 
-  // ── Avatar initials ───────────────────────────────────────
-  const initials = (s.company_name || s.anon_id || "?")
-    .split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase().slice(0,2);
+  // ── Plausibility ──────────────────────────────
+  const subs=(typeof getSubmissions==="function")?getSubmissions():[];
+  const sub=subs.find(x=>x.anon_id===s.anon_id);
+  let plausHTML="";
+  if(sub){
+    const pm={
+      passed:{cls:"dv-pill-pass",txt:"✓ Plausibility Passed"},
+      flagged:{cls:"dv-pill-warn",txt:"⚠ Flagged"},
+      failed:{cls:"dv-pill-fail",txt:"✗ Failed"}
+    }[sub.plausibility_status]||{cls:"dv-pill-fail",txt:"✗ Failed"};
+    plausHTML=`<span class="dv-pill ${pm.cls}" id="dvPlausBadge" data-plaus="${escapeHTML(s.anon_id)}">${pm.txt}</span>`;
+  }
 
-  // ── Signal classifications ────────────────────────────────
-  const ue = classifyUE(s);
-  const rq = classifyRQ(s);
-  const ce = classifyCE(s);
-  const ueColor = ue==="Strong" ? "green" : ue==="No Risk" ? "amber" : "red";
-  const rqColor = rq==="High"   ? "green" : rq==="Stable"  ? "amber" : "red";
-  const ceColor = ce==="Efficient"?"green" : ce==="Neutral" ? "amber" : "red";
+  // ── Pipeline / CRM state ─────────────────────
+  const pipeline=getPipeline();
+  const pipeItem=pipeline.find(x=>x.anon_id===s.anon_id);
+  const isSynced=pipeItem?.status==="Synced";
+  const inPipeline=!!pipeItem;
+  const alreadySent=(typeof getOutreach==="function")&&getOutreach().some(x=>x.anon_id===s.anon_id);
 
-  // ── Growth ────────────────────────────────────────────────
-  const g = s.growth?.value_pct ?? null;
-  const gVal   = g===null ? "—" : (g>0?"+":"")+g+" %";
-  const gClass = g===null ? "" : g>20?"pos" : g>0?"warn" : "neg";
-  const gColor = g===null ? "" : g>20?"green" : g>0?"amber" : "red";
+  // ── Sector / market display ───────────────────
+  const sectorFull=s.sub_sector?`${s.sector} › ${s.sub_sector}`:s.sector;
+  const marketStr=(s.market_served||[]).join(", ").replace("DACH","DACH (DE · AT · CH)");
 
-  // ── KPI color helpers ─────────────────────────────────────
-  const nrrColor  = s.nrr_pct>=110?"green":s.nrr_pct>=100?"amber":"red";
-  const nrrClass  = s.nrr_pct>=100?"pos":"neg";
-  const lcColor   = s.logo_churn_pct<=3?"green":s.logo_churn_pct<=6?"amber":"red";
-  const rcColor   = s.revenue_churn_pct<=3?"green":s.revenue_churn_pct<=6?"amber":"red";
-  const ltvcColor = s.ltv_cac_ratio>=3?"green":s.ltv_cac_ratio>=1?"amber":"red";
-  const ltvcClass = s.ltv_cac_ratio>=3?"pos":"neg";
-  const rwColor   = s.runway_months>=18?"green":s.runway_months>=12?"amber":"red";
-  const rwClass   = s.runway_months>=12?"warn":"neg";
-  const bmVal     = (s.burn_multiple!==null&&s.burn_multiple!==undefined) ? s.burn_multiple.toFixed(2)+" ×" : "—";
-  const bmColor   = s.burn_multiple<=1.5?"green":s.burn_multiple<=3?"amber":"red";
-  const bmClass   = s.burn_multiple<=1.5?"pos":"warn";
-  const scoreNum  = parseFloat(scoreVal);
-  const scoreColor= scoreNum>=70?"green":scoreNum>=40?"amber":"red";
+  // ── Growth ───────────────────────────────────
+  const g=s.growth?.value_pct??null;
+  const gVal=g===null?"—":(g>0?"+":"")+g+" %";
+  const gCls=g===null?"":g>20?"g":g>0?"a":"r";
 
-  // ── Ownership ─────────────────────────────────────────────
-  const owSum   = ((s.founder_pct||0)+(s.esop_pct||0)+(s.employees_pct||0)).toFixed(1);
-  const owAvail = (100-parseFloat(owSum)).toFixed(1);
+  // ── Semantic color helpers ────────────────────
+  function nrrCls(v){ return v>=110?"g":v>=100?"a":"r"; }
+  function churnCls(v){ return v<=3?"g":v<=6?"a":"r"; }
+  function ltvcCls(v){ return v>=3?"g":v>=1?"a":"r"; }
+  function bmCls(v){ return v<=1.5?"g":v<=3?"a":"r"; }
+  function rwCls(v){ return v>=18?"g":v>=12?"a":"r"; }
 
-  // ── Pipeline / CRM state ─────────────────────────────────
-  const pipeline    = getPipeline();
-  const pipeItem    = pipeline.find(x=>x.anon_id===s.anon_id);
-  const isSynced    = pipeItem?.status==="Synced";
-  const inPipeline  = !!pipeItem;
-  const alreadySent = (typeof getOutreach==="function") && getOutreach().some(x=>x.anon_id===s.anon_id);
-
-  // ── Notes HTML ───────────────────────────────────────────
-  const notes = (typeof getNotesForDeal==="function") ? getNotesForDeal(s.anon_id) : [];
-  const notesHTML = notes.length===0
-    ? `<div class="deal-notes-empty">Noch keine Notizen.</div>`
-    : notes.map(n=>`
-      <div class="deal-note-entry">
-        <div class="deal-note-meta">
-          <span class="deal-note-ts">${escapeHTML(timeAgo(n.created_at).toUpperCase())}</span>
-          <span class="deal-note-author">${escapeHTML(n.author||"Analyst")}</span>
+  // ── Notes HTML ───────────────────────────────
+  const notes=(typeof getNotesForDeal==="function")?getNotesForDeal(s.anon_id):[];
+  const notesHTML=notes.length===0
+    ?`<div class="dv-note-empty">Noch keine Notizen.</div>`
+    :notes.map(n=>`
+      <div class="dv-note-entry">
+        <div class="dv-note-meta">
+          <span class="dv-note-ts">${escapeHTML(timeAgo(n.created_at).toUpperCase())}</span>
+          <span class="dv-note-author">${escapeHTML(n.author||"Analyst")}</span>
         </div>
-        <div class="deal-note-text">
-          <button class="deal-note-delete" data-del-note="${escapeHTML(n.id)}">✕</button>
+        <div class="dv-note-body">
+          <button class="dv-note-del" data-del="${escapeHTML(n.id)}">✕</button>
           ${escapeHTML(n.text)}
         </div>
       </div>
-      <div class="deal-note-sep"></div>
     `).join("");
 
-  // ── Sector label ─────────────────────────────────────────
-  const sectorDisplay = s.sub_sector ? `${s.sector} › ${s.sub_sector}` : s.sector;
-  const marketStr = (s.market_served||[]).join(", ").replace("DACH","DACH (DE·AT·CH)");
+  // ── Burn Multiple ─────────────────────────────
+  const bm=s.burn_multiple!==null&&s.burn_multiple!==undefined?s.burn_multiple.toFixed(2)+" ×":"—";
+  const bmCl=s.burn_multiple!==null?bmCls(s.burn_multiple):"";
 
-  // ── Render ────────────────────────────────────────────────
-  modal.innerHTML = `
-    <div class="deal-topbar">
-      <div class="deal-topbar-nav">
-        <button class="deal-btn-nav" id="dealPrevBtn">← Zurück</button>
-        <button class="deal-btn-nav" id="dealNextBtn">Weiter →</button>
-      </div>
-      <div class="deal-topbar-spacer"></div>
-      <button class="deal-btn-sec" id="dealCompareBtn">Add to Compare</button>
-      <button class="deal-btn-sec" id="dealPipelineBtn" ${inPipeline?"disabled":""}>${inPipeline?"✓ In Pipeline":"Add to Pipeline"}</button>
-      <button class="deal-btn-crm" id="dealCrmBtn" ${isSynced?"disabled":""}>${isSynced?"✓ Synced":"Push to CRM"}</button>
-      <button class="deal-btn-primary" id="dealAnfrageBtn" ${alreadySent?"disabled":""}>${alreadySent?"✓ Angefragt":"Anfrage senden"}</button>
+  // ── Ownership ─────────────────────────────────
+  const owSum=((s.founder_pct||0)+(s.esop_pct||0)+(s.employees_pct||0)).toFixed(1);
+  const owAvail=(100-parseFloat(owSum)).toFixed(1);
+
+  // ── Render ────────────────────────────────────
+  modal.innerHTML=`
+    <div class="dv-topbar">
+      <span class="dv-topbar-id">${escapeHTML(startupLabel(s))}</span>
+      <span class="dv-topbar-sep">/</span>
+      <span class="dv-topbar-meta">${escapeHTML(s.anon_id)} · ${escapeHTML(s.sector)} · ${escapeHTML(s.stage)} · ${escapeHTML(s.origin_country)}</span>
+      <button class="dv-btn" id="dvPrevBtn">← Zurück</button>
+      <button class="dv-btn" id="dvNextBtn">Weiter →</button>
+      <button class="dv-btn" id="dvCompareBtn">Compare</button>
+      <button class="dv-btn" id="dvPipeBtn" ${inPipeline?"disabled":""}>${inPipeline?"✓ In Pipeline":"Pipeline"}</button>
+      <button class="dv-btn dv-btn-crm" id="dvCrmBtn" ${isSynced?"disabled":""}>${isSynced?"✓ Synced":"Push to CRM"}</button>
+      <button class="dv-btn dv-btn-prim" id="dvAnfrageBtn" ${alreadySent?"disabled":""}>${alreadySent?"✓ Angefragt":"Anfrage senden"}</button>
     </div>
 
-    <div class="deal-main">
-      <div class="deal-left">
+    <div class="dv-main">
+      <div class="dv-left">
 
-        <div class="deal-hero">
-          <div class="deal-avatar">${escapeHTML(initials)}</div>
-          <div class="deal-hero-info">
-            <div class="deal-hero-name">
+        <div class="dv-hero">
+          <div class="dv-hero-info">
+            <div class="dv-hero-name">
               ${escapeHTML(startupLabel(s))}
-              <span class="deal-stage-badge">${escapeHTML(s.stage)}</span>
-              ${plausBadgeHTML}
+              <span class="dv-pill dv-pill-seed">${escapeHTML(s.stage)}</span>
+              <span class="dv-pill">${escapeHTML(sectorFull)}</span>
+              ${plausHTML}
             </div>
-            <div class="deal-hero-desc">${escapeHTML(s.description||s.notes||"")}</div>
-            <div class="deal-hero-meta">
-              <span class="deal-meta-pill">${escapeHTML(sectorDisplay)}</span>
-              <span class="deal-meta-pill">${escapeHTML(s.anon_id)}</span>
-              ${s.contact_name?`<span class="deal-meta-pill">📧 ${escapeHTML(s.contact_name)}</span>`:""}
-            </div>
+            <div class="dv-hero-desc">${escapeHTML(s.description||s.notes||"")}</div>
+          </div>
+          <div class="dv-score-block">
+            <span class="dv-score-label">Custom Score</span>
+            <span class="dv-score-number ${scoreColorClass}">${escapeHTML(scoreVal)}</span>
+            <span class="dv-score-ruleset">${escapeHTML(rulesetName)}</span>
+            <button class="dv-score-info" id="dvScoreInfo" data-si="${escapeHTML(s.anon_id)}">(i) Breakdown</button>
           </div>
         </div>
 
-        <div class="deal-section">
-          <div class="deal-sec-label">Kontext</div>
-          <div class="deal-kpi-row c4">
-            <div class="deal-kpi"><div class="deal-kpi-lbl">HQ</div><div class="deal-kpi-val sm">${escapeHTML(s.origin_country)}</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">Markt</div><div class="deal-kpi-val sm" style="font-size:12px;">${escapeHTML(marketStr)}</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">Stage</div><div class="deal-kpi-val blue sm">${escapeHTML(s.stage)}</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">Team</div><div class="deal-kpi-val">${escapeHTML(String(s.team_size))}</div><div class="deal-kpi-sub">Mitarbeiter</div></div>
+        <div class="dv-section">
+          <div class="dv-sec-head"><span class="dv-sec-title">Kontext</span><div class="dv-sec-line"></div></div>
+          <div class="dv-pgrid">
+            <div class="dv-prow"><span class="dv-pl">HQ</span><span class="dv-pv ui">${escapeHTML(s.origin_country)}</span></div>
+            <div class="dv-prow"><span class="dv-pl">Markt</span><span class="dv-pv ui">${escapeHTML(marketStr)}</span></div>
+            <div class="dv-prow"><span class="dv-pl">Stage</span><span class="dv-pv b ui">${escapeHTML(s.stage)}</span></div>
+            <div class="dv-prow"><span class="dv-pl">Teamgröße</span><span class="dv-pv">${escapeHTML(String(s.team_size))} Mitarbeiter</span></div>
+            ${s.contact_name?`<div class="dv-prow full"><span class="dv-pl">Kontakt</span><span class="dv-pv ui">${escapeHTML(s.contact_name)}${s.contact_email?" — "+escapeHTML(s.contact_email):""}</span></div>`:""}
           </div>
         </div>
 
-        <div class="deal-section">
-          <div class="deal-sec-label">Revenue &amp; Wachstum</div>
-          <div class="deal-kpi-row c4">
-            <div class="deal-kpi"><div class="deal-kpi-lbl">MRR</div><div class="deal-kpi-val">${escapeHTML(fmtDeal(s.mrr_eur))}</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">ARR</div><div class="deal-kpi-val">${escapeHTML(fmtDeal(s.arr_eur))}</div></div>
-            <div class="deal-kpi ${gClass}"><div class="deal-kpi-lbl">Wachstum ${escapeHTML(s.growth?.type||"")}</div><div class="deal-kpi-val ${gColor}">${escapeHTML(gVal)}</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">Net New ARR</div><div class="deal-kpi-val">${escapeHTML(fmtDeal(s.net_new_arr_eur))}</div></div>
+        <div class="dv-section">
+          <div class="dv-sec-head"><span class="dv-sec-title">Revenue & Wachstum</span><div class="dv-sec-line"></div></div>
+          <div class="dv-pgrid">
+            <div class="dv-prow"><span class="dv-pl">MRR</span><span class="dv-pv">${escapeHTML(fmtFull(s.mrr_eur))}</span></div>
+            <div class="dv-prow"><span class="dv-pl">ARR</span><span class="dv-pv">${escapeHTML(fmtFull(s.arr_eur))}</span></div>
+            <div class="dv-prow"><span class="dv-pl">Wachstum ${escapeHTML(s.growth?.type||"MoM")}</span><span class="dv-pv ${gCls}">${escapeHTML(gVal)}</span></div>
+            <div class="dv-prow"><span class="dv-pl">Net New ARR</span><span class="dv-pv">${escapeHTML(fmtFull(s.net_new_arr_eur))}</span></div>
           </div>
         </div>
 
-        <div class="deal-section">
-          <div class="deal-sec-label">Retention</div>
-          <div class="deal-kpi-row c3">
-            <div class="deal-kpi ${nrrClass}"><div class="deal-kpi-lbl">NRR</div><div class="deal-kpi-val ${nrrColor}">${escapeHTML(String(s.nrr_pct))} %</div><div class="deal-kpi-sub">Net Revenue Retention</div></div>
-            <div class="deal-kpi ${s.logo_churn_pct<=3?"pos":"neg"}"><div class="deal-kpi-lbl">Logo Churn</div><div class="deal-kpi-val ${lcColor}">${escapeHTML(String(s.logo_churn_pct))} %</div><div class="deal-kpi-sub">Kunden-Abwanderung</div></div>
-            <div class="deal-kpi ${s.revenue_churn_pct<=3?"pos":"neg"}"><div class="deal-kpi-lbl">Revenue Churn</div><div class="deal-kpi-val ${rcColor}">${escapeHTML(String(s.revenue_churn_pct))} %</div><div class="deal-kpi-sub">Umsatz-Abwanderung</div></div>
+        <div class="dv-section">
+          <div class="dv-sec-head"><span class="dv-sec-title">Retention</span><div class="dv-sec-line"></div></div>
+          <div class="dv-pgrid">
+            <div class="dv-prow"><span class="dv-pl">NRR</span><span class="dv-pv ${nrrCls(s.nrr_pct)}">${escapeHTML(String(s.nrr_pct))} %</span></div>
+            <div class="dv-prow"><span class="dv-pl">Logo Churn</span><span class="dv-pv ${churnCls(s.logo_churn_pct)}">${escapeHTML(String(s.logo_churn_pct))} %</span></div>
+            <div class="dv-prow full"><span class="dv-pl">Revenue Churn</span><span class="dv-pv ${churnCls(s.revenue_churn_pct)}">${escapeHTML(String(s.revenue_churn_pct))} %</span></div>
           </div>
         </div>
 
-        <div class="deal-section">
-          <div class="deal-sec-label">Unit Economics</div>
-          <div class="deal-kpi-row c5">
-            <div class="deal-kpi"><div class="deal-kpi-lbl">Gross Margin</div><div class="deal-kpi-val">${escapeHTML(String(s.gross_margin_pct))} %</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">LTV</div><div class="deal-kpi-val sm">${escapeHTML(fmtDeal(s.ltv_eur))}</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">CAC</div><div class="deal-kpi-val sm">${escapeHTML(fmtDeal(s.cac_eur))}</div></div>
-            <div class="deal-kpi"><div class="deal-kpi-lbl">CAC Payback</div><div class="deal-kpi-val sm">${escapeHTML(String(s.cac_payback_months))} Mo.</div></div>
-            <div class="deal-kpi ${ltvcClass}"><div class="deal-kpi-lbl">LTV / CAC</div><div class="deal-kpi-val ${ltvcColor}">${escapeHTML(s.ltv_cac_ratio.toFixed(1))} ×</div></div>
+        <div class="dv-section">
+          <div class="dv-sec-head"><span class="dv-sec-title">Unit Economics</span><div class="dv-sec-line"></div></div>
+          <div class="dv-pgrid">
+            <div class="dv-prow"><span class="dv-pl">Gross Margin</span><span class="dv-pv">${escapeHTML(String(s.gross_margin_pct))} %</span></div>
+            <div class="dv-prow"><span class="dv-pl">LTV</span><span class="dv-pv">${escapeHTML(fmtFull(s.ltv_eur))}</span></div>
+            <div class="dv-prow"><span class="dv-pl">CAC</span><span class="dv-pv">${escapeHTML(fmtFull(s.cac_eur))}</span></div>
+            <div class="dv-prow"><span class="dv-pl">CAC Payback</span><span class="dv-pv">${escapeHTML(String(s.cac_payback_months))} Monate</span></div>
+            <div class="dv-prow full"><span class="dv-pl">LTV / CAC</span><span class="dv-pv ${ltvcCls(s.ltv_cac_ratio)}">${escapeHTML(s.ltv_cac_ratio.toFixed(1))} ×</span></div>
           </div>
         </div>
 
-        <div class="deal-section">
-          <div class="deal-sec-label">Capital Efficiency</div>
-          <div class="deal-kpi-row c3">
-            <div class="deal-kpi neg"><div class="deal-kpi-lbl">Burn / Monat</div><div class="deal-kpi-val red">${escapeHTML(fmtDeal(s.burn_eur_per_month))}</div></div>
-            <div class="deal-kpi ${rwClass}"><div class="deal-kpi-lbl">Runway</div><div class="deal-kpi-val ${rwColor}">${escapeHTML(String(s.runway_months))} Mo.</div><div class="deal-kpi-sub">bei aktuellem Burn</div></div>
-            <div class="deal-kpi ${bmClass}"><div class="deal-kpi-lbl">Burn Multiple</div><div class="deal-kpi-val ${bmColor}">${escapeHTML(bmVal)}</div></div>
+        <div class="dv-section">
+          <div class="dv-sec-head"><span class="dv-sec-title">Capital Efficiency</span><div class="dv-sec-line"></div></div>
+          <div class="dv-pgrid">
+            <div class="dv-prow"><span class="dv-pl">Burn / Monat</span><span class="dv-pv r">${escapeHTML(fmtFull(s.burn_eur_per_month))}</span></div>
+            <div class="dv-prow"><span class="dv-pl">Runway</span><span class="dv-pv ${rwCls(s.runway_months)}">${escapeHTML(String(s.runway_months))} Monate</span></div>
+            <div class="dv-prow full"><span class="dv-pl">Burn Multiple</span><span class="dv-pv ${bmCl}">${escapeHTML(bm)}</span></div>
           </div>
         </div>
 
-        <div class="deal-section">
-          <div class="deal-sec-label">Cap Table &amp; Runde</div>
-          <div class="deal-own-row">
-            <div class="deal-own-ticket"><div class="deal-kpi-lbl">Ticket</div><div class="deal-kpi-val lg">${escapeHTML(fmtDeal(s.ticket_eur))}</div><div class="deal-kpi-sub">Rundengröße</div></div>
-            <div class="deal-own-item"><div class="deal-kpi-lbl">Founder</div><div class="deal-kpi-val">${escapeHTML((s.founder_pct||0).toFixed(1))} %</div></div>
-            <div class="deal-own-item dim"><div class="deal-kpi-lbl">ESOP</div><div class="deal-kpi-val">${escapeHTML((s.esop_pct||0).toFixed(1))} %</div></div>
-            <div class="deal-own-item dim"><div class="deal-kpi-lbl">Employees</div><div class="deal-kpi-val">${escapeHTML((s.employees_pct||0).toFixed(1))} %</div></div>
-          </div>
-          <div class="deal-own-sum">Summe: ${escapeHTML(owSum)} % · ${escapeHTML(owAvail)} % verfügbar</div>
-        </div>
-
-        <div class="deal-section">
-          <div class="deal-sec-label">Signal-Scores</div>
-          <div class="deal-kpi-row c4">
-            <div class="deal-kpi score-good"><div class="deal-kpi-lbl">Unit Economics</div><div class="deal-kpi-val ${ueColor} sm" style="margin-top:5px;">${escapeHTML(ue)}</div></div>
-            <div class="deal-kpi score-good"><div class="deal-kpi-lbl">Retention Quality</div><div class="deal-kpi-val ${rqColor} sm" style="margin-top:5px;">${escapeHTML(rq)}</div></div>
-            <div class="deal-kpi score-good"><div class="deal-kpi-lbl">Capital Efficiency</div><div class="deal-kpi-val ${ceColor} sm" style="margin-top:5px;">${escapeHTML(ce)}</div></div>
-            <div class="deal-kpi score-info"><div class="deal-kpi-lbl">Custom Score</div><div class="deal-kpi-val ${scoreColor} lg" style="margin-top:3px;">${escapeHTML(scoreVal)}</div><div class="deal-kpi-sub">/ 100 · ${escapeHTML(rulesetName)}</div></div>
+        <div class="dv-section">
+          <div class="dv-sec-head"><span class="dv-sec-title">Cap Table & Runde</span><div class="dv-sec-line"></div></div>
+          <div class="dv-pgrid">
+            <div class="dv-prow"><span class="dv-pl">Ticket</span><span class="dv-pv">${escapeHTML(fmtFull(s.ticket_eur))}</span></div>
+            <div class="dv-prow"><span class="dv-pl">Founder</span><span class="dv-pv">${escapeHTML((s.founder_pct||0).toFixed(1))} %</span></div>
+            <div class="dv-prow"><span class="dv-pl">ESOP</span><span class="dv-pv">${escapeHTML((s.esop_pct||0).toFixed(1))} %</span></div>
+            <div class="dv-prow"><span class="dv-pl">Employees</span><span class="dv-pv">${escapeHTML((s.employees_pct||0).toFixed(1))} %</span></div>
+            <div class="dv-prow full"><span class="dv-pl">Verfügbar</span><span class="dv-pv muted">${escapeHTML(owSum)} % vergeben · ${escapeHTML(owAvail)} % frei</span></div>
           </div>
         </div>
 
       </div>
 
-      <div class="deal-right">
-        <div class="deal-notes-head">
-          <div class="deal-notes-title">Intelligence Notes</div>
-          <button class="deal-notes-edit" title="Bearbeiten">✎</button>
-        </div>
-        ${notesHTML}
-        <div class="deal-note-add">
-          <textarea class="deal-note-input" id="dealNoteInput" placeholder="Neue Notiz hinzufügen…" rows="3" maxlength="500"></textarea>
-          <button class="deal-note-save" id="dealNoteSave">Speichern</button>
-          <div class="deal-note-hint">Lokal gespeichert · für das gesamte Team sichtbar</div>
+      <div class="dv-right">
+        <div class="dv-notes">
+          <div class="dv-notes-head">
+            <span class="dv-notes-title">Notes</span>
+          </div>
+          ${notesHTML}
+          <div class="dv-note-add">
+            <textarea class="dv-note-inp" id="dvNoteInput" placeholder="Neue Notiz…" rows="3" maxlength="500"></textarea>
+            <button class="dv-note-save" id="dvNoteSave">Speichern</button>
+            <div class="dv-note-hint">Ctrl+Enter zum Speichern</div>
+          </div>
         </div>
       </div>
     </div>
   `;
 
-  // ── Event Bindings ────────────────────────────────────────
-  const arr = (list && list.length) ? list : [s];
-  const idx = arr.findIndex(z=>z.anon_id===s.anon_id);
+  // ── Event Bindings ─────────────────────────────
+  const arr=(list&&list.length)?list:[s];
+  const idx=arr.findIndex(z=>z.anon_id===s.anon_id);
 
-  document.getElementById("dealPrevBtn").onclick = () => {
-    openModalByIndex((idx - 1 + arr.length) % arr.length, arr);
-  };
-  document.getElementById("dealNextBtn").onclick = () => {
-    openModalByIndex((idx + 1) % arr.length, arr);
-  };
+  // Navigation
+  document.getElementById("dvPrevBtn").onclick=()=>openModalByIndex((idx-1+arr.length)%arr.length,arr);
+  document.getElementById("dvNextBtn").onclick=()=>openModalByIndex((idx+1)%arr.length,arr);
 
-  // Keyboard nav
-  if(modal._keyHandler) document.removeEventListener("keydown", modal._keyHandler);
-  modal._keyHandler = (e) => {
-    if(backdrop.style.display !== "flex") return;
-    if(e.key === "ArrowRight") document.getElementById("dealNextBtn")?.click();
-    if(e.key === "ArrowLeft")  document.getElementById("dealPrevBtn")?.click();
-    if(e.key === "Escape") closeModal();
+  // Keyboard
+  if(modal._keyHandler) document.removeEventListener("keydown",modal._keyHandler);
+  modal._keyHandler=(e)=>{
+    if(backdrop.style.display!=="flex") return;
+    if(e.key==="ArrowRight") document.getElementById("dvNextBtn")?.click();
+    if(e.key==="ArrowLeft")  document.getElementById("dvPrevBtn")?.click();
+    if(e.key==="Escape") closeModal();
   };
-  document.addEventListener("keydown", modal._keyHandler);
+  document.addEventListener("keydown",modal._keyHandler);
 
   // Pipeline
-  const pipeBtn = document.getElementById("dealPipelineBtn");
-  if(pipeBtn && !inPipeline){
-    pipeBtn.onclick = () => {
-      pipelineAdd(s.anon_id, "In Review");
-      toast("Pipeline", "Deal zur Pipeline hinzugefügt");
-      pipeBtn.textContent = "✓ In Pipeline";
-      pipeBtn.disabled = true;
+  const pipeBtn=document.getElementById("dvPipeBtn");
+  if(pipeBtn&&!inPipeline){
+    pipeBtn.onclick=()=>{
+      pipelineAdd(s.anon_id,"In Review");
+      toast("Pipeline","Deal zur Pipeline hinzugefügt");
+      pipeBtn.textContent="✓ In Pipeline";
+      pipeBtn.disabled=true;
       if(currentView==="pipeline") renderPipeline();
     };
   }
 
   // CRM
-  const crmBtn = document.getElementById("dealCrmBtn");
-  if(crmBtn && !isSynced){
-    crmBtn.onclick = () => {
-      const p2 = getPipeline();
-      const pi2 = p2.find(x=>x.anon_id===s.anon_id);
-      if(pi2 && pi2.status==="Declined"){
+  const crmBtn=document.getElementById("dvCrmBtn");
+  if(crmBtn&&!isSynced){
+    crmBtn.onclick=()=>{
+      const pi=getPipeline().find(x=>x.anon_id===s.anon_id);
+      if(pi&&pi.status==="Declined"){
         if(!confirm("Dieser Deal wurde declined. Trotzdem ins CRM pushen?")) return;
       }
       pipelinePushToCRM(s.anon_id);
-      crmBtn.textContent = "✓ Synced";
-      crmBtn.disabled = true;
+      crmBtn.textContent="✓ Synced";
+      crmBtn.disabled=true;
       if(currentView==="pipeline") renderPipeline();
     };
   }
 
   // Compare
-  const cmpBtn = document.getElementById("dealCompareBtn");
-  if(cmpBtn) cmpBtn.onclick = () => addToCompare(s.anon_id);
+  document.getElementById("dvCompareBtn").onclick=()=>addToCompare(s.anon_id);
 
-  // Anfrage senden
-  const anfBtn = document.getElementById("dealAnfrageBtn");
-  if(anfBtn && !alreadySent){
-    anfBtn.onclick = () => {
-      closeModal();
-      if(typeof _otOpenSendModal==="function") _otOpenSendModal(s);
-    };
+  // Anfrage
+  const anfBtn=document.getElementById("dvAnfrageBtn");
+  if(anfBtn&&!alreadySent){
+    anfBtn.onclick=()=>{ closeModal(); if(typeof _otOpenSendModal==="function") _otOpenSendModal(s); };
   }
 
-  // Plausibility info
-  const plausEl = document.getElementById("dealPlausBadge");
-  if(plausEl){
-    plausEl.onclick = (e) => {
-      if(typeof openPlausibilityBreakdown==="function") openPlausibilityBreakdown(s.anon_id, plausEl);
-      e.stopPropagation();
-    };
-  }
+  // Plausibility
+  const plausEl=document.getElementById("dvPlausBadge");
+  if(plausEl) plausEl.onclick=(e)=>{ if(typeof openPlausibilityBreakdown==="function") openPlausibilityBreakdown(s.anon_id,plausEl); e.stopPropagation(); };
+
+  // Score breakdown
+  const scoreInfoBtn=document.getElementById("dvScoreInfo");
+  if(scoreInfoBtn) scoreInfoBtn.onclick=(e)=>{ if(typeof openScoreBreakdown==="function") openScoreBreakdown(s.anon_id,scoreInfoBtn); e.stopPropagation(); };
 
   // Notes: save
-  const noteSave  = document.getElementById("dealNoteSave");
-  const noteInput = document.getElementById("dealNoteInput");
-  if(noteSave && noteInput){
-    const doSave = () => {
-      const text = noteInput.value.trim();
+  const noteSave=document.getElementById("dvNoteSave");
+  const noteInput=document.getElementById("dvNoteInput");
+  if(noteSave&&noteInput){
+    const doSave=()=>{
+      const text=noteInput.value.trim();
       if(!text) return;
-      const pi3 = getPipeline().find(x=>x.anon_id===s.anon_id);
-      const author = (pi3 && pi3.owner) ? pi3.owner : "Analyst";
-      addNote(s.anon_id, text, author);
-      noteInput.value = "";
-      toast("Gespeichert", "Notiz hinzugefügt");
-      openModalWithStartup(s, list);
+      const pi=getPipeline().find(x=>x.anon_id===s.anon_id);
+      const author=(pi&&pi.owner)?pi.owner:"Analyst";
+      addNote(s.anon_id,text,author);
+      noteInput.value="";
+      toast("Gespeichert","Notiz hinzugefügt");
+      openModalWithStartup(s,list);
     };
-    noteSave.onclick = doSave;
-    noteInput.addEventListener("keydown", (e) => {
-      if((e.ctrlKey||e.metaKey) && e.key==="Enter"){ e.preventDefault(); doSave(); }
-    });
+    noteSave.onclick=doSave;
+    noteInput.addEventListener("keydown",(e)=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){ e.preventDefault(); doSave(); } });
   }
 
   // Notes: delete
-  modal.querySelectorAll("[data-del-note]").forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      deleteNote(btn.getAttribute("data-del-note"));
-      toast("Gelöscht", "Notiz gelöscht");
-      openModalWithStartup(s, list);
-    };
+  modal.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.onclick=(e)=>{ e.stopPropagation(); deleteNote(btn.getAttribute("data-del")); toast("Gelöscht","Notiz gelöscht"); openModalWithStartup(s,list); };
   });
-
-  // Score breakdown (i) buttons if present from custom-index patch
-  try{ patchDealModal(); }catch(_){}
 }
 
 function renderModalNotes(anon_id){
@@ -424,14 +385,13 @@ function renderModalNotes(anon_id){
 }
 
 function closeModal(){
-  const backdrop = document.getElementById("modalBackdrop");
-  backdrop.style.display = "none";
+  const backdrop=document.getElementById("modalBackdrop");
+  backdrop.style.display="none";
   backdrop.setAttribute("aria-hidden","true");
-  // Clean up keyboard handler
-  const modal = backdrop.querySelector(".modal");
-  if(modal && modal._keyHandler){
-    document.removeEventListener("keydown", modal._keyHandler);
-    modal._keyHandler = null;
+  const modal=backdrop.querySelector(".modal");
+  if(modal&&modal._keyHandler){
+    document.removeEventListener("keydown",modal._keyHandler);
+    modal._keyHandler=null;
   }
 }
 
