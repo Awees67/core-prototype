@@ -79,8 +79,13 @@ function renderDashboard(){
     'DeepTech': '#ef4444', 'AI': '#a78bfa', 'ClimateTech': '#34d399',
     'Cybersecurity': '#fb923c', 'PropTech': '#60a5fa', 'Marketplace': '#f472b6', 'DevTools': '#94a3b8'
   };
-  const sectorDist = groupBy(startups, s => s.sector).slice(0, 5);
-  const sektorDonutSegs = sectorDist.map(([name, cnt]) => ({ value: cnt, color: SECTOR_COLORS[name] || '#94a3b8' }));
+  // All sectors — used for donut segments so they sum to 100%
+  const sectorDistAll  = groupBy(startups, s => s.sector);
+  // Top 5 only — used for the text legend beside the donut
+  const sectorDistTop5 = sectorDistAll.slice(0, 5);
+
+  // Donut segments use ALL sectors
+  const sektorDonutSegs = sectorDistAll.map(([name, cnt]) => ({ value: cnt, color: SECTOR_COLORS[name] || '#94a3b8' }));
 
   // Stage distribution (all stages)
   const ALL_STAGES = ['Pre-Seed', 'Seed', 'Pre-Series A', 'Series A', 'Series B'];
@@ -132,11 +137,14 @@ function renderDashboard(){
       <div class="dbv2-dot-count">${stageCounts[st]}</div>
     </div>`).join('');
 
+  // Accepted = total startups minus those still pending in the submissions queue
+  const funnelAccepted = Math.max(0, funnelTotal - subs.length);
+
   const funnelSteps = [
-    { label: 'EINGEREICHT', val: funnelTotal, pct: 100, color: 'rgba(128,128,128,0.35)' },
-    { label: 'ANGENOMMEN', val: funnelTotal, pct: 100, color: 'var(--accent)' },
+    { label: 'EINGEREICHT', val: funnelTotal,    pct: 100,                                    color: 'rgba(128,128,128,0.35)' },
+    { label: 'ANGENOMMEN',  val: funnelAccepted, pct: pctOf(funnelAccepted, funnelTotal || 1), color: 'var(--accent)' },
     { label: 'IN PIPELINE', val: funnelPipeline, pct: pctOf(funnelPipeline, funnelTotal || 1), color: '#f59e0b' },
-    { label: 'AN CRM', val: funnelSynced, pct: pctOf(funnelSynced, funnelTotal || 1), color: '#00dfc1' }
+    { label: 'AN CRM',      val: funnelSynced,   pct: pctOf(funnelSynced,   funnelTotal || 1), color: '#00dfc1' }
   ];
   const funnelHtml = funnelSteps.map(f => `
     <div class="dbv2-frow">
@@ -201,7 +209,7 @@ function renderDashboard(){
   }).join('');
 
   const sektorDonutSvg = buildDonutSVG(sektorDonutSegs, 120, 16);
-  const sektorLegendHtml = sectorDist.map(([name, cnt]) => `
+  const sektorLegendHtml = sectorDistTop5.map(([name, cnt]) => `
     <div class="dbv2-dleg-item">
       <div class="dbv2-dleg-dot" style="background:${SECTOR_COLORS[name] || '#94a3b8'}"></div>
       ${escapeHTML(name)} &nbsp;<strong style="color:var(--text-primary);font-weight:800">${cnt}</strong>
