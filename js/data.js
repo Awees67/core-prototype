@@ -185,6 +185,89 @@ const STARTUP_DESCRIPTIONS = {
   ]
 };
 
+const STARTUP_DETAIL_SENTENCES = {
+  'B2B SaaS': [
+    'Das Unternehmen bedient primär mittelständische Unternehmen in der DACH-Region und wächst zunehmend in angrenzende europäische Märkte.',
+    'Die Plattform integriert sich nahtlos in bestehende Tool-Stacks und reduziert so Implementierungsaufwand auf ein Minimum.',
+    'Das Gründerteam vereint Expertise aus Enterprise-Vertrieb, Produktentwicklung und skalierbarer Cloud-Infrastruktur.',
+    'Kernkunden schätzen vor allem die Self-Service-Funktionen und den geringen Onboarding-Aufwand im Vergleich zu Legacy-Lösungen.',
+    'Die Architektur ist API-first aufgebaut und erlaubt tief greifende Integrationen in CRM-, ERP- und BI-Systeme.',
+    'Aktuell befindet sich das Unternehmen in der Expansionsphase und erschließt neue Vertikalen und Unternehmensgrößen.'
+  ],
+  'FinTech': [
+    'Das Unternehmen operiert unter vollständiger regulatorischer Compliance und hält alle relevanten europäischen Lizenzen.',
+    'Kernzielgruppe sind digitale Plattformen und wachstumsstarke KMU, die Finanzinfrastruktur als strategischen Wettbewerbsvorteil einsetzen.',
+    'Das Gründerteam bringt Erfahrung aus Banken, Regulierungsbehörden und erfolgreichen FinTech-Exits mit.',
+    'Die Lösung ist white-label-fähig und kann von Partnern unter eigener Marke eingesetzt werden.',
+    'Dank modularer API-Architektur können Kunden einzelne Bausteine bedarfsgerecht kombinieren und skalieren.',
+    'Das Unternehmen expandiert aktuell in weitere EU-Märkte und sieht insbesondere in der DACH-Region signifikantes Wachstumspotenzial.'
+  ],
+  'HealthTech': [
+    'Die Lösung ist CE-zertifiziert und erfüllt alle Anforderungen der MDR sowie der relevanten Datenschutzrichtlinien.',
+    'Pilotpartner aus dem stationären und ambulanten Bereich bestätigen eine signifikante Reduktion administrativer Aufwände.',
+    'Das Team vereint medizinisches Fachwissen mit tiefer Technologie-Expertise aus Machine Learning und Cloud-Architektur.',
+    'Der Go-to-Market erfolgt primär über Krankenhausgruppen und Kassenärztliche Vereinigungen als strategische Partner.',
+    'Langfristiges Ziel ist eine pan-europäische Gesundheitsdatenplattform mit standardisierten Schnittstellen zu nationalen Systemen.',
+    'Das Unternehmen arbeitet eng mit Universitätskliniken zusammen und betreibt laufend klinische Evaluierungsstudien.'
+  ],
+  'DeepTech': [
+    'Die zugrundeliegende Kerntechnologie ist durch mehrere internationale Patente geschützt und basiert auf jahrelanger universitärer Forschung.',
+    'Das Unternehmen kooperiert mit führenden Forschungsinstituten und hat Zugang zu einzigartiger Laborinfrastruktur.',
+    'Erste Pilotkunden aus der Halbleiter- und Automobilindustrie bestätigen die technische Überlegenheit gegenüber Bestandslösungen.',
+    'Die Technologie adressiert ein Marktversagen, für das es bislang keine skalierbare kommerzielle Lösung gibt.',
+    'Das Gründerteam besteht aus promovierten Wissenschaftlern mit kombinierter Forschungserfahrung von über zwanzig Jahren.',
+    'Neben dem Primärmarkt eröffnen sich attraktive Lizenzierungsmöglichkeiten für angrenzende Industriebereiche.'
+  ],
+  'AI': [
+    'Alle Modelle werden vollständig on-premise oder in privaten Cloud-Umgebungen betrieben und erfüllen europäische Datenschutzanforderungen.',
+    'Das Unternehmen setzt auf domänenspezifisches Fine-Tuning statt generischer Basismodelle und erreicht damit deutlich höhere Präzision.',
+    'Erste Enterprise-Kunden berichten von einer Reduktion manueller Prozesszeiten um mehr als sechzig Prozent.',
+    'Das Gründerteam hat zuvor an führenden Forschungslabors und KI-Startups in Europa und den USA gearbeitet.',
+    'Die Plattform ist modular aufgebaut und lässt sich ohne tiefgreifende IT-Kenntnisse in bestehende Workflows einbinden.',
+    'Neben dem SaaS-Kernprodukt bietet das Unternehmen maßgeschneiderte Modellentwicklung als Professional-Services-Komponente an.'
+  ],
+  'ClimateTech': [
+    'Das Unternehmen hat bereits CO2-Zertifikate mit führenden Verifizierungsstandards wie Gold Standard und Verra erhalten.',
+    'Kernkunden sind große Industrieunternehmen mit verbindlichen Net-Zero-Zielen bis 2030 oder 2040.',
+    'Die Lösung ist komplementär zu bestehenden Nachhaltigkeitsinitiativen und integriert sich in gängige ESG-Reporting-Frameworks.',
+    'Das Gründerteam verbindet Erfahrung aus Energiewirtschaft, Klimaforschung und digitalem Produktaufbau.',
+    'Strategische Partnerschaften mit Energieversorgern und Kommunen sichern langfristige Abnahmeverträge.',
+    'Das Unternehmen verfolgt eine Dual-Revenue-Strategie aus Software-Lizenzen und ergebnisbasierter CO2-Vergütung.'
+  ],
+  'Cybersecurity': [
+    'Die Lösung erkennt Bedrohungen in Echtzeit ohne regelbasierte Signatur-Datenbanken — rein verhaltensbasiert mittels Machine Learning.',
+    'Das Unternehmen ist SOC 2 Type II zertifiziert und unterstützt Kunden aktiv bei ISO 27001 und NIS2-Compliance.',
+    'Kernzielgruppe sind mittelständische Unternehmen in regulierten Branchen wie Finanz, Gesundheit und kritischer Infrastruktur.',
+    'Das Gründerteam bringt Erfahrung aus militärischer Cyber-Abwehr, nationalen CERTs und erfolgreichen Security-Exits mit.',
+    'Dank agentloser Architektur ist die Implementierung in wenigen Stunden abgeschlossen — ohne Eingriff in Produktivsysteme.',
+    'Das Produkt ergänzt bestehende SIEM- und SOAR-Lösungen und schließt kritische Lücken in der Angriffserkennung.'
+  ],
+  'PropTech': [
+    'Das Unternehmen verwaltet aktuell über zehntausend Wohneinheiten auf der Plattform und wächst monatlich um rund fünfzehn Prozent.',
+    'Kernkunden sind institutionelle Bestandshalter, Family Offices und wachstumsorientierte Hausverwaltungen.',
+    'Durch prädiktive Wartungsalgorithmen reduzieren Kunden ungeplante Instandhaltungskosten nachweislich um bis zu dreißig Prozent.',
+    'Das Gründerteam vereint Immobilienwirtschaft, PropTech und B2B-Software-Expertise auf Basis von zwei vorherigen Gründungserfahrungen.',
+    'Die offene API-Schnittstelle erlaubt die nahtlose Anbindung an ERP-Systeme, Buchhaltungssoftware und Mieterportale.',
+    'Langfristig positioniert sich das Unternehmen als Datenschicht für den europäischen Immobilienmarkt.'
+  ],
+  'Marketplace': [
+    'Der Marktplatz adressiert eine strukturelle Ineffizienz in einem fragmentierten Markt mit hohem Standardisierungspotenzial.',
+    'Transaktionsvolumen und Käufer-Seller-Verhältnis entwickeln sich konsistent in Richtung eines gesunden Marktplatznetzwerkeffekts.',
+    'Das Unternehmen setzt auf kuratiertes Supply statt reiner Aggregation und sichert damit überdurchschnittliche Conversion-Rates.',
+    'Das Gründerteam hat zuvor einen Marktplatz in einem angrenzenden Bereich erfolgreich aufgebaut und verkauft.',
+    'Durch managed Fulfillment-Komponenten differenziert sich die Plattform klar von reinen Listing-Lösungen.',
+    'Internationale Expansion ist für das kommende Geschäftsjahr geplant, beginnend mit Deutschland und der Schweiz.'
+  ],
+  'DevTools': [
+    'Das Tool löst ein tägliches Schmerzproblem für Engineering-Teams in wachstumsstarken Produktunternehmen.',
+    'Die Developer Experience steht im Mittelpunkt — Onboarding dauert unter dreißig Minuten, auch ohne umfangreiche Dokumentation.',
+    'Das Unternehmen betreibt eine aktive Open-Source-Community mit mehreren tausend Github-Stars als strategisches GTM-Instrument.',
+    'Das Gründerteam hat die Lösung aus einem eigenen Schmerzproblem heraus entwickelt und ist tief in der Developer-Community verankert.',
+    'Bestehende Kunden berichten von einer signifikanten Reduktion von Deployment-Zyklen und Fehlerquoten in Produktivsystemen.',
+    'Das PLG-Modell (Product-Led Growth) sorgt für organische Viralität innerhalb von Engineering-Organisationen.'
+  ]
+};
+
 const CONTACT_FIRST_NAMES = ['Klaus','Stefan','Anna','Maria','Thomas','Sarah','Michael','Julia','Markus','Laura','David','Nina','Felix','Lena','Christian','Sophie','Andreas','Hannah','Tobias','Lisa','Sebastian','Emma','Patrick','Mia','Florian','Leonie'];
 const CONTACT_LAST_NAMES = ['Winter','Müller','Weber','Fischer','Schneider','Bauer','Koch','Richter','Hoffmann','Wagner','Becker','Schulz','Wolf','Schäfer','Meyer','Lehmann','Hartmann','Klein','Krause','Braun','Zimmermann','Neumann','Schwarz','Lange','Huber','Maier'];
 
@@ -217,7 +300,15 @@ function buildStartup(rng, i){
   const sub_sector = subSectors.length ? randChoice(rng, subSectors) : null;
   const growthType = randChoice(rng, GEN.growthTypes);
 
-  const description = randChoice(rng, STARTUP_DESCRIPTIONS[sector] || ["Entwickelt innovative Lösungen."]);
+  const teaser = randChoice(rng, STARTUP_DESCRIPTIONS[sector] || ['Entwickelt innovative Lösungen.']);
+  const detailPool = STARTUP_DETAIL_SENTENCES[sector] || [];
+  // Shuffle detail pool deterministically using the seeded rng, pick 2
+  const shuffledDetails = detailPool.slice().sort(() => rng() - 0.5);
+  const pickedDetails = shuffledDetails.slice(0, 2);
+  const description = [teaser, ...pickedDetails].join(' ');
+
+  const base = Math.pow(rng(), 2) * 450000;
+  const mrr = Math.round(clamp(base + randInt(rng, 5000, 35000), 6000, 520000) / 100) * 100;
 
   const teamRanges = {
     "Pre-Seed": [2, 6],
@@ -227,10 +318,26 @@ function buildStartup(rng, i){
     "Series B": [30, 120]
   };
   const [tMin, tMax] = teamRanges[stage] || [3, 20];
-  const team_size = randInt(rng, tMin, tMax);
+  const rawTeamSize = randInt(rng, tMin, tMax);
 
-  const base = Math.pow(rng(), 2) * 450000;
-  const mrr = Math.round(clamp(base + randInt(rng, 5000, 35000), 6000, 520000) / 100) * 100;
+  // Revenue-per-employee floor: ensures team size is credible relative to MRR.
+  // Sector modifier: DeepTech/HealthTech/AI can be R&D-heavy (lower revenue/head ok).
+  // FinTech/B2B SaaS/Marketplace should be more efficient.
+  const sectorEfficiencyFloor = {
+    'FinTech':       25000,   // €25k ARR / employee minimum
+    'B2B SaaS':      20000,
+    'Marketplace':   18000,
+    'DevTools':      20000,
+    'Cybersecurity': 18000,
+    'PropTech':      15000,
+    'AI':            15000,
+    'ClimateTech':   10000,
+    'HealthTech':    8000,
+    'DeepTech':      6000     // R&D heavy, can have low revenue per head
+  };
+  const floorPerEmployee = sectorEfficiencyFloor[sector] || 12000;
+  const maxTeamFromRevenue = Math.max(tMin, Math.floor((mrr * 12) / floorPerEmployee));
+  const team_size = Math.min(rawTeamSize, maxTeamFromRevenue);
 
   const growthPct = clamp(Math.round((rng()*220 - 30)), -25, 190);
   const burn = Math.round(clamp(mrr * (0.25 + rng()*0.75) + randInt(rng, 5000, 55000), 6000, 220000)/100)*100;
