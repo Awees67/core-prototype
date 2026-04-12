@@ -12,6 +12,14 @@ function hideAllViews(){
     const el = document.getElementById(id);
     if(el) el.style.display = "none";
   });
+  // Hide the home-only control bars for ALL non-home views.
+  // renderCards() (home/Übersicht) will call showControls() to make them visible again.
+  const ctrlBar = document.querySelector(".controls");
+  const summaryBar = document.querySelector(".summarybar");
+  const chipsBar = document.querySelector(".activechips");
+  if(ctrlBar) ctrlBar.style.display = "none";
+  if(summaryBar) summaryBar.style.display = "none";
+  if(chipsBar) chipsBar.style.display = "none";
 }
 
 function updateCounts(){

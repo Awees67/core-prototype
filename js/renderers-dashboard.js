@@ -26,13 +26,6 @@ function renderDashboard(){
   if (!view) return;
   view.style.display = '';
 
-  const ctrlBar = document.querySelector('.controls');
-  const summaryBar = document.querySelector('.summarybar');
-  const chipsBar = document.querySelector('.activechips');
-  if (ctrlBar) ctrlBar.style.display = 'none';
-  if (summaryBar) summaryBar.style.display = 'none';
-  if (chipsBar) chipsBar.style.display = 'none';
-
   // --- Data ---
   const subs = getSubmissions();
   const pipeline = getPipeline();
