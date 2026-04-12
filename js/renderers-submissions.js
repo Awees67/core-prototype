@@ -128,7 +128,13 @@ function renderSubmissions(){
             const sectorStr = sub.sector + (sub.sub_sector ? ` › ${sub.sub_sector}` : "");
             const ss = startups.find(x=>x.anon_id===sub.anon_id);
             const isSelected = bulkIsSelected(sub.anon_id);
-            const score = Math.round(sub.signal_index||0);
+            let score = Math.round(sub.signal_index||0);
+            try {
+              const _liveRes = computeCustomIndexV6(sub.anon_id);
+              if (_liveRes && _liveRes.score !== null && _liveRes.score !== undefined) {
+                score = Math.round(_liveRes.score);
+              }
+            } catch (_) {}
             const scoreClass = score >= 70 ? "high" : score >= 40 ? "mid" : "low";
             return `<tr class="${isSelected ? "bulk-selected" : ""}">
               <td><input type="checkbox" class="bulk-check" data-bulk="${escapeHTML(sub.anon_id)}" ${isSelected ? "checked" : ""}></td>
