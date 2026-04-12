@@ -693,9 +693,6 @@
     .privacy-link:hover{ background:var(--soft); }
     .privacy-link:focus{ outline:none; box-shadow:var(--focus); }
 
-    /* make room so bar doesn't cover content */
-    body{ padding-bottom:64px; }
-
     .privacy-backdrop{
       position:fixed;
       inset:0;
