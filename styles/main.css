@@ -917,7 +917,7 @@ tbody tr:hover{ background:rgba(25,118,210,0.06); }
       border-radius:999px;
       width:0%;
     }
-    .cmpVal{ font-weight:950; white-space:nowrap; }
+    .cmpVal{ font-weight:600; white-space:nowrap; }
     .cmpCell.top .cmpBar{ border-color: var(--goodBorder); }
 
 /* Compare table */
@@ -2942,10 +2942,11 @@ tbody td,
 }
 
 .cmpVal {
-  font-family: var(--font-data);
+  font-family: var(--font-ui);
   font-weight: 600;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   white-space: nowrap;
   color: var(--text-primary);
 }

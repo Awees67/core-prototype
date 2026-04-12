@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const topRunway = deals.reduce((a,b)=> getRunway(b)>getRunway(a)?b:a, deals[0]);
   const topLTV = deals.reduce((a,b)=> getLTV(b)>getLTV(a)?b:a, deals[0]);
 
-  const fmtRatio = (n)=> (Math.round(n*10)/10).toLocaleString("de-AT");
+  const fmtRatio = (n)=> (Math.round(n*10)/10).toLocaleString("de-DE");
 
   const cell = (value, max, isTop, fmt)=>{
     const pct = Math.max(0, Math.min(100, Math.round((value/max)*100)));
@@ -290,9 +290,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
     `;
   };
 
-  const _fmtEUR = (n)=> "€" + Math.round(n).toLocaleString("de-AT");
-  const _fmtPct = (n)=> (Math.round(n*10)/10).toLocaleString("de-AT") + "%";
-  const _fmtM = (n)=> Math.round(n).toLocaleString("de-AT") + "m";
+  const _fmtEUR = (n)=> fmtEUR(Math.round(n));
+  const _fmtPct = (n)=> (Math.round(n*10)/10).toLocaleString("de-DE") + "%";
+  const _fmtM = (n)=> Math.round(n).toLocaleString("de-DE") + "m";
 
   body.innerHTML = deals.map(s=>{
     const mrr = getMRR(s), gr = getGrowth(s), rw = getRunway(s), lv = getLTV(s);
