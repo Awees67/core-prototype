@@ -386,7 +386,8 @@ function generateSubmissionsFromStartups(arr, rng){
   // Patch the last chosen startup with ownership > 100% so it always fails.
   const failTarget = chosen[chosen.length - 1];
   if(failTarget && results[results.length - 1].plausibility_status !== "failed"){
-    const patchedStartup = { ...failTarget, founder_pct: 80, esop_pct: 15, employees_pct: 10, mrr_eur: 0 };
+    // Only overflow ownership — does not touch MRR so score and plausibility stay consistent
+    const patchedStartup = { ...failTarget, founder_pct: 80, esop_pct: 15, employees_pct: 10 };
     const forcedPlaus = computePlausibility(patchedStartup);
     const last = results[results.length - 1];
     last.plausibility_status = forcedPlaus.status;
