@@ -3767,7 +3767,7 @@ tbody td,
 }
 .dv-hero-desc {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   line-height: 1.55;
 }
@@ -3852,19 +3852,20 @@ tbody td,
 [data-theme="dark"] .dv-prow:hover { background: rgba(255,255,255,0.025); }
 .dv-pl {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
-  width: 130px;
+  width: 140px;
   flex-shrink: 0;
 }
 .dv-pv {
-  font-family: var(--font-data);
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   color: var(--text-primary);
-  letter-spacing: 0.01em;
   flex: 1;
 }
-.dv-pv.ui   { font-family: var(--font-ui); }
+.dv-pv.ui   { font-family: var(--font-ui); letter-spacing: 0; }
 .dv-pv.g    { color: var(--score-ring-high); }
 .dv-pv.r    { color: var(--score-ring-low); }
 .dv-pv.a    { color: var(--score-ring-medium); }
