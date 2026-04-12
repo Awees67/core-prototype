@@ -103,14 +103,6 @@ function renderInbox() {
           <h2 class="ot-title">Anfragen</h2>
           <p class="ot-subtitle">Outreach → Follow-up → Call. Alle Bewerberkontakte im Überblick.</p>
         </div>
-        <div class="ot-topbar-right">
-          <div class="ot-stats-row">
-            <div class="ot-stat-chip"><span class="ot-sdot" style="background:#378ADD"></span><span class="ot-sn">${active.length}</span><span>aktiv</span></div>
-            <div class="ot-stat-chip"><span class="ot-sdot" style="background:#EF9F27"></span><span class="ot-sn">${none.length}</span><span>keine Antwort</span></div>
-            <div class="ot-stat-chip"><span class="ot-sdot" style="background:#1D9E75"></span><span class="ot-sn">${replied.length}</span><span>geantwortet</span></div>
-            <div class="ot-stat-chip"><span class="ot-sdot" style="background:#1D9E75"></span><span class="ot-sn">${calls.length}</span><span>Calls geplant</span></div>
-          </div>
-        </div>
       </div>
 
       <div class="ot-tab-bar">
