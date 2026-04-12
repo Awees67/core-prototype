@@ -43,10 +43,7 @@ function openModalWithStartup(s, list){
     if(n>=1000) return "€"+(n/1000).toFixed(0)+"k";
     return "€"+Math.round(n);
   }
-  function fmtFull(n){
-    if(n===null||n===undefined) return "—";
-    return "€"+Math.round(n).toLocaleString("de-DE");
-  }
+  function fmtFull(n){ return fmtEUR(n||0); }
 
   // ── Custom Score ──────────────────────────────
   let scoreVal="—", rulesetName="Standard Screening";
@@ -223,7 +220,7 @@ function openModalWithStartup(s, list){
           <div class="dv-notes-head">
             <span class="dv-notes-title">Notes</span>
           </div>
-          ${notesHTML}
+          <div class="dv-notes-list" id="dvNotesList">${notesHTML}</div>
           <div class="dv-note-add">
             <textarea class="dv-note-inp" id="dvNoteInput" placeholder="Neue Notiz…" rows="3" maxlength="500"></textarea>
             <button class="dv-note-save" id="dvNoteSave">Speichern</button>
@@ -308,7 +305,34 @@ function openModalWithStartup(s, list){
       addNote(s.anon_id,text,author);
       noteInput.value="";
       toast("Gespeichert","Notiz hinzugefügt");
-      openModalWithStartup(s,list);
+      const updatedNotes=(typeof getNotesForDeal==="function")?getNotesForDeal(s.anon_id):[];
+      const listEl=document.getElementById("dvNotesList");
+      if(listEl){
+        if(updatedNotes.length===0){
+          listEl.innerHTML='<div class="dv-note-empty">Noch keine Notizen.</div>';
+        }else{
+          listEl.innerHTML=updatedNotes.map(n=>`
+            <div class="dv-note-entry">
+              <div class="dv-note-meta">
+                <span class="dv-note-ts">${escapeHTML(timeAgo(n.created_at).toUpperCase())}</span>
+                <span class="dv-note-author">${escapeHTML(n.author||"Analyst")}</span>
+              </div>
+              <div class="dv-note-body">
+                <button class="dv-note-del" data-del="${escapeHTML(n.id)}">\u2715</button>
+                ${escapeHTML(n.text)}
+              </div>
+            </div>
+          `).join("");
+          listEl.querySelectorAll("[data-del]").forEach(btn=>{
+            btn.onclick=(e)=>{
+              e.stopPropagation();
+              deleteNote(btn.getAttribute("data-del"));
+              btn.closest(".dv-note-entry").remove();
+              toast("Gelöscht","Notiz gelöscht");
+            };
+          });
+        }
+      }
     };
     noteSave.onclick=doSave;
     noteInput.addEventListener("keydown",(e)=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){ e.preventDefault(); doSave(); } });
@@ -316,7 +340,7 @@ function openModalWithStartup(s, list){
 
   // Notes: delete
   modal.querySelectorAll("[data-del]").forEach(btn=>{
-    btn.onclick=(e)=>{ e.stopPropagation(); deleteNote(btn.getAttribute("data-del")); toast("Gelöscht","Notiz gelöscht"); openModalWithStartup(s,list); };
+    btn.onclick=(e)=>{ e.stopPropagation(); deleteNote(btn.getAttribute("data-del")); btn.closest(".dv-note-entry").remove(); toast("Gelöscht","Notiz gelöscht"); };
   });
 }
 

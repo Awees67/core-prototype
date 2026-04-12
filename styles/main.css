@@ -3984,3 +3984,45 @@ tbody td,
   .dv-hero { flex-direction: column; }
   .dv-score-block { align-items: flex-start; }
 }
+
+/* =========================
+   DEAL VIEW v2 – Fixes
+========================= */
+
+.modal-backdrop {
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+}
+
+.dv-left {
+  padding-bottom: 72px !important;
+}
+
+.dv-right {
+  display: grid !important;
+  grid-template-rows: 1fr auto !important;
+  overflow: hidden !important;
+}
+
+.dv-notes {
+  display: grid !important;
+  grid-template-rows: auto 1fr auto !important;
+  padding: 14px 16px !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+
+.dv-notes-head { flex-shrink: 0; }
+
+.dv-notes-list {
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
+}
+
+.dv-note-add {
+  margin-top: 0 !important;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
