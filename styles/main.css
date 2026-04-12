@@ -3018,7 +3018,7 @@ tbody td,
    OUTREACH TRACKER v2
 ========================= */
 .ot-shell { font-family: var(--font-ui, 'IBM Plex Sans', sans-serif); }
-.ot-topbar { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.ot-topbar { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-bottom:10px; border-bottom:none; }
 .ot-title { margin:0 0 3px; font-size:1.1rem; font-weight:800; }
 .ot-subtitle { margin:0; font-size:0.84rem; color:var(--text-secondary); font-weight:500; line-height:1.4; max-width:480px; }
 .ot-topbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
