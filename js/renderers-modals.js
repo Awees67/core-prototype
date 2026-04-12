@@ -114,8 +114,8 @@ function openModalWithStartup(s, list){
   const bmCl=s.burn_multiple!==null?bmCls(s.burn_multiple):"";
 
   // ── Ownership ─────────────────────────────────
-  const owSum=((s.founder_pct||0)+(s.esop_pct||0)+(s.employees_pct||0)).toFixed(1);
-  const owAvail=(100-parseFloat(owSum)).toFixed(1);
+  const owAllocated=((s.esop_pct||0)+(s.employees_pct||0)).toFixed(1);
+  const owAvail=(100-parseFloat(owAllocated)).toFixed(1);
 
   // ── Render ────────────────────────────────────
   modal.innerHTML=`
@@ -209,7 +209,7 @@ function openModalWithStartup(s, list){
             <div class="dv-prow"><span class="dv-pl">Founder</span><span class="dv-pv">${escapeHTML((s.founder_pct||0).toFixed(1))} %</span></div>
             <div class="dv-prow"><span class="dv-pl">ESOP</span><span class="dv-pv">${escapeHTML((s.esop_pct||0).toFixed(1))} %</span></div>
             <div class="dv-prow"><span class="dv-pl">Employees</span><span class="dv-pv">${escapeHTML((s.employees_pct||0).toFixed(1))} %</span></div>
-            <div class="dv-prow full"><span class="dv-pl">Verfügbar</span><span class="dv-pv muted">${escapeHTML(owSum)} % vergeben · ${escapeHTML(owAvail)} % frei</span></div>
+            <div class="dv-prow full"><span class="dv-pl">Verfügbar</span><span class="dv-pv muted">${escapeHTML(owAllocated)} % vergeben · ${escapeHTML(owAvail)} % frei</span></div>
           </div>
         </div>
 
