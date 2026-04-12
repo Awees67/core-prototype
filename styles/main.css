@@ -3259,7 +3259,7 @@ tbody td,
   max-height: 100dvh !important;
   border-radius: 0 !important;
   background: #0b1220 !important;
-  display: flex !important;
+  display: flex;
   flex-direction: column !important;
   resize: none !important;
   min-width: unset !important;
@@ -3633,7 +3633,7 @@ tbody td,
   max-height: 100dvh !important;
   border-radius: 0 !important;
   background: var(--surface-base) !important;
-  display: flex !important;
+  display: flex;
   flex-direction: column !important;
   resize: none !important;
   min-width: unset !important;
