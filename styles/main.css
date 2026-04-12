@@ -3039,7 +3039,7 @@ tbody td,
 .ot-tab-n.blue { background:var(--chip); color:var(--accent); }
 
 /* Master-Detail */
-.ot-master-detail { display:grid; grid-template-columns:360px 1fr; border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); overflow:hidden; background:var(--surface-raised); min-height:500px; }
+.ot-master-detail { display:grid; grid-template-columns:clamp(320px, 28%, 520px) 1fr; border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); overflow:hidden; background:var(--surface-raised); min-height:500px; }
 @media(max-width:900px) { .ot-master-detail { grid-template-columns:1fr; } }
 .ot-list-col { display:flex; flex-direction:column; border-right:1px solid var(--border); background:var(--surface-raised); overflow:hidden; }
 
